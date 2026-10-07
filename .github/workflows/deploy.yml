@@ -29,19 +29,21 @@ jobs:
           if [ -f package.json ]; then echo "dir=dist" >> "$GITHUB_OUTPUT"; echo "node=true" >> "$GITHUB_OUTPUT";
           else echo "dir=placeholder" >> "$GITHUB_OUTPUT"; echo "node=false" >> "$GITHUB_OUTPUT"; fi
 
+      - uses: actions/configure-pages@v5
+        id: pages
+
       - uses: actions/setup-node@v4
         if: steps.detect.outputs.node == 'true'
         with:
           node-version: 22
           cache: npm
 
+      # base берётся из настроек Pages: /New-Year/ на github.io, / после подключения ngperm.ru
       - name: Build
         if: steps.detect.outputs.node == 'true'
         run: |
           npm ci
-          npm run build
-
-      - uses: actions/configure-pages@v5
+          npx vite build --base="${{ steps.pages.outputs.base_path }}/"
 
       - uses: actions/upload-pages-artifact@v3
         with:
