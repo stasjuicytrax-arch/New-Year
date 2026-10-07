@@ -18,7 +18,7 @@
     padding-bottom: var(--space-9);
     /* --hw: ширина холста ведущих (2:3), --h1: кегль «НОВОГОДНЯЯ», --fs3: кегль «НОЧЬ 2027» */
     --hw: min(100vw, 480px);
-    --h1: min(13.4vw, 84px);
+    --h1: min(11.2vw, 84px);
     --fs3: calc(var(--h1) * 0.9);
   }
 
@@ -86,7 +86,7 @@
     margin-inline: auto;
     margin-bottom: var(--space-3);
     font-size: 12px;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.14em;
     line-height: 1.5;
     color: var(--text);
   }
@@ -141,7 +141,7 @@
 
   /* Таймер: часть композиции, цифры крупно */
   .hero__timer { gap: var(--space-2); justify-items: center; text-align: center; }
-  .hero__timer .countdown__label { max-width: none; font-size: 14px; letter-spacing: 0.22em; text-align: center; }
+  .hero__timer .countdown__label { max-width: none; font-size: 14px; letter-spacing: 0.14em; text-align: center; }
   .hero__timer .countdown__board { justify-content: center; gap: var(--space-2); }
 
   .hero__price { max-width: 44ch; font-family: var(--font-text); font-size: 16px; font-weight: 600; letter-spacing: 0.03em; line-height: 1.45; color: var(--text-strong); text-wrap: balance; }
@@ -154,9 +154,9 @@
       min-height: 100svh;
       padding-top: calc(64px + 4svh);
       --hw: min(34vw, 60svh, 700px);
-      --h1: min(7vw, 13svh, 140px);
+      --h1: min(6.4vw, 13svh, 128px);
     }
-    .hero__label { font-size: 13px; letter-spacing: 0.28em; }
+    .hero__label { font-size: 13px; letter-spacing: 0.14em; }
     .hero__row { flex-wrap: nowrap; width: auto; gap: var(--space-5); }
     .hero__cta { width: auto; }
     .ticket { min-height: 64px; padding: var(--space-3) var(--space-5); }

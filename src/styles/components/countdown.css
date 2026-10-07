@@ -23,7 +23,7 @@
   .countdown__num,
   .countdown__sep {
     font-family: var(--font-display);
-    font-weight: 700;
+    font-weight: 400;
     font-size: clamp(34px, 3.4vw, 56px);
     line-height: 0.9;
     font-variant-numeric: lining-nums tabular-nums;
@@ -37,7 +37,7 @@
   }
   .countdown__cap {
     font-size: 11px;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--text-muted);
   }
@@ -63,7 +63,7 @@
   .countdown--poster .countdown__num,
   .countdown--poster .countdown__sep { font-size: clamp(40px, 4.4vw, 72px); }
   .countdown--poster .countdown__unit { min-width: 2.1ch; }
-  .countdown--poster .countdown__cap { font-family: var(--font-ui); font-size: 12px; letter-spacing: 0.2em; }
+  .countdown--poster .countdown__cap { font-family: var(--font-ui); font-size: 12px; letter-spacing: 0.14em; }
 
   .countdown--full .countdown__num,
   .countdown--full .countdown__sep { font-size: clamp(48px, 7vw, 112px); }

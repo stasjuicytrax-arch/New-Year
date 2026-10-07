@@ -33,7 +33,7 @@
   .preloader__board {
     display: flex;
     font-family: var(--font-display);
-    font-weight: 700;
+    font-weight: 400;
     font-size: clamp(72px, 16vw, 176px);
     line-height: 1;
     font-variant-numeric: lining-nums tabular-nums;

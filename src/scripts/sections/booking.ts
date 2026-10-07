@@ -150,7 +150,7 @@ export function initBooking(): void {
   const estimate = form.querySelector<HTMLElement>('[data-estimate]')!;
   const renderEstimate = (): void => {
     const total = get('adults') * prices.adult + get('kids4') * prices.child;
-    estimate.textContent = `${bookingBlock.estimatePrefix} от ${fmt(total)} ${prices.currency}`;
+    estimate.innerHTML = `<span class="form__estimate-label">${bookingBlock.estimatePrefix}</span>от ${fmt(total)} ${prices.currency}`;
   };
 
   /** Горячее: телятина + судак всегда равны числу взрослых (перекладываем порцию между блюдами). */

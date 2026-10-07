@@ -9,7 +9,7 @@
   .ch__no { display: flex; align-items: baseline; gap: var(--space-4); }
   .ch__digits {
     font-family: var(--font-display);
-    font-weight: 700;
+    font-weight: 400;
     font-size: var(--fs-num);
     line-height: 0.8;
     font-variant-numeric: lining-nums tabular-nums;
@@ -74,9 +74,9 @@
   .ch__word-in {
     display: block;
     font-family: var(--font-display);
-    font-weight: 700;
+    font-weight: 400;
     text-transform: uppercase;
-    font-size: min(calc(100cqw / (var(--len) * 0.7)), 340px);
+    font-size: min(calc(100cqw / (var(--len) * 0.84)), 340px);
     line-height: 0.95;
     white-space: nowrap;
     font-variant-numeric: lining-nums;
@@ -185,7 +185,7 @@
   .ch__polaroid--3 .ch__img { object-position: 70% 50%; }
 
   /* ---------- 08: DJ Seven ---------- */
-  .ch__dj { font-family: var(--font-display); font-weight: 700; font-size: clamp(34px, 5vw, 72px); line-height: 0.9; text-transform: uppercase; }
+  .ch__dj { font-family: var(--font-display); font-weight: 400; font-size: clamp(34px, 5vw, 72px); line-height: 0.9; text-transform: uppercase; }
   .ch__media--dj { width: min(100%, 450px); margin-inline: auto; }
   .ch__square { aspect-ratio: 1; z-index: 1; }
   .ch__neon { position: absolute; inset: -6% -12%; pointer-events: none; }
@@ -223,10 +223,10 @@
   .ch__marquee-track { display: flex; width: max-content; gap: var(--space-8); animation: marquee 32s linear infinite; }
   .ch__marquee-track span {
     flex: none;
-    font-family: var(--font-techno);
+    font-family: var(--font-ui);
     font-weight: 500;
     font-size: clamp(14px, 1.8vw, 22px);
-    letter-spacing: 0.22em;
+    letter-spacing: 0.14em;
     white-space: nowrap;
     color: var(--text-strong);
   }
@@ -237,7 +237,7 @@
     justify-self: start;
     padding: 10px 20px;
     font-family: var(--font-display);
-    font-weight: 600;
+    font-weight: 400;
     font-size: clamp(20px, 2.2vw, 30px);
     line-height: 1.1;
     text-transform: uppercase;
@@ -250,13 +250,13 @@
   .menu__list { display: grid; padding: 0; list-style: none; margin: 0; }
   .menu__item { display: grid; grid-template-columns: 2.6rem minmax(0, 1fr); gap: var(--space-3); padding-block: var(--space-4); border-bottom: 1px solid var(--line); }
   .menu__item:last-child { border-bottom: 0; }
-  .menu__n { font-family: var(--font-display); font-weight: 600; font-size: 22px; line-height: 1.1; color: var(--neon-400); }
-  .menu__name { margin: 0 0 var(--space-1); font-family: var(--font-display); font-weight: 600; font-size: clamp(20px, 1.9vw, 26px); line-height: 1.15; text-transform: uppercase; color: var(--text-strong); }
+  .menu__n { font-family: var(--font-display); font-weight: 400; font-size: 22px; line-height: 1.1; color: var(--neon-400); }
+  .menu__name { margin: 0 0 var(--space-1); font-family: var(--font-display); font-weight: 400; font-size: clamp(20px, 1.9vw, 26px); line-height: 1.15; text-transform: uppercase; color: var(--text-strong); }
   .menu__desc, .menu__opt span, .menu__note { font-size: 15px; line-height: 1.5; color: var(--text-muted); max-width: none; }
   .menu__fork { display: grid; gap: var(--space-2); }
   .menu__opt { display: grid; gap: 2px; }
-  .menu__opt b { font-family: var(--font-display); font-weight: 600; font-size: 19px; text-transform: uppercase; color: var(--text-strong); }
-  .menu__or { font-family: var(--font-display); font-style: normal; font-weight: 600; font-size: 18px; text-transform: uppercase; color: var(--amber-200); }
+  .menu__opt b { font-family: var(--font-display); font-weight: 400; font-size: 19px; text-transform: uppercase; color: var(--text-strong); }
+  .menu__or { font-family: var(--font-display); font-style: normal; font-weight: 400; font-size: 18px; text-transform: uppercase; color: var(--amber-200); }
   .menu__note { margin-top: var(--space-2); }
   .menu__note a { color: var(--text-strong); text-underline-offset: 3px; }
   .menu__more {
@@ -273,7 +273,7 @@
   .menu__totals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4) var(--space-5); align-items: end; }
   .menu__totals > .label { grid-column: 1 / -1; }
   .menu__total { display: grid; gap: var(--space-1); }
-  .menu__big { font-family: var(--font-display); font-weight: 700; font-size: clamp(44px, 6vw, 96px); line-height: 0.9; font-variant-numeric: lining-nums; }
+  .menu__big { font-family: var(--font-display); font-weight: 400; font-size: clamp(44px, 6vw, 96px); line-height: 0.9; font-variant-numeric: lining-nums; }
 
   @media (max-width: 1023px) {
     .menu:not(.is-open) .menu__item:nth-child(n + 4) { display: none; }
@@ -302,10 +302,10 @@
   /* ======== ВЕРСИЯ 2 ======== */
   .program__head { display: grid; justify-items: center; gap: var(--space-3); text-align: center; padding-bottom: var(--space-7); }
   .program h2 { font-size: var(--fs-h2); line-height: 1; }
-  .program__lead { font-family: var(--font-ui); font-size: 14px; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: var(--text-muted); }
+  .program__lead { font-family: var(--font-ui); font-size: 14px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); }
 
   .ch__digits { font-size: clamp(44px, 6vw, 96px); }
-  .ch__title { font-size: clamp(28px, 3.4vw, 52px); line-height: 1.08; }
+  .ch__title { font-size: clamp(22px, 3vw, 46px); line-height: 1.12; letter-spacing: 0.01em; }
 
   /* Главы без широкого фото: текст по центру */
   .ch--center > .container { justify-items: center; text-align: center; }
@@ -360,11 +360,14 @@
   /* Бегущая строка между блоками: хром, медленно */
   .marquee { overflow: hidden; padding-block: var(--space-6); -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
   .marquee__track { display: flex; width: max-content; animation: marquee 60s linear infinite; }
-  .marquee__track span { flex: none; padding-right: var(--space-8); font-family: var(--font-display); font-weight: 600; font-size: clamp(28px, 4vw, 56px); line-height: 1.1; letter-spacing: 0.06em; white-space: nowrap; }
+  .marquee__track span { flex: none; padding-right: var(--space-8); font-family: var(--font-display); font-weight: 400; font-size: clamp(28px, 4vw, 56px); line-height: 1.1; letter-spacing: 0.06em; white-space: nowrap; }
 
-  /* Меню по ВЕРСИИ 2: Inter Tight + Onest, антиква только для хромовых акцентов */
+  /* Меню: Manrope, Prata только для хромовых акцентов */
   .menu__name, .menu__opt b, .menu__or { font-family: var(--font-ui); text-transform: none; letter-spacing: -0.005em; }
   .menu__name { font-size: clamp(18px, 1.5vw, 22px); }
   .menu__opt b { font-size: 17px; }
-  .menu__or { font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase; }
+  .menu__or { font-size: 14px; letter-spacing: 0.14em; text-transform: uppercase; }
+  /* Мелкие номера и плашка шампанского: Manrope (у Prata «10» и «11» читаются как «Ю» и «ll», Prata только для крупных акцентов) */
+  .menu__n { font-family: var(--font-ui); font-weight: 500; font-size: 15px; letter-spacing: 0.04em; font-variant-numeric: lining-nums tabular-nums; }
+  .ch__ribbon { font-family: var(--font-ui); font-weight: 600; font-size: clamp(14px, 1.4vw, 18px); letter-spacing: 0.1em; line-height: 1.35; border-radius: 22px; padding: 12px 22px; max-width: 34ch; text-wrap: balance; }
 }

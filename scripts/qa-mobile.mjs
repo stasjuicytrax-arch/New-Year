@@ -80,9 +80,15 @@ async function inPage(desktop) {
     if (!visible(img) || !img.complete || !img.naturalWidth || !img.currentSrc) continue;
     if (img.closest('[aria-hidden="true"]') || /\.svg(\?|$)/.test(img.currentSrc)) continue;
     const w = img.offsetWidth; // без transform-параллакса
-    const probe = new Image();
-    probe.src = img.currentSrc;
-    await probe.decode().catch(() => undefined);
+    // реальная ширина файла берётся один раз на адрес (кэш на странице)
+    const cache = (window.__qaProbe ??= new Map());
+    if (!cache.has(img.currentSrc)) {
+      const probe = new Image();
+      probe.src = img.currentSrc;
+      await probe.decode().catch(() => undefined);
+      cache.set(img.currentSrc, probe.naturalWidth);
+    }
+    const probe = { naturalWidth: cache.get(img.currentSrc) };
     if (probe.naturalWidth < w * 2 - 1) out.push(`${label(img)} мыло: файл ${probe.naturalWidth}px < 2 × ${Math.round(w)}px (${img.currentSrc.split('/').pop()})`);
   }
 
@@ -159,7 +165,11 @@ async function inPage(desktop) {
     const fs = parseFloat(getComputedStyle(l[1]).fontSize);
     const fs3 = parseFloat(getComputedStyle(l[2]).fontSize);
     if (fs3 < fs * 0.5 - 0.01) out.push(`«НОЧЬ 2027» ${Math.round(fs3)}px < половины «НОВОГОДНЯЯ» (${Math.round(fs / 2)}px)`);
-    if (rr[2].height > fs3 * 1.3) out.push('«НОЧЬ 2027» не в одну строку');
+    // «в одну строку» считаем по рядам глифов: высота рамки текста у Prata выше кегля
+    const rg = document.createRange();
+    rg.selectNodeContents(l[2]);
+    const ys = [...rg.getClientRects()].filter((x) => x.width > 1).map((x) => x.top);
+    if (Math.max(...ys) - Math.min(...ys) > fs3 * 0.5) out.push('«НОЧЬ 2027» не в одну строку');
     const mid = (rr[2].left + rr[2].right) / 2;
     if (Math.abs(mid - document.documentElement.clientWidth / 2) > 4) out.push(`«НОЧЬ 2027» не по центру (смещение ${Math.round(mid - document.documentElement.clientWidth / 2)}px)`);
     const gap = rr[2].top - rr[1].bottom;
@@ -220,11 +230,11 @@ async function run(browser, [width, height, desktop = false]) {
   const sections = await page.$$eval('main > section[id], .ch[id], footer', (els) => els.map((e) => e.id || 'footer'));
 
   // проход сверху вниз: на каждом экране считаем нарушения (шапка/плавающие элементы стоят на месте)
-  const step = Math.round(height * 0.8);
+  const step = Math.round(height * 0.9);
   const seen = new Set();
   for (let y = 0; y < total; y += step) {
     await page.evaluate((v) => window.scrollTo(0, v), y);
-    await page.waitForTimeout(450);
+    await page.waitForTimeout(150);
     for (const v of await page.evaluate(inPage, desktop)) {
       if (!seen.has(v)) {
         seen.add(v);
@@ -245,11 +255,11 @@ async function run(browser, [width, height, desktop = false]) {
   // скриншоты: полная страница + каждая секция
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.waitForTimeout(600);
-  await page.screenshot({ path: `${dir}/full.png`, fullPage: true }).catch((e) => fail(name, `скриншот страницы: ${e.message}`));
-  for (const id of sections) {
+  const want = process.env.QA_SHOTS === 'all' ? sections : sections.filter((id) => ['hero', 'ch-10', 'booking', 'site-footer'].includes(id));
+  for (const id of want) {
     const el = await page.$(`#${id}`);
     await el?.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(1100);
+    await page.waitForTimeout(700);
     await el?.screenshot({ path: `${dir}/${id}.png` }).catch(() => undefined);
   }
   await ctx.close();
@@ -258,15 +268,19 @@ async function run(browser, [width, height, desktop = false]) {
 await rm('qa', { recursive: true, force: true });
 await mkdir('qa', { recursive: true });
 await checkSource();
-const server = spawn(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], { stdio: 'ignore', shell: process.platform === 'win32' });
+const server = spawn(process.execPath, ['node_modules/vite/bin/vite.js', 'preview', '--port', String(PORT), '--strictPort'], { stdio: 'ignore' });
+const killServer = () => { try { server.kill('SIGKILL'); } catch {} };
+process.on('exit', killServer);
+setTimeout(() => { console.error('Mobile QA: общий таймаут 290 с'); killServer(); process.exit(2); }, 290000).unref();
 let browser;
 try {
   await waitForServer();
   browser = await chromium.launch();
-  for (const vp of VIEWPORTS) await run(browser, vp);
+  // по три вьюпорта параллельно: весь прогон укладывается в 5 минут
+  for (let i = 0; i < VIEWPORTS.length; i += 3) await Promise.all(VIEWPORTS.slice(i, i + 3).map((vp) => run(browser, vp)));
 } finally {
   await browser?.close();
-  server.kill();
+  killServer();
 }
 
 if (errors.length) {
@@ -274,3 +288,4 @@ if (errors.length) {
   process.exit(1);
 }
 console.log(`Mobile QA: ${VIEWPORTS.length} вьюпортов, 0 ошибок`);
+process.exit(0);

@@ -108,9 +108,9 @@ export function mountHero(): Hero {
   mountCountdown($('.hero__timer'), hero.countdownLabel, 'poster');
 
   const ready = Promise.all([
-    document.fonts.load('700 64px "Cormorant SC"', 'НОВОГОДНЯЯ 2027'),
-    document.fonts.load('400 16px Onest', 'Забронировать'),
-    document.fonts.load('600 16px "Inter Tight"', 'Забронировать'),
+    document.fonts.load('400 64px Prata', 'НОВОГОДНЯЯ 2027'),
+    document.fonts.load('400 16px Manrope', 'Забронировать'),
+    document.fonts.load('600 16px Manrope', 'Забронировать'),
     img.decode().catch(() => undefined),
   ]).then(() => undefined);
 

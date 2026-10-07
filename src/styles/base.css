@@ -17,7 +17,8 @@
   .lenis.lenis-smooth { scroll-behavior: auto !important; }
   .lenis.lenis-stopped { overflow: hidden; }
 
-  html { scroll-behavior: smooth; scroll-padding-top: 72px; background: var(--bg); }
+  /* Prata имеет один вес: жирность не имитировать */
+  html { scroll-behavior: smooth; scroll-padding-top: 72px; background: var(--bg); font-synthesis: none; }
 
   body {
     min-height: 100svh;
@@ -26,6 +27,7 @@
     color: var(--text);
     font-family: var(--font-text);
     font-size: var(--fs-body);
+    font-variant-numeric: lining-nums;
     line-height: 1.6;
     text-wrap: pretty;
     -webkit-font-smoothing: antialiased;
@@ -36,9 +38,10 @@
 
   h1, h2, h3 {
     font-family: var(--font-display);
-    font-weight: 700;
+    font-weight: 400;
     text-transform: uppercase;
     font-style: normal;
+    letter-spacing: 0.01em;
     color: var(--text-strong);
     text-wrap: balance;
   }
@@ -74,7 +77,7 @@
     font-size: var(--fs-label);
     font-weight: 500;
     line-height: 1.2;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--text-muted);
   }
@@ -90,8 +93,8 @@
     box-shadow: 0 0 10px 2px color-mix(in oklab, var(--cyan-300) 70%, transparent);
   }
 
-  /* Подзаголовки и названия: современный гротеск; антиква остаётся для хромовых акцентов */
-  h3, h4 { font-family: var(--font-ui); font-weight: 600; text-transform: none; letter-spacing: -0.01em; }
+  /* Названия блюд и подзаголовки меню: Manrope; Prata только для крупных акцентов */
+  h4 { font-family: var(--font-ui); font-weight: 600; text-transform: none; letter-spacing: 0; }
 
   /* Стеклянная панель вместо рамки со срезанными углами */
   .glass {
