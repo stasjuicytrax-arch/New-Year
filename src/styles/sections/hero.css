@@ -13,13 +13,14 @@
     overflow: clip;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr) auto;
-    grid-template-areas: 'head' 'fig' 'info';
-    min-height: 100svh;
-    padding-top: 76px;
+    grid-template-rows: auto minmax(0, 1fr) auto auto;
+    grid-template-areas: 'head' 'fig' 'info' 'timer';
+    /* таймер стоит отдельной строкой и может уходить чуть ниже экрана: область ведущих от него не сжимается */
+    min-height: calc(100svh + 76px);
+    padding-top: calc(64px + 2.5svh);
     padding-bottom: var(--space-5);
     /* --hw: ширина холста ведущих (пропорция 2:3), --h1: кегль «НОВОГОДНЯЯ» */
-    --hw: min(100vw, 500px, 56svh);
+    --hw: min(100vw, 500px, calc((100svh - 520px) / 0.88));
     --h1: min(13.4vw, 84px);
   }
 
@@ -166,31 +167,41 @@
   .hero__price { max-width: 36ch; font-family: var(--font-text); font-size: 15px; font-weight: 600; letter-spacing: 0.03em; line-height: 1.4; color: var(--text-strong); text-wrap: balance; }
   .hero__note { display: block; font-weight: 400; color: var(--text); }
 
+  /* Таймер: компактно в колонке, без рамок и линий */
+  .hero__timer { grid-area: timer; position: relative; z-index: 4; padding: var(--space-4) var(--margin) 0; }
+  .hero__timer.countdown { justify-items: center; text-align: center; gap: 4px; }
+  .hero__timer .countdown__label { max-width: none; font-size: 12px; letter-spacing: 0.18em; text-align: inherit; }
+  .hero__timer .countdown__board { justify-content: center; }
+
   /* ---------- Desktop: сплит 40/60 ---------- */
   @media (min-width: 1024px) {
     .hero__stage {
       grid-template-columns: minmax(0, 40fr) minmax(0, 60fr);
-      grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
-      grid-template-areas: 'head fig' 'info fig';
-      height: 100svh;
-      min-height: 560px;
-      padding-top: 72px;
+      grid-template-rows: auto auto auto;
+      grid-template-areas: 'head fig' 'info fig' 'timer fig';
+      align-content: center;
+      height: auto;
+      min-height: max(100svh, 600px);
+      padding-top: calc(64px + 4svh);
       padding-bottom: var(--space-6);
       /* фигура крупно: ширина холста до 60vw или 96svh. Колонка текста не шире 40% */
-      --hw: min(60vw, 96svh, 1024px);
-      --h1: min(5vw, 11.5svh);
+      --hw: min(56vw, calc(100svh - 112px), 1024px);
+      --h1: min(5vw, 10.5svh);
     }
-    .hero__head { align-self: end; padding-left: var(--margin); padding-right: 0; margin-bottom: var(--space-5); text-align: left; }
+    .hero__head { padding-left: var(--margin); padding-right: 0; margin-bottom: var(--space-5); text-align: left; }
     .hero__label { font-size: 13px; letter-spacing: 0.24em; }
-    .hero__info { align-self: start; justify-items: start; padding-left: var(--margin); padding-right: 0; text-align: left; gap: var(--space-5); }
+    .hero__info { justify-items: start; padding-left: var(--margin); padding-right: 0; text-align: left; gap: var(--space-5); }
     .hero__sub { max-width: 34ch; font-size: clamp(18px, 1.6vw, 26px); }
     .hero__tickets { justify-content: flex-start; gap: var(--space-3); }
     .hero__flake { width: 1.6em; height: 1.6em; }
     .ticket { min-height: 64px; padding: var(--space-3) var(--space-5); }
     .ticket__value { font-size: clamp(26px, 2.6vw, 44px); }
     .hero__cta { justify-items: start; width: auto; }
+    .hero__timer { padding: var(--space-4) 0 0 var(--margin); }
+    .hero__timer.countdown { justify-items: start; text-align: left; }
+    .hero__timer .countdown__board { justify-content: flex-start; }
     .hero__price { font-size: clamp(16px, 1.2vw, 19px); text-align: left; }
-    .hero__hosts { left: auto; right: 0; translate: none; }
+    .hero__hosts { left: auto; right: calc(34vw - var(--hw) / 2); translate: none; }
     .hero__glow { inset: 8% -4% 0 36%; }
     .hero__stage::after { height: 26%; }
     .beam--l { opacity: 0.7; }

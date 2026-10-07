@@ -51,6 +51,13 @@
     61%, 100% { opacity: 0.25; }
   }
 
+  /* mini: компактно в колонке hero, цифры мельче */
+  .countdown--mini .countdown__board { gap: 6px; }
+  .countdown--mini .countdown__num,
+  .countdown--mini .countdown__sep { font-size: clamp(22px, 2vw, 30px); }
+  .countdown--mini .countdown__unit { min-width: 2ch; }
+  .countdown--mini .countdown__cap { font-size: 11px; }
+
   .countdown--full .countdown__num,
   .countdown--full .countdown__sep { font-size: clamp(48px, 7vw, 112px); }
   .countdown--full .countdown__cap { font-size: var(--fs-label); }

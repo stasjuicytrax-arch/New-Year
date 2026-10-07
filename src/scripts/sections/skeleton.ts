@@ -1,5 +1,6 @@
-import { bookingBlock, event, footer, hero as heroContent, intro, manifest, nav, phones, program, typo, why } from '../../content/content';
-import { mountCountdown } from '../countdown';
+import { event, footer, hero as heroContent, intro, manifest, nav, phones, program, typo, why } from '../../content/content';
+import { renderBooking } from './booking';
+import { renderChapters } from './chapters';
 
 const $ = <T extends HTMLElement>(sel: string): T => {
   const el = document.querySelector<T>(sel);
@@ -7,9 +8,11 @@ const $ = <T extends HTMLElement>(sel: string): T => {
   return el;
 };
 
-/** Каркас секций: заголовки и якоря из content.ts. Вёрстка секций наполняется в шагах 5-8 плана. */
+/** Разметка всей страницы кроме hero: шапка, полоса отсчёта, интро, главы, «почему», манифест, бронь, футер. */
 export function renderSkeleton(): void {
   const [phone] = phones;
+  const [dateT, timeT] = heroContent.tickets;
+
   $('#site-header').innerHTML = `
     <a class="site-header__brand" href="#hero">${nav.brand}</a>
     <div class="site-header__actions">
@@ -20,54 +23,50 @@ export function renderSkeleton(): void {
       <a class="site-header__cta" href="#booking" data-goal="book_click">${nav.cta}</a>
     </div>`;
 
-  mountCountdown($('#countdown'), heroContent.countdownLabel, 'compact');
-
   $('#intro').innerHTML = `
-    <div class="container">
-      <p class="lead">${typo(intro.lead)}</p>
-      <p>${typo(intro.note)}</p>
+    <div class="container intro">
+      <p class="lead intro__lead" data-words>${typo(intro.lead)}</p>
+      <div class="intro__cta" data-fade>
+        <p class="intro__note">${typo(intro.note)}</p>
+        <span class="btn-wrap"><a class="btn btn--secondary" href="#booking" data-goal="book_click"><span>${intro.cta}</span></a></span>
+      </div>
     </div>`;
 
   $('#program').innerHTML = `
-    <div class="container"><h2 id="program-title" class="chrome">${program.title}</h2></div>
-    ${program.chapters
-      .map(
-        (c) => `
-    <article class="chapter" id="${c.id}">
-      <div class="container">
-        <p class="label">${program.chapterLabel} ${c.n}</p>
-        <h3>${typo(c.title)}</h3>
-        <p>${typo(c.text)}</p>
-      </div>
-    </article>`,
-      )
-      .join('')}`;
+    <div class="container program__head"><h2 id="program-title" class="chrome" data-split>${program.title}</h2></div>
+    ${renderChapters()}`;
 
   $('#why').innerHTML = `
-    <div class="container">
-      <h2 id="why-title" class="chrome">${typo(why.title)}</h2>
-      <ol class="why__list">${why.items.map((t) => `<li>${typo(t)}</li>`).join('')}</ol>
+    <div class="container why__grid">
+      <div class="why__main">
+        <h2 id="why-title" class="chrome" data-split>${typo(why.title)}</h2>
+        <ol class="why__list" data-cascade>
+          ${why.items.map((t, i) => `<li class="why__item"><span class="why__n">${String(i + 1).padStart(2, '0')}</span><span class="why__t">${typo(t)}</span></li>`).join('')}
+        </ol>
+      </div>
+      <aside class="why__ticket" aria-label="Дата и бронь">
+        <p class="why__date chrome">${dateT.value}</p>
+        <p class="label">${timeT.label} ${timeT.value}</p>
+        <span class="btn-wrap"><a class="btn btn--primary" href="#booking" data-goal="book_click"><span>${heroContent.cta}</span></a></span>
+      </aside>
     </div>`;
 
+  const hl = manifest.highlights.reduce((html, w) => html.replace(w, `<span class="hl">${w}</span>`), typo(manifest.text));
   $('#manifest').innerHTML = `
-    <div class="container">
-      <h2 id="manifest-title" class="chrome">${manifest.title}</h2>
-      <p>${typo(manifest.text)}</p>
+    <div class="container manifest__in">
+      <span class="manifest__year chrome" aria-hidden="true">2027</span>
+      <h2 id="manifest-title" class="chrome" data-split>${manifest.title}</h2>
+      <p class="manifest__text">${hl}</p>
     </div>`;
 
-  $('#booking').innerHTML = `
-    <div class="container">
-      <h2 id="booking-title" class="chrome">${typo(bookingBlock.title)}</h2>
-      <p>${typo(bookingBlock.text)}</p>
-      <p>${bookingBlock.callLine} ${phones.map((p) => `<a href="${p.href}">${p.label}</a>`).join(' · ')}</p>
-    </div>`;
+  $('#booking').innerHTML = renderBooking();
 
   $('#site-footer').innerHTML = `
-    <div class="container">
+    <div class="container footer__grid">
       <p class="site-footer__title chrome">${footer.headline}</p>
-      <p>${footer.slogan}</p>
+      <p class="footer__slogan">${footer.slogan}</p>
       <p><a href="${event.mapUrl}" target="_blank" rel="noopener">${footer.venueLine}</a></p>
-      <p>${phones.map((p) => `<a href="${p.href}">${p.label}</a>`).join(' · ')}</p>
-      <p><a href="${import.meta.env.BASE_URL}privacy.html">${footer.privacy}</a> · ${footer.copyright}</p>
+      <p class="footer__phones">${phones.map((p) => `<a href="${p.href}" data-goal="${p.goal}">${p.label}</a>`).join('<span aria-hidden="true"> · </span>')}</p>
+      <p class="footer__legal"><a href="${import.meta.env.BASE_URL}privacy.html">${footer.privacy}</a><span aria-hidden="true"> · </span>${footer.copyright}</p>
     </div>`;
 }

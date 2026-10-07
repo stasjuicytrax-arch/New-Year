@@ -10,19 +10,25 @@ import '../styles/components/countdown.css';
 import '../styles/components/preloader.css';
 import '../styles/sections/layout.css';
 import '../styles/sections/hero.css';
+import '../styles/sections/chapters.css';
+import '../styles/sections/page.css';
 
 import { initHeader } from './header';
 import { initScroll, lockScroll, scrollToTarget, ScrollTrigger } from './scroll';
+import { initBooking } from './sections/booking';
 import { mountHero } from './sections/hero';
+import { initReveals } from './sections/reveal';
 import { runPreloader } from './sections/preloader';
 import { renderSkeleton } from './sections/skeleton';
 
 const html = document.documentElement;
 
 renderSkeleton();
+initBooking();
 const hero = mountHero();
 initHeader();
 initScroll();
+initReveals();
 
 // WebGL-слой (three.js) грузится лениво и не блокирует первый экран; снег включается вручную (fadeTo)
 export const effects = import('./gl/index').then((m) => m.initEffects());

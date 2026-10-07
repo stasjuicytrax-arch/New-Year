@@ -1,0 +1,301 @@
+@layer sections {
+  .program__head { padding-bottom: var(--space-6); }
+  .program h2 { font-size: clamp(44px, 8vw, 128px); }
+
+  /* ---------- Общая глава ---------- */
+  .ch { position: relative; padding-block: clamp(48px, 8vw, 128px); }
+  .ch > .container { display: grid; gap: var(--space-7) var(--gutter); }
+  .ch__head { display: grid; gap: var(--space-4); align-content: start; min-width: 0; }
+  .ch__no { display: flex; align-items: baseline; gap: var(--space-4); }
+  .ch__digits {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--fs-num);
+    line-height: 0.8;
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+  .ch__title { margin: 0; font-size: clamp(30px, 4.4vw, 68px); line-height: 0.98; text-wrap: balance; }
+  .ch__text { max-width: 46ch; font-size: var(--fs-lead); line-height: 1.5; color: var(--text); }
+  .ch__media { position: relative; min-width: 0; }
+
+  .ch__mask { position: relative; overflow: hidden; }
+  .ch__mask picture { display: block; width: 100%; height: 100%; }
+  .ch__img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+  /* Mobile: фото/слово сначала, текст под ним (DOM: head первым, поэтому поднимаем медиа) */
+  .ch__media, .ch__word, .ch__finder, .ch__strip { order: -1; }
+  .ch--full .ch__media { order: -2; }
+
+  /* ---------- 01: балет ---------- */
+  .ch__mask--wide { aspect-ratio: 3 / 2; }
+  .ch__strip {
+    grid-column: 1 / -1;
+    width: 100vw;
+    margin-inline: calc(50% - 50vw);
+    overflow: hidden;
+    aspect-ratio: 1600 / 607;
+    max-height: 340px;
+  }
+  .ch__strip picture { display: block; height: 100%; }
+  .ch__strip img { width: 110%; max-width: none; height: 100%; object-fit: cover; }
+
+  /* ---------- 02: ведущие ---------- */
+  .ch__media--hosts { display: grid; place-items: end center; }
+  .ch__halo {
+    position: absolute;
+    inset: 4% -6% 0;
+    background:
+      radial-gradient(48% 50% at 50% 46%, color-mix(in oklab, var(--cyan-300) 36%, transparent), transparent 70%),
+      radial-gradient(70% 70% at 50% 55%, color-mix(in oklab, var(--electric-500) 32%, transparent), transparent 75%);
+    filter: blur(14px);
+    pointer-events: none;
+  }
+  .ch__cutout {
+    position: relative;
+    width: min(100%, 500px);
+    aspect-ratio: 2 / 3;
+    -webkit-mask-image: linear-gradient(to bottom, #000 58%, transparent 90%);
+    mask-image: linear-gradient(to bottom, #000 58%, transparent 90%);
+  }
+  .ch__cutout picture { display: block; width: 100%; height: 100%; }
+
+  /* ---------- 03: Дед Мороз и Снегурочка ---------- */
+  .ch__media--duo { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); padding-bottom: 8%; }
+  .ch__frame { aspect-ratio: 3 / 4; }
+  .ch__frame--a { grid-column: 1 / span 7; grid-row: 1; }
+  .ch__frame--b { grid-column: 6 / span 7; grid-row: 1; margin-top: 26%; z-index: 1; box-shadow: 0 0 0 5px var(--night-950), 0 0 36px color-mix(in oklab, var(--electric-500) 40%, transparent); }
+  .ch__img--ded { object-position: 54% 20%; }
+
+  /* ---------- Главы-слова: ИЛЛЮЗИЯ, ФОТО, ФОТОЗОНЫ, СПЕЦЭФФЕКТЫ ---------- */
+  .ch--word > .container { justify-items: center; text-align: center; }
+  .ch--word .ch__head { justify-items: center; max-width: 720px; }
+  .ch--word .ch__no { justify-content: center; }
+  .ch__word { container-type: inline-size; width: 100%; text-align: center; position: relative; z-index: 1; }
+  .ch__word-in {
+    display: block;
+    font-family: var(--font-display);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: min(calc(100cqw / (var(--len) * 0.7)), 340px);
+    line-height: 0.95;
+    white-space: nowrap;
+    font-variant-numeric: lining-nums;
+  }
+  .ch--word .ch__head, .ch--word .ch__finder, .ch--word .ch__zones { position: relative; z-index: 1; }
+
+  /* 04: дымка света за словом */
+  .ch--illusion::before {
+    content: '';
+    position: absolute;
+    inset: 10% -10% 10%;
+    background:
+      radial-gradient(40% 40% at 30% 40%, color-mix(in oklab, var(--electric-500) 24%, transparent), transparent 70%),
+      radial-gradient(36% 40% at 72% 56%, color-mix(in oklab, var(--cyan-300) 18%, transparent), transparent 70%);
+    filter: blur(30px);
+    animation: smoke 18s var(--ease-swing) infinite alternate;
+    pointer-events: none;
+  }
+  @keyframes smoke { from { transform: translateX(-4%); } to { transform: translateX(4%); } }
+  .ch__fx { display: none; }
+
+  /* 05: рамка видоискателя и одна вспышка */
+  .ch__finder { position: relative; width: 100%; padding: clamp(28px, 5vw, 72px) clamp(16px, 4vw, 56px); }
+  .ch__finder i { position: absolute; width: clamp(22px, 3vw, 40px); aspect-ratio: 1; border: 0 solid var(--cyan-300); filter: drop-shadow(0 0 8px color-mix(in oklab, var(--cyan-300) 60%, transparent)); }
+  .ch__finder i:nth-child(1) { top: 0; left: 0; border-top-width: 2px; border-left-width: 2px; }
+  .ch__finder i:nth-child(2) { top: 0; right: 0; border-top-width: 2px; border-right-width: 2px; }
+  .ch__finder i:nth-child(3) { bottom: 0; left: 0; border-bottom-width: 2px; border-left-width: 2px; }
+  .ch__finder i:nth-child(4) { bottom: 0; right: 0; border-bottom-width: 2px; border-right-width: 2px; }
+  .ch__flash { position: fixed; inset: 0; z-index: 30; background: #fff; opacity: 0; pointer-events: none; }
+
+  /* 07: пустые рамки фотозон, в которых движется свет */
+  .ch__zones { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); width: min(100%, 760px); }
+  .ch__zones i {
+    display: block;
+    aspect-ratio: 3 / 4;
+    border: 1px solid var(--line-strong);
+    clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+    background:
+      radial-gradient(circle at 30% 24%, color-mix(in oklab, var(--cyan-300) 30%, transparent), transparent 55%) 0 0 / 220% 220%,
+      color-mix(in oklab, var(--night-800) 60%, transparent);
+    animation: zone-light 9s var(--ease-swing) infinite alternate;
+  }
+  .ch__zones i:nth-child(2) { animation-delay: -3s; }
+  .ch__zones i:nth-child(3) { animation-delay: -6s; }
+  @keyframes zone-light { from { background-position: 0 0, 0 0; } to { background-position: 100% 100%, 0 0; } }
+
+  /* 09: веер лучей, медленно качается (без строба) */
+  .ch__rays { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+  .ch__rays i {
+    position: absolute;
+    left: 50%;
+    bottom: -12%;
+    width: 90%;
+    height: 120%;
+    translate: -50% 0;
+    transform-origin: 50% 100%;
+    rotate: calc((var(--k, 0) - 3) * 20deg);
+    clip-path: polygon(50% 100%, 40% 0, 60% 0);
+    background: linear-gradient(0deg, color-mix(in oklab, var(--cyan-300) 38%, transparent), transparent 82%);
+    mix-blend-mode: screen;
+    animation: ray-sweep 7s var(--ease-swing) infinite alternate;
+    animation-delay: calc(var(--k, 0) * -1.4s);
+  }
+  .ch__rays i:nth-child(1) { --k: 1; }
+  .ch__rays i:nth-child(2) { --k: 2; }
+  .ch__rays i:nth-child(3) { --k: 3; }
+  .ch__rays i:nth-child(4) { --k: 4; }
+  .ch__rays i:nth-child(5) { --k: 5; }
+  @keyframes ray-sweep { from { transform: rotate(-9deg); } to { transform: rotate(9deg); } }
+
+  /* ---------- 06: семья (тёплое окно, детская плашка) ---------- */
+  .ch--kids::before {
+    content: '';
+    position: absolute;
+    inset: 12% -10% 8%;
+    background: radial-gradient(46% 46% at 62% 56%, color-mix(in oklab, var(--amber-400) 14%, transparent), transparent 72%);
+    filter: blur(30px);
+    pointer-events: none;
+  }
+  .ch__badge {
+    justify-self: start;
+    max-width: 30ch;
+    padding: 8px 18px;
+    font-size: 14px;
+    line-height: 1.35;
+    color: var(--text-strong);
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    text-wrap: balance;
+  }
+  .ch__media--fan { position: relative; aspect-ratio: 1; width: min(100%, 520px); margin-inline: auto; }
+  .ch__polaroid {
+    position: absolute;
+    width: 60%;
+    aspect-ratio: 4 / 5;
+    padding: 6px;
+    background: color-mix(in oklab, var(--night-800) 80%, transparent);
+    clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--amber-200) 55%, transparent);
+  }
+  .ch__polaroid picture { display: block; width: 100%; height: 100%; }
+  .ch__polaroid .ch__img { object-position: 45% 50%; }
+  .ch__polaroid--1 { left: 0; top: 10%; z-index: 1; rotate: -5deg; }
+  .ch__polaroid--2 { right: 0; top: 0; z-index: 2; rotate: 4deg; }
+  .ch__polaroid--3 { left: 20%; bottom: 0; width: 52%; z-index: 3; rotate: -1deg; }
+  .ch__polaroid--3 .ch__img { object-position: 70% 50%; }
+
+  /* ---------- 08: DJ Seven ---------- */
+  .ch__dj { font-family: var(--font-display); font-weight: 700; font-size: clamp(34px, 5vw, 72px); line-height: 0.9; text-transform: uppercase; }
+  .ch__media--dj { width: min(100%, 450px); margin-inline: auto; }
+  .ch__square { aspect-ratio: 1; z-index: 1; }
+  .ch__neon { position: absolute; inset: -6% -12%; pointer-events: none; }
+  .ch__neon i {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--cyan-300), var(--neon-400), transparent);
+    filter: drop-shadow(0 0 8px var(--cyan-300));
+    opacity: 0.7;
+  }
+  .ch__neon i:nth-child(1) { top: 12%; rotate: -8deg; }
+  .ch__neon i:nth-child(2) { top: 58%; rotate: 5deg; }
+  .ch__neon i:nth-child(3) { top: 88%; rotate: -3deg; }
+  .ch__eq { position: relative; display: flex; align-items: flex-end; justify-content: space-between; gap: 4px; height: 52px; margin-top: var(--space-4); }
+  .ch__eq i {
+    flex: 1;
+    max-width: 3px;
+    height: 100%;
+    background: linear-gradient(0deg, var(--neon-400), var(--cyan-300));
+    transform-origin: 50% 100%;
+    animation: eq 1.6s var(--ease-swing) infinite alternate;
+    animation-delay: calc(var(--i) * -0.17s);
+  }
+  @keyframes eq { from { transform: scaleY(0.12); } to { transform: scaleY(1); } }
+  .ch__marquee {
+    grid-column: 1 / -1;
+    width: 100vw;
+    margin-inline: calc(50% - 50vw);
+    overflow: hidden;
+    border-block: 1px solid var(--line);
+    padding-block: var(--space-4);
+  }
+  .ch__marquee-track { display: flex; width: max-content; gap: var(--space-8); animation: marquee 32s linear infinite; }
+  .ch__marquee-track span {
+    flex: none;
+    font-family: var(--font-techno);
+    font-weight: 500;
+    font-size: clamp(14px, 1.8vw, 22px);
+    letter-spacing: 0.22em;
+    white-space: nowrap;
+    color: var(--text-strong);
+  }
+  @keyframes marquee { to { transform: translateX(-50%); } }
+
+  /* ---------- 10: меню ---------- */
+  .ch__ribbon {
+    justify-self: start;
+    padding: 10px 20px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(20px, 2.2vw, 30px);
+    line-height: 1.1;
+    text-transform: uppercase;
+    color: var(--text-strong);
+    border-block: 1px solid var(--line-strong);
+    background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--electric-500) 22%, transparent), transparent);
+  }
+  .menu { display: grid; gap: var(--space-6); min-width: 0; order: -1; }
+  .menu__card { position: relative; isolation: isolate; padding: clamp(20px, 3vw, 40px); }
+  .menu__list { display: grid; padding: 0; list-style: none; margin: 0; }
+  .menu__item { display: grid; grid-template-columns: 2.6rem minmax(0, 1fr); gap: var(--space-3); padding-block: var(--space-4); border-bottom: 1px solid var(--line); }
+  .menu__item:last-child { border-bottom: 0; }
+  .menu__n { font-family: var(--font-display); font-weight: 600; font-size: 22px; line-height: 1.1; color: var(--neon-400); }
+  .menu__name { margin: 0 0 var(--space-1); font-family: var(--font-display); font-weight: 600; font-size: clamp(20px, 1.9vw, 26px); line-height: 1.15; text-transform: uppercase; color: var(--text-strong); }
+  .menu__desc, .menu__opt span, .menu__note { font-size: 15px; line-height: 1.5; color: var(--text-muted); max-width: none; }
+  .menu__fork { display: grid; gap: var(--space-2); }
+  .menu__opt { display: grid; gap: 2px; }
+  .menu__opt b { font-family: var(--font-display); font-weight: 600; font-size: 19px; text-transform: uppercase; color: var(--text-strong); }
+  .menu__or { font-family: var(--font-display); font-style: normal; font-weight: 600; font-size: 18px; text-transform: uppercase; color: var(--amber-200); }
+  .menu__note { margin-top: var(--space-2); }
+  .menu__note a { color: var(--text-strong); text-underline-offset: 3px; }
+  .menu__more {
+    width: 100%;
+    min-height: 52px;
+    margin-top: var(--space-4);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--snow-50);
+    border: 1px solid var(--line-strong);
+  }
+  .menu__totals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4) var(--space-5); align-items: end; }
+  .menu__totals > .label { grid-column: 1 / -1; }
+  .menu__total { display: grid; gap: var(--space-1); }
+  .menu__big { font-family: var(--font-display); font-weight: 700; font-size: clamp(44px, 6vw, 96px); line-height: 0.9; font-variant-numeric: lining-nums; }
+
+  @media (max-width: 1023px) {
+    .menu:not(.is-open) .menu__item:nth-child(n + 4) { display: none; }
+  }
+
+  /* ---------- Desktop: чередование схем ---------- */
+  @media (min-width: 1024px) {
+    .ch__media, .ch__word, .ch__finder, .ch__strip, .menu, .ch--full .ch__media { order: 0; }
+    .ch--right > .container,
+    .ch--left > .container,
+    .ch--menu > .container { grid-template-columns: repeat(12, minmax(0, 1fr)); align-items: center; }
+    .ch--right .ch__head { grid-column: 1 / span 5; grid-row: 1; }
+    .ch--right .ch__media { grid-column: 7 / span 6; grid-row: 1; }
+    .ch--left .ch__head { grid-column: 8 / span 5; grid-row: 1; }
+    .ch--left .ch__media { grid-column: 1 / span 6; grid-row: 1; }
+    .ch--menu .ch__head { grid-column: 1 / span 4; grid-row: 1; align-self: start; position: sticky; top: 110px; }
+    .ch--menu .menu { grid-column: 6 / span 7; grid-row: 1; }
+    .ch--full > .container { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+    .ch--full .ch__head { grid-column: 1 / span 6; }
+    .ch--full .ch__media { grid-column: 1 / -1; }
+    .ch__mask--wide { aspect-ratio: 16 / 8; }
+    .ch__media--fan { margin-inline: 0; }
+    .ch__media--dj { margin-inline: 0; }
+  }
+}

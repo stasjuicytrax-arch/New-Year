@@ -61,7 +61,7 @@ async function inPage() {
   if (document.documentElement.scrollWidth > vw) out.push(`горизонтальный скролл: scrollWidth ${document.documentElement.scrollWidth} > clientWidth ${vw}`);
 
   // 2. центрирование ключевых медиа и обрезка краем экрана
-  const media = [...document.querySelectorAll('.hero__hosts img, .chapter img, .chapter picture img')].filter(visible);
+  const media = [...document.querySelectorAll('.hero__hosts img, .ch__cutout, .ch__media--dj, .ch__media--fan, .ch__media--duo, .ch__mask--wide')].filter(visible);
   for (const img of media) {
     if (img.closest('#hero') && !atTop) continue;
     const b = rect(img);
@@ -77,7 +77,7 @@ async function inPage() {
   for (const img of document.images) {
     if (!visible(img) || !img.complete || !img.naturalWidth || !img.currentSrc) continue;
     if (img.closest('[aria-hidden="true"]') || /\.svg(\?|$)/.test(img.currentSrc)) continue;
-    const w = rect(img).width;
+    const w = img.offsetWidth; // без transform-параллакса
     const probe = new Image();
     probe.src = img.currentSrc;
     await probe.decode().catch(() => undefined);
@@ -99,7 +99,7 @@ async function inPage() {
   }
   for (const el of document.querySelectorAll('a[href], button, input, select, textarea, summary, [role=button]')) {
     if (!visible(el) || el.closest('.skip-link')) continue;
-    if (el.matches('a') && el.closest('p, li') && !el.classList.contains('btn')) continue; // инлайн-ссылка в тексте
+    if (el.matches('a') && el.closest('p, li, .check') && !el.classList.contains('btn')) continue; // инлайн-ссылка в тексте
     const b = rect(el);
     if (b.width < 43.5 || b.height < 43.5) out.push(`тач-цель ${Math.round(b.width)}×${Math.round(b.height)} < 44: ${label(el)} «${(el.textContent || '').trim().slice(0, 24)}»`);
   }
@@ -167,11 +167,13 @@ async function inPage() {
   const stage = document.querySelector('.hero__stage');
   if (stage && atTop) {
     const cta = stage.querySelector('.hero__cta');
-    const bottom = Math.max(stage.getBoundingClientRect().bottom, cta ? cta.getBoundingClientRect().bottom : 0);
+    const bottom = cta ? cta.getBoundingClientRect().bottom : 0;
     if (bottom > window.innerHeight + 1) out.push(`hero не помещается на экран: низ ${Math.round(bottom)}px > ${window.innerHeight}px`);
     const head = stage.querySelector('.hero__head').getBoundingClientRect();
     const hh = stage.querySelector('.hero__hosts img').getBoundingClientRect();
-    if (hh.top > head.bottom + window.innerHeight * 0.2) out.push('между H1 и ведущими большая пустота');
+    const headsTop = hh.top + hh.height * 0.08; // верх голов на 8% высоты холста
+    if (headsTop > head.bottom + window.innerHeight * 0.2) out.push('между H1 и ведущими большая пустота');
+    if (headsTop < head.bottom - 2) out.push(`ведущие налезают на заголовок на ${Math.round(head.bottom - headsTop)}px`);
   }
   const kids = document.querySelector('.hero__kids');
   if (kids && visible(kids) && atTop) {
@@ -205,7 +207,7 @@ async function run(browser, [width, height]) {
   const dir = `qa/${name}`;
   await mkdir(dir, { recursive: true });
   const total = await page.evaluate(() => document.documentElement.scrollHeight);
-  const sections = await page.$$eval('main > section[id]', (els) => els.map((e) => e.id));
+  const sections = await page.$$eval('main > section[id], .ch[id], footer', (els) => els.map((e) => e.id || 'footer'));
 
   // проход сверху вниз: на каждом экране считаем нарушения (шапка/плавающие элементы стоят на месте)
   const step = Math.round(height * 0.8);
@@ -237,7 +239,7 @@ async function run(browser, [width, height]) {
   for (const id of sections) {
     const el = await page.$(`#${id}`);
     await el?.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(1100);
     await el?.screenshot({ path: `${dir}/${id}.png` }).catch(() => undefined);
   }
   await ctx.close();

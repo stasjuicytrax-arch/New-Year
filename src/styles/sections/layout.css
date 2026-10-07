@@ -3,21 +3,17 @@
   /* Фон-сцена живёт на фиксированной подложке body::before, поэтому WebGL-слой виден сквозь секции */
   body::before { content: ''; position: fixed; inset: 0; z-index: -1; background: var(--scene); pointer-events: none; }
   main, .site-footer { position: relative; z-index: var(--z-content); }
+  /* Декор (неон, лучи, огромные цифры) выходит за блок, но не должен расширять страницу по горизонтали */
+  main { overflow-x: clip; }
   .scene { min-height: var(--pad-scene); display: grid; align-content: center; padding-block: var(--pad-pause); }
   .pause { padding-block: var(--pad-pause); }
   .dense { padding-block: var(--pad-dense); }
   .chapter { padding-block: var(--pad-chapter); }
   .program { padding-top: var(--pad-pause); }
 
-  /* Узкая полоса с отсчётом сразу под hero */
-  .strip { padding-block: var(--space-5); border-block: 1px solid var(--line); background: color-mix(in oklab, var(--night-950) 70%, transparent); }
-  .strip .countdown { width: var(--container); margin-inline: auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--space-3) var(--space-7); text-align: left; }
-  .strip .countdown__label { max-width: none; }
   h2 { font-size: var(--fs-display); line-height: 0.9; }
-  .chapter h3 { font-size: clamp(28px, 5vw, 72px); line-height: 0.95; margin-block: var(--space-4) var(--space-6); text-wrap: balance; }
   .lead { font-size: var(--fs-lead); line-height: 1.45; max-width: 48ch; color: var(--text-strong); }
 
-  .why__list { padding-left: 0; list-style-position: inside; font-weight: 500; font-size: var(--fs-h3); }
   .site-footer { padding-block: var(--pad-dense); background: var(--night-1000); }
   .site-footer a { display: inline-block; padding-block: 12px; }
 }

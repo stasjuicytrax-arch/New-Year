@@ -4,7 +4,7 @@ import { event } from '../content/content';
  * Обратный отсчёт до полуночи по Перми (DESIGN-SYSTEM §7.12).
  * Цель задана абсолютным моментом с оффсетом +05:00, поэтому часовой пояс зрителя не влияет на результат.
  */
-export type CountdownVariant = 'compact' | 'full';
+export type CountdownVariant = 'compact' | 'full' | 'mini';
 
 const TARGET = new Date(event.midnightISO).getTime();
 

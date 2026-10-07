@@ -1,5 +1,6 @@
 import { event, hero, typo } from '../../content/content';
 import { chromeText, type ChromeText } from '../chrome';
+import { mountCountdown } from '../countdown';
 import { finePointer, gsap, reducedMotion } from '../scroll';
 import { magnetic, ticketFrame } from '../ui';
 
@@ -24,7 +25,7 @@ export interface Hero {
 
 const glyph = (cls = ''): string => `<span class="glyph ${cls}" aria-hidden="true">${snowflakeSvg}</span>`;
 
-const SIZES = '(min-width: 1024px) min(60vw, 96svh), min(100vw, 500px)';
+const SIZES = '(min-width: 1024px) 56vw, min(100vw, 500px)';
 
 function markup(): string {
   const [t1, t2, t3] = hero.titleLines;
@@ -75,6 +76,8 @@ function markup(): string {
         <p class="hero__price">${hero.priceNote} <span class="hero__note">${hero.ctaNote}</span></p>
       </div>
     </div>
+
+    <div class="hero__timer" data-in></div>
   </div>`;
 }
 
@@ -102,6 +105,7 @@ export function mountHero(): Hero {
   const lines: ChromeText[] = lineEls.map((el) => chromeText(el, { mask: animated }));
   const frames = tickets.map((t) => ticketFrame(t));
   $$('[data-magnetic]').forEach((w) => magnetic(w, 8));
+  mountCountdown($('.hero__timer'), hero.countdownLabel, 'mini');
 
   const ready = Promise.all([
     document.fonts.load('700 64px "Cormorant SC"', 'НОВОГОДНЯЯ 2027'),
