@@ -1,0 +1,119 @@
+/* Токены «Хрустальной полуночи». Источник: docs/DESIGN-SYSTEM.md §3, §4, §5, §6, §10 */
+@layer tokens {
+  :root {
+    color-scheme: dark;
+
+    /* Ночь */
+    --night-1000: #000208;
+    --night-950: #00061b;
+    --night-900: #00102e;
+    --night-800: #0a1a44;
+    --night-700: #142a63;
+
+    /* Синий свет */
+    --royal-600: #24437c;
+    --electric-500: #1f5bff;
+    --neon-400: #598bfb;
+    --cyan-300: #5dc0e1;
+
+    /* Лёд и серебро */
+    --ice-200: #abc3e4;
+    --frost-100: #d7e1ed;
+    --snow-50: #f5f8fc;
+    --silver-500: #8591b2;
+    --steel-400: #a29fa4;
+
+    /* Тёплый свет (только как свет, ≤5% площади) */
+    --amber-200: #ffe1bc;
+    --amber-400: #ffb36b;
+    --ember-700: #783c30;
+
+    /* Ошибка формы: единственный «красный» на сайте */
+    --error: #ff8a8a;
+
+    /* Семантика */
+    --bg: var(--night-950);
+    --bg-scene: var(--night-900);
+    --surface: color-mix(in oklab, var(--night-800) 70%, transparent);
+    --text: var(--frost-100);
+    --text-strong: var(--snow-50);
+    --text-muted: var(--ice-200);
+    --line: color-mix(in oklab, var(--neon-400) 35%, transparent);
+    --line-strong: var(--neon-400);
+    --accent: var(--electric-500);
+    --accent-glow: 0 0 24px color-mix(in oklab, var(--electric-500) 55%, transparent);
+    --focus-ring: 0 0 0 2px var(--night-950), 0 0 0 4px var(--neon-400);
+
+    /* Градиенты */
+    --chrome: linear-gradient(180deg, #ffffff 0%, #eaf0f8 30%, #9aa6c4 48%, #5e6886 52%, #e6ecf5 64%, #b9c3d8 82%, #8591b2 100%);
+    --chrome-sheen: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.95) 50%, transparent 60%);
+    --beam: linear-gradient(180deg,
+      color-mix(in oklab, var(--cyan-300) 70%, transparent) 0%,
+      color-mix(in oklab, var(--electric-500) 35%, transparent) 40%,
+      transparent 100%);
+    --scene: radial-gradient(120% 80% at 50% -10%, #12317a 0%, var(--night-900) 45%, var(--night-1000) 100%);
+
+    /* Шрифты */
+    --font-display: 'Cormorant SC', 'Cormorant Garamond', Georgia, serif;
+    --font-text: 'Onest', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-techno: 'Unbounded', 'Onest', system-ui, sans-serif;
+
+    /* Типографическая шкала */
+    --fs-mega: clamp(64px, 13vw, 240px);
+    --fs-display: clamp(48px, 8vw, 128px);
+    --fs-h2: clamp(36px, 5vw, 72px);
+    --fs-h3: clamp(24px, 2.6vw, 36px);
+    --fs-num: clamp(72px, 10vw, 180px);
+    --fs-lead: clamp(18px, 1.6vw, 24px);
+    --fs-body: clamp(16px, 1.1vw, 18px);
+    --fs-label: clamp(11px, 0.9vw, 13px);
+    --fs-button: 15px;
+
+    /* Сетка */
+    --margin: clamp(16px, 5vw, 80px);
+    --gutter: clamp(16px, 1.7vw, 32px);
+    --container: min(100% - 2 * var(--margin), 1760px);
+
+    /* Отступы (база 4) */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+    --space-7: 48px;
+    --space-8: 64px;
+    --space-9: 96px;
+    --space-10: 128px;
+    --space-11: 192px;
+    --space-12: 256px;
+
+    /* Ритм секций */
+    --pad-scene: 100svh;
+    --pad-chapter: clamp(96px, 14vw, 224px);
+    --pad-pause: clamp(64px, 10vw, 160px);
+    --pad-dense: clamp(64px, 8vw, 128px);
+
+    /* Движение */
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in-out: cubic-bezier(0.83, 0, 0.17, 1);
+    --ease-swing: cubic-bezier(0.45, 0, 0.55, 1);
+    --dur-1: 180ms;
+    --dur-2: 400ms;
+    --dur-3: 800ms;
+    --dur-4: 1200ms;
+    --dur-5: 1800ms;
+    --stagger: 60ms;
+
+    /* Формы */
+    --chamfer-sm: 10px;
+    --chamfer: 14px;
+
+    /* Слои (z-index scale) */
+    --z-gl: 0;
+    --z-content: 1;
+    --z-header: 50;
+    --z-menu: 60;
+    --z-preloader: 100;
+  }
+}
