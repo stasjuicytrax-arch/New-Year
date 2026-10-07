@@ -1,0 +1,177 @@
+{
+  "hosts": {
+    "src": "1707x2560",
+    "variants": [
+      {
+        "w": 640,
+        "width": 640,
+        "height": 960
+      },
+      {
+        "w": 960,
+        "width": 960,
+        "height": 1440
+      },
+      {
+        "w": 1440,
+        "width": 1440,
+        "height": 2160
+      }
+    ]
+  },
+  "ballet-violet": {
+    "src": "2560x1707",
+    "variants": [
+      {
+        "w": 640,
+        "width": 640,
+        "height": 427
+      },
+      {
+        "w": 960,
+        "width": 960,
+        "height": 640
+      },
+      {
+        "w": 1440,
+        "width": 1440,
+        "height": 960
+      },
+      {
+        "w": 2048,
+        "width": 2048,
+        "height": 1366
+      }
+    ]
+  },
+  "ballet-feathers": {
+    "src": "1600x607",
+    "variants": [
+      {
+        "w": 640,
+        "width": 640,
+        "height": 243
+      },
+      {
+        "w": 960,
+        "width": 960,
+        "height": 364
+      },
+      {
+        "w": 1440,
+        "width": 1440,
+        "height": 546
+      }
+    ]
+  },
+  "ded-moroz": {
+    "src": "5502x3668",
+    "variants": [
+      {
+        "w": 640,
+        "width": 640,
+        "height": 427
+      },
+      {
+        "w": 960,
+        "width": 960,
+        "height": 640
+      },
+      {
+        "w": 1440,
+        "width": 1440,
+        "height": 960
+      },
+      {
+        "w": 2048,
+        "width": 2048,
+        "height": 1365
+      }
+    ]
+  },
+  "snegurochka": {
+    "src": "3572x5358",
+    "variants": [
+      {
+        "w": 640,
+        "width": 640,
+        "height": 960
+      },
+      {
+        "w": 960,
+        "width": 960,
+        "height": 1440
+      },
+      {
+        "w": 1440,
+        "width": 1440,
+        "height": 2160
+      }
+    ]
+  },
+  "kids-1": {
+    "src": "2144x1600",
+    "variants": [
+      {
+        "w": 640,
+        "width": 640,
+        "height": 478
+      },
+      {
+        "w": 960,
+        "width": 960,
+        "height": 716
+      },
+      {
+        "w": 1440,
+        "width": 1440,
+        "height": 1075
+      }
+    ]
+  },
+  "kids-2": {
+    "src": "3000x2000",
+    "variants": [
+      {
+        "w": 640,
+        "width": 640,
+        "height": 427
+      },
+      {
+        "w": 960,
+        "width": 960,
+        "height": 640
+      },
+      {
+        "w": 1440,
+        "width": 1440,
+        "height": 960
+      }
+    ]
+  },
+  "kids-3": {
+    "src": "1024x682",
+    "variants": [
+      {
+        "w": 600,
+        "width": 600,
+        "height": 400
+      }
+    ]
+  },
+  "dj-seven": {
+    "src": "1254x1254",
+    "variants": [
+      {
+        "w": 640,
+        "width": 640,
+        "height": 640
+      },
+      {
+        "w": 900,
+        "width": 900,
+        "height": 900
+      }
+    ]
+  }
+}
