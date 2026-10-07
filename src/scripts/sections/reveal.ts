@@ -1,5 +1,4 @@
 import { gsap, reducedMotion, ScrollTrigger, SplitText } from '../scroll';
-import { ticketFrame } from '../ui';
 
 /**
  * Лёгкие scroll-анимации страницы (GSAP ScrollTrigger, без WebGL): заголовки по строкам, фото из маски с параллаксом,
@@ -52,7 +51,6 @@ function scramble(el: HTMLElement): void {
 
 export function initReveals(): void {
   initMenu();
-  $$('.menu__card, .why__ticket, .price-ticket').forEach((el) => ticketFrame(el, 16));
   if (reducedMotion.matches) return;
 
   // Заголовки: h3 по строкам из-под маски; хромовые h2 целиком (background-clip:text ломается на вложенных масках)
@@ -143,6 +141,18 @@ export function initReveals(): void {
       onEnter: () => void gsap.fromTo(flash, { opacity: 0 }, { opacity: 0.85, duration: 0.06, yoyo: true, repeat: 1, ease: 'none' }),
     });
   }
+
+  // Фотоплёнка (глава 05): лента поляроидов едет по скроллу
+  $$('[data-film]').forEach((film) => {
+    const track = film.querySelector<HTMLElement>('.film__track');
+    if (!track) return;
+    gsap.fromTo(
+      track,
+      { x: 0 },
+      { x: () => -Math.max(0, track.scrollWidth - film.clientWidth), ease: 'none', scrollTrigger: { trigger: film, start: 'top 90%', end: 'bottom 20%', scrub: 0.6, invalidateOnRefresh: true } },
+    );
+    gsap.from($$('.film__item', film), { y: 40, opacity: 0, duration: 0.9, ease: 'expo.out', stagger: 0.08, scrollTrigger: once(film, 'top 85%') });
+  });
 
   // Слова интро проявляются по мере скролла
   $$('[data-words]').forEach((el) => {

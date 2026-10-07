@@ -14,6 +14,7 @@
   h2 { font-size: var(--fs-display); line-height: 0.9; }
   .lead { font-size: var(--fs-lead); line-height: 1.45; max-width: 48ch; color: var(--text-strong); }
 
-  .site-footer { padding-block: var(--pad-dense); background: var(--night-1000); }
+  /* Футер: мягкий переход из фона страницы, без плиты */
+  .site-footer { padding-block: clamp(96px, 14vw, 200px) var(--space-8); background: linear-gradient(180deg, transparent 0%, color-mix(in oklab, var(--night-1000) 70%, transparent) 50%, var(--night-1000) 100%); }
   .site-footer a { display: inline-block; padding-block: 12px; }
 }

@@ -1,4 +1,4 @@
-import { event, footer, hero as heroContent, intro, manifest, nav, phones, program, typo, why } from '../../content/content';
+import { event, footer, hero as heroContent, intro, manifest, marquee, nav, phones, program, typo, why } from '../../content/content';
 import { renderBooking } from './booking';
 import { renderChapters } from './chapters';
 
@@ -23,6 +23,10 @@ export function renderSkeleton(): void {
       <a class="site-header__cta" href="#booking" data-goal="book_click">${nav.cta}</a>
     </div>`;
 
+  const run = `<div class="marquee__track">${Array.from({ length: 8 }, () => `<span class="chrome">${marquee}</span>`).join('')}</div>`;
+  $('#marquee-a').innerHTML = run;
+  $('#marquee-b').innerHTML = run;
+
   $('#intro').innerHTML = `
     <div class="container intro">
       <p class="lead intro__lead" data-words>${typo(intro.lead)}</p>
@@ -33,7 +37,10 @@ export function renderSkeleton(): void {
     </div>`;
 
   $('#program').innerHTML = `
-    <div class="container program__head"><h2 id="program-title" class="chrome" data-split>${program.title}</h2></div>
+    <div class="container program__head">
+      <h2 id="program-title" class="chrome" data-split>${program.title}</h2>
+      <p class="program__lead" data-fade>${program.lead}</p>
+    </div>
     ${renderChapters()}`;
 
   $('#why').innerHTML = `
@@ -44,7 +51,7 @@ export function renderSkeleton(): void {
           ${why.items.map((t, i) => `<li class="why__item"><span class="why__n">${String(i + 1).padStart(2, '0')}</span><span class="why__t">${typo(t)}</span></li>`).join('')}
         </ol>
       </div>
-      <aside class="why__ticket" aria-label="Дата и бронь">
+      <aside class="why__ticket glass" aria-label="Дата и бронь">
         <p class="why__date chrome">${dateT.value}</p>
         <p class="label">${timeT.label} ${timeT.value}</p>
         <span class="btn-wrap"><a class="btn btn--primary" href="#booking" data-goal="book_click"><span>${heroContent.cta}</span></a></span>
@@ -62,11 +69,26 @@ export function renderSkeleton(): void {
   $('#booking').innerHTML = renderBooking();
 
   $('#site-footer').innerHTML = `
-    <div class="container footer__grid">
-      <p class="site-footer__title chrome">${footer.headline}</p>
+    <div class="container footer__scene">
+      <p class="footer__farewell chrome">${footer.farewell}</p>
       <p class="footer__slogan">${footer.slogan}</p>
-      <p><a href="${event.mapUrl}" target="_blank" rel="noopener">${footer.venueLine}</a></p>
-      <p class="footer__phones">${phones.map((p) => `<a href="${p.href}" data-goal="${p.goal}">${p.label}</a>`).join('<span aria-hidden="true"> · </span>')}</p>
+      <div class="footer__cols">
+        <div class="footer__col">
+          <p class="label label--dot">${footer.colAddress}</p>
+          <p class="footer__big">${event.venue}</p>
+          <p class="footer__text">Пермь, ${event.address}</p>
+          <a class="footer__link" href="${event.mapUrl}" target="_blank" rel="noopener">${footer.route}</a>
+        </div>
+        <div class="footer__col">
+          <p class="label label--dot">${footer.colPhones}</p>
+          ${phones.map((p) => `<a class="footer__phone" href="${p.href}" data-goal="${p.goal}">${p.label}</a>`).join('')}
+        </div>
+        <div class="footer__col">
+          <p class="label label--dot">${footer.colBooking}</p>
+          <span class="btn-wrap"><a class="btn btn--primary" href="#booking" data-goal="book_click"><span>${heroContent.cta}</span></a></span>
+        </div>
+      </div>
+      <hr class="footer__rule">
       <p class="footer__legal"><a href="${import.meta.env.BASE_URL}privacy.html">${footer.privacy}</a><span aria-hidden="true"> · </span>${footer.copyright}</p>
     </div>`;
 }

@@ -70,13 +70,48 @@
   .container { width: var(--container); margin-inline: auto; }
 
   .label {
-    font-family: var(--font-text);
+    font-family: var(--font-ui);
     font-size: var(--fs-label);
     font-weight: 500;
     line-height: 1.2;
-    letter-spacing: 0.28em;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--text-muted);
+  }
+  /* Метка с маленькой светящейся точкой слева (ВЕРСИЯ 2), без линий */
+  .label--dot { display: flex; align-items: center; gap: 0.9em; width: fit-content; max-width: 100%; }
+  .label--dot::before {
+    content: '';
+    flex: none;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--cyan-300);
+    box-shadow: 0 0 10px 2px color-mix(in oklab, var(--cyan-300) 70%, transparent);
+  }
+
+  /* Подзаголовки и названия: современный гротеск; антиква остаётся для хромовых акцентов */
+  h3, h4 { font-family: var(--font-ui); font-weight: 600; text-transform: none; letter-spacing: -0.01em; }
+
+  /* Стеклянная панель вместо рамки со срезанными углами */
+  .glass {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-line);
+    border-radius: var(--glass-radius);
+    box-shadow: var(--glass-glow);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+  }
+
+  /* Лёгкое зерно поверх страницы: 4% киношности */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    pointer-events: none;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.4 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
   @media (prefers-reduced-motion: reduce) {

@@ -157,4 +157,45 @@
     .booking__grid { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: var(--space-9); }
     .form__submit .btn-wrap { width: auto; }
   }
+
+  /* ======== ВЕРСИЯ 2 ======== */
+  .why__ticket.glass { padding: var(--space-6); }
+  .price-ticket { padding: var(--space-4) var(--space-5); }
+  .price-ticket.glass { min-height: 112px; }
+  .booking__form.glass { padding: clamp(20px, 3vw, 44px); }
+
+  .input { border: 1px solid var(--glass-line); border-radius: 14px; background: rgba(0, 16, 46, 0.6); }
+  .input:focus-visible { border-color: var(--neon-400); box-shadow: 0 0 0 3px color-mix(in oklab, var(--electric-500) 35%, transparent); }
+  .stepper { border: 1px solid var(--glass-line); border-radius: 999px; background: rgba(0, 16, 46, 0.6); overflow: hidden; }
+  .seg__item span { border-radius: 999px; border: 1px solid var(--glass-line); background: rgba(0, 16, 46, 0.6); }
+  .seg__item input:checked + span { border-color: var(--ice-200); background: color-mix(in oklab, var(--electric-500) 38%, transparent); }
+  .check input { border-radius: 10px; border-color: rgba(171, 195, 228, 0.4); background: rgba(0, 16, 46, 0.6); }
+  .form__submit .btn-wrap { width: 100%; }
+
+  /* Модалка «онлайн-бронь подключается» */
+  .modal { width: min(92vw, 520px); padding: clamp(24px, 4vw, 40px); margin: auto; color: var(--text-strong); text-align: center; border: 1px solid var(--glass-line); background: rgba(6, 18, 52, 0.82); }
+  .modal::backdrop { background: rgba(0, 2, 8, 0.62); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+  .modal[open] { display: grid; gap: var(--space-4); justify-items: center; }
+  .modal__title { font-family: var(--font-display); font-weight: 700; font-size: clamp(30px, 4vw, 48px); line-height: 1; text-transform: uppercase; }
+  .modal__text { color: var(--text); }
+  .modal__calls { display: grid; gap: var(--space-3); width: 100%; }
+  .modal .btn-wrap { width: 100%; }
+  .modal .btn { width: 100%; }
+
+  /* Футер: финальная сцена */
+  .footer__scene { display: grid; justify-items: center; gap: var(--space-6); text-align: center; }
+  .footer__farewell { font-family: var(--font-display); font-weight: 700; font-size: clamp(40px, 8vw, 128px); line-height: 0.95; text-transform: uppercase; text-wrap: balance; }
+  .footer__slogan { font-size: var(--fs-lead); color: var(--text-muted); }
+  .footer__cols { display: grid; gap: var(--space-7); width: 100%; max-width: 1100px; margin-top: var(--space-6); }
+  .footer__col { display: grid; gap: var(--space-2); justify-items: center; align-content: start; }
+  .footer__big { font-family: var(--font-display); font-weight: 700; font-size: clamp(30px, 3vw, 44px); line-height: 1; }
+  .footer__text { color: var(--text); }
+  .footer__link, .footer__phone { display: inline-flex; align-items: center; min-height: 44px; font-family: var(--font-ui); font-weight: 600; color: var(--text-strong); text-underline-offset: 4px; }
+  .footer__phone { font-size: clamp(20px, 2vw, 28px); text-decoration: none; }
+  .footer__link { font-size: 15px; }
+  .footer__col .btn-wrap { margin-top: var(--space-2); }
+  .footer__rule { width: 100%; max-width: 1100px; margin: var(--space-6) 0 0; border: 0; border-top: 1px solid var(--glass-line); }
+  @media (min-width: 1024px) {
+    .footer__cols { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
 }

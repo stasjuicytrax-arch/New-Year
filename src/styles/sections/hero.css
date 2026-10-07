@@ -4,24 +4,22 @@
   /* inline-скрипт в head ставит fx-intro, пока hero.ts не выставит начальные состояния входа */
   html.fx-intro .hero__stage { visibility: hidden; }
 
-  /* ---------- Каркас афиши ----------
-     Mobile: head (метка + H1) / figure (ведущие) / info (ТОП-150, билеты, кнопка, цена), всё в один экран.
-     Desktop: сплит 40/60, слева head + info одной колонкой, справа ведущие крупно. */
+  /* ---------- Афиша: центрированная композиция ----------
+     метка и H1 по центру → ведущие крупно (головы перекрывают низ «НОЧЬ 2027») →
+     билеты и кнопка → крупный таймер → цена. Всё в обычном потоке: уходит вместе с hero. */
   .hero__stage {
     position: relative;
     isolation: isolate;
     overflow: clip;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr) auto auto;
-    grid-template-areas: 'head' 'fig' 'info' 'timer';
-    /* таймер стоит отдельной строкой и может уходить чуть ниже экрана: область ведущих от него не сжимается */
-    min-height: calc(100svh + 76px);
-    padding-top: calc(64px + 2.5svh);
-    padding-bottom: var(--space-5);
-    /* --hw: ширина холста ведущих (пропорция 2:3), --h1: кегль «НОВОГОДНЯЯ» */
-    --hw: min(100vw, 500px, calc((100svh - 520px) / 0.88));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: calc(64px + 3svh);
+    padding-bottom: var(--space-9);
+    /* --hw: ширина холста ведущих (2:3), --h1: кегль «НОВОГОДНЯЯ», --fs3: кегль «НОЧЬ 2027» */
+    --hw: min(100vw, 480px);
     --h1: min(13.4vw, 84px);
+    --fs3: calc(var(--h1) * 0.9);
   }
 
   /* ---------- Свет: два прожектора и голубое свечение за ведущими ---------- */
@@ -52,21 +50,24 @@
     mask-image: linear-gradient(180deg, #000 0%, rgb(0 0 0 / 0.55) 45%, transparent 92%);
     animation: beam-sway var(--sway, 10s) var(--ease-swing) infinite alternate;
   }
-  .beam--l { left: 3%; rotate: -26deg; --sway: 9s; }
-  .beam--r { left: 97%; rotate: 26deg; --sway: 12s; }
+  .beam--l { left: 8%; rotate: -26deg; --sway: 9s; }
+  .beam--r { left: 92%; rotate: 26deg; --sway: 12s; }
   @keyframes beam-sway {
     from { rotate: -6deg; }
     to { rotate: 6deg; }
   }
 
+  /* Свечение плавно гаснет к низу: у hero нет видимой нижней границы */
   .hero__glow {
     position: absolute;
     z-index: 1;
-    inset: 18% -20% 0 -20%;
+    inset: 16% 0 0;
     background:
-      radial-gradient(45% 55% at 50% 62%, color-mix(in oklab, var(--cyan-300) 30%, transparent), transparent 70%),
-      radial-gradient(60% 70% at 50% 70%, color-mix(in oklab, var(--electric-500) 34%, transparent), transparent 75%);
+      radial-gradient(34% 46% at 50% 42%, color-mix(in oklab, var(--cyan-300) 30%, transparent), transparent 70%),
+      radial-gradient(52% 60% at 50% 48%, color-mix(in oklab, var(--electric-500) 34%, transparent), transparent 75%);
     filter: blur(24px);
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%);
     pointer-events: none;
   }
   .hero__flash {
@@ -79,26 +80,10 @@
     pointer-events: none;
   }
 
-  /* Тёмная подложка под нижним блоком: мелкий текст не теряется на лучах и снеге */
-  .hero__stage::after {
-    content: '';
-    position: absolute;
-    inset: auto 0 0 0;
-    z-index: 3;
-    height: 36%;
-    background: linear-gradient(0deg, color-mix(in oklab, var(--night-1000) 80%, transparent), transparent);
-    pointer-events: none;
-  }
-
   /* ---------- Заголовок ---------- */
-  .hero__head {
-    grid-area: head;
-    position: relative;
-    z-index: 4;
-    padding-inline: var(--margin);
-    text-align: center;
-  }
+  .hero__head { position: relative; z-index: 4; width: 100%; padding-inline: var(--margin); text-align: center; }
   .hero__label {
+    margin-inline: auto;
     margin-bottom: var(--space-3);
     font-size: 12px;
     letter-spacing: 0.2em;
@@ -113,109 +98,73 @@
     white-space: nowrap;
     font-variant-numeric: lining-nums;
   }
-  .hero__line--1 { font-size: calc(var(--h1) * 0.62); }
-  .hero__line--2 { line-height: 0.86; }
-  .hero__line--3 { font-size: calc(var(--h1) * 0.9); }
+  .hero__line--1 { font-size: calc(var(--h1) * 0.62); z-index: 4; }
+  .hero__line--2 { line-height: 0.86; z-index: 4; }
+  /* «НОЧЬ 2027» лежит за ведущими: головы перекрывают нижнюю четверть букв, лица чистые */
+  .hero__line--3 { font-size: var(--fs3); z-index: 1; }
 
   /* ---------- Ведущие ----------
-     Холст 1024x1536 не кадрирован: головы на 8% высоты, бёдра на ~52%. Низ растворяется с 46% до 66%
-     и уходит под нижний блок (кадр по бёдра). */
-  .hero__figure { grid-area: fig; position: relative; min-height: 0; }
+     Холст 1024x1536, головы на 8% высоты. Поднимаем кадр так, чтобы головы заходили на низ третьей строки;
+     тело растворяется (46% → 62%) до начала нижнего блока. */
+  .hero__figure { position: relative; z-index: 2; width: var(--hw); margin: calc(var(--fs3) * -0.2 - var(--hw) * 0.12) auto calc(var(--hw) * -0.57); }
   .hero__hosts {
     --r: 1;
-    position: absolute;
-    z-index: 2;
-    left: 50%;
-    bottom: calc(var(--hw) * -0.5);
-    translate: -50% 0;
     display: block;
-    width: var(--hw);
+    width: 100%;
     aspect-ratio: 2 / 3;
-    /* первая маска: вход «свет снизу вверх»; вторая: растворение ниже бёдер */
-    -webkit-mask-image: linear-gradient(to top, #000 calc(var(--r) * 135% - 35%), transparent calc(var(--r) * 135%)), linear-gradient(to bottom, #000 46%, transparent 66%);
-    mask-image: linear-gradient(to top, #000 calc(var(--r) * 135% - 35%), transparent calc(var(--r) * 135%)), linear-gradient(to bottom, #000 46%, transparent 66%);
+    -webkit-mask-image: linear-gradient(to top, #000 calc(var(--r) * 135% - 35%), transparent calc(var(--r) * 135%)), linear-gradient(to bottom, #000 46%, transparent 62%);
+    mask-image: linear-gradient(to top, #000 calc(var(--r) * 135% - 35%), transparent calc(var(--r) * 135%)), linear-gradient(to bottom, #000 46%, transparent 62%);
     -webkit-mask-composite: source-in;
     mask-composite: intersect;
     pointer-events: none;
   }
   .hero__hosts img { display: block; width: 100%; height: 100%; }
-  .hero__names { display: none; }
 
-  /* ---------- Нижний блок ---------- */
+  /* ---------- Нижний блок: билеты · кнопка → таймер → цена ---------- */
   .hero__info {
-    grid-area: info;
     position: relative;
     z-index: 4;
     display: grid;
-    gap: var(--space-4);
     justify-items: center;
+    gap: var(--space-5);
+    width: 100%;
     padding-inline: var(--margin);
     text-align: center;
   }
-  .hero__sub {
-    max-width: 30ch;
-    font-size: 16px;
-    line-height: 1.4;
-    color: var(--text-strong);
-    text-wrap: balance;
-  }
+  .hero__names { margin: 0; font-size: 12px; line-height: 1.6; color: var(--text-strong); }
+  .hero__row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--space-4); width: 100%; }
   .hero__tickets { display: flex; align-items: center; justify-content: center; gap: var(--space-2); }
   .hero__flake { width: 1.2em; height: 1.2em; }
   .ticket { min-height: 54px; padding: var(--space-2) var(--space-4); }
   .ticket__value { font-size: 22px; }
-  .hero__cta { display: grid; gap: var(--space-2); justify-items: center; width: 100%; }
-  .hero__price { max-width: 36ch; font-family: var(--font-text); font-size: 15px; font-weight: 600; letter-spacing: 0.03em; line-height: 1.4; color: var(--text-strong); text-wrap: balance; }
+  .hero__cta { width: 100%; }
+
+  /* Таймер: часть композиции, цифры крупно */
+  .hero__timer { gap: var(--space-2); justify-items: center; text-align: center; }
+  .hero__timer .countdown__label { max-width: none; font-size: 14px; letter-spacing: 0.22em; text-align: center; }
+  .hero__timer .countdown__board { justify-content: center; gap: var(--space-2); }
+
+  .hero__price { max-width: 44ch; font-family: var(--font-text); font-size: 16px; font-weight: 600; letter-spacing: 0.03em; line-height: 1.45; color: var(--text-strong); text-wrap: balance; }
   .hero__note { display: block; font-weight: 400; color: var(--text); }
+  .hero__sub { max-width: 32ch; font-size: 16px; line-height: 1.4; color: var(--text); text-wrap: balance; }
 
-  /* Таймер: компактно в колонке, без рамок и линий */
-  .hero__timer { grid-area: timer; position: relative; z-index: 4; padding: var(--space-4) var(--margin) 0; }
-  .hero__timer.countdown { justify-items: center; text-align: center; gap: 4px; }
-  .hero__timer .countdown__label { max-width: none; font-size: 12px; letter-spacing: 0.18em; text-align: inherit; }
-  .hero__timer .countdown__board { justify-content: center; }
-
-  /* ---------- Desktop: сплит 40/60 ---------- */
+  /* ---------- Desktop ---------- */
   @media (min-width: 1024px) {
     .hero__stage {
-      grid-template-columns: minmax(0, 40fr) minmax(0, 60fr);
-      grid-template-rows: auto auto auto;
-      grid-template-areas: 'head fig' 'info fig' 'timer fig';
-      align-content: center;
-      height: auto;
-      min-height: max(100svh, 600px);
+      min-height: 100svh;
       padding-top: calc(64px + 4svh);
-      padding-bottom: var(--space-6);
-      /* фигура крупно: ширина холста до 60vw или 96svh. Колонка текста не шире 40% */
-      --hw: min(56vw, calc(100svh - 112px), 1024px);
-      --h1: min(5vw, 10.5svh);
+      --hw: min(34vw, 60svh, 700px);
+      --h1: min(7vw, 13svh, 140px);
     }
-    .hero__head { padding-left: var(--margin); padding-right: 0; margin-bottom: var(--space-5); text-align: left; }
-    .hero__label { font-size: 13px; letter-spacing: 0.24em; }
-    .hero__info { justify-items: start; padding-left: var(--margin); padding-right: 0; text-align: left; gap: var(--space-5); }
-    .hero__sub { max-width: 34ch; font-size: clamp(18px, 1.6vw, 26px); }
-    .hero__tickets { justify-content: flex-start; gap: var(--space-3); }
-    .hero__flake { width: 1.6em; height: 1.6em; }
+    .hero__label { font-size: 13px; letter-spacing: 0.28em; }
+    .hero__row { flex-wrap: nowrap; width: auto; gap: var(--space-5); }
+    .hero__cta { width: auto; }
     .ticket { min-height: 64px; padding: var(--space-3) var(--space-5); }
-    .ticket__value { font-size: clamp(26px, 2.6vw, 44px); }
-    .hero__cta { justify-items: start; width: auto; }
-    .hero__timer { padding: var(--space-4) 0 0 var(--margin); }
-    .hero__timer.countdown { justify-items: start; text-align: left; }
-    .hero__timer .countdown__board { justify-content: flex-start; }
-    .hero__price { font-size: clamp(16px, 1.2vw, 19px); text-align: left; }
-    .hero__hosts { left: auto; right: calc(34vw - var(--hw) / 2); translate: none; }
-    .hero__glow { inset: 8% -4% 0 36%; }
-    .hero__stage::after { height: 26%; }
-    .beam--l { opacity: 0.7; }
-    .hero__names {
-      display: block;
-      position: absolute;
-      z-index: 4;
-      right: var(--margin);
-      bottom: var(--space-1);
-      text-align: right;
-      line-height: 1.6;
-      font-size: 12px;
-      color: var(--text-strong);
-    }
+    .ticket__value { font-size: clamp(26px, 2.4vw, 42px); }
+    .hero__flake { width: 1.6em; height: 1.6em; }
+    .hero__sub { font-size: clamp(18px, 1.4vw, 24px); max-width: none; }
+    .hero__price { font-size: clamp(16px, 1.2vw, 20px); }
+    .hero__timer .countdown__label { font-size: 16px; }
   }
 
   /* Нет WebGL / reduced-motion: лучи статичные градиенты, без качания */

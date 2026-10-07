@@ -45,7 +45,7 @@
     --focus-ring: 0 0 0 2px var(--night-950), 0 0 0 4px var(--neon-400);
 
     /* Градиенты */
-    --chrome: linear-gradient(180deg, #ffffff 0%, #eaf0f8 30%, #9aa6c4 48%, #5e6886 52%, #e6ecf5 64%, #b9c3d8 82%, #8591b2 100%);
+    --chrome: linear-gradient(180deg, #ffffff 0%, #eef3fa 34%, #c9d3e6 68%, #9fadc9 100%); /* ВЕРСИЯ 2: белый → лёд → серебро, без тёмной полосы */
     /* ХРОМ ДЛЯ КНОПОК И ПЛАШЕК: мягкое серебро без тёмной «линии горизонта» (--chrome оставлен только для текста) */
     --chrome-button: linear-gradient(180deg, #ffffff 0%, #eef3fa 35%, #d9e2ef 70%, #c3cee0 100%);
     --chrome-sheen: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.95) 50%, transparent 60%);
@@ -58,6 +58,7 @@
     /* Шрифты */
     --font-display: 'Cormorant SC', 'Cormorant Garamond', Georgia, serif;
     --font-text: 'Onest', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-ui: 'Inter Tight', 'Onest', system-ui, sans-serif;
     --font-techno: 'Unbounded', 'Onest', system-ui, sans-serif;
 
     /* Типографическая шкала */
@@ -106,6 +107,12 @@
     --dur-4: 1200ms;
     --dur-5: 1800ms;
     --stagger: 60ms;
+
+    /* Стеклянные панели (ВЕРСИЯ 2) */
+    --glass-bg: rgba(10, 26, 68, 0.35);
+    --glass-line: rgba(171, 195, 228, 0.18);
+    --glass-radius: 20px;
+    --glass-glow: inset 0 0 40px rgba(89, 139, 251, 0.08);
 
     /* Формы */
     --chamfer-sm: 10px;

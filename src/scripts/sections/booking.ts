@@ -1,5 +1,4 @@
 import { booking, bookingBlock, event, phones, prices, typo } from '../../content/content';
-import { ticketFrame } from '../ui';
 
 /**
  * Финальный CTA + форма брони (TZ §5.6): цены двумя билетами, форма со степперами, выбор горячего,
@@ -34,7 +33,7 @@ export function renderBooking(): string {
   const tickets = [adult, child]
     .map(
       (t) => `
-      <div class="price-ticket" data-ticket>
+      <div class="price-ticket glass" data-ticket>
         <span class="label">${t.label}</span>
         <span class="price-ticket__value chrome">${t.prefix ? `<small>${t.prefix}</small> ` : ''}<span data-count="${t.value}" data-sep="1">${fmt(t.value)}</span> <small>${prices.currency}</small></span>
         ${t.note ? `<span class="price-ticket__note">${t.note}</span>` : ''}
@@ -55,7 +54,7 @@ export function renderBooking(): string {
         .join('<span aria-hidden="true"> · </span>')}</p>
     </div>
 
-    <form class="booking__form" id="booking-form" novalidate aria-label="Заявка на бронирование стола">
+    <form class="booking__form glass" id="booking-form" novalidate aria-label="Заявка на бронирование стола">
       <div class="form__fields">
         <label class="field">
           <span class="field__label">Имя <b aria-hidden="true">*</b></span>
@@ -119,7 +118,15 @@ export function renderBooking(): string {
         <p>${bookingBlock.success.split('. ').slice(1).join('. ')}</p>
       </div>
     </form>
-  </div>`;
+  </div>
+  <dialog class="modal glass" id="booking-modal" aria-labelledby="modal-title">
+    <p class="modal__title chrome" id="modal-title">${bookingBlock.modalTitle}</p>
+    <p class="modal__text">${bookingBlock.modalText}</p>
+    <div class="modal__calls">
+      ${phones.map((p) => `<span class="btn-wrap"><a class="btn btn--primary" href="${p.href}" data-goal="${p.goal}"><span>${p.label}</span></a></span>`).join('')}
+    </div>
+    <span class="btn-wrap"><button class="btn btn--secondary" type="button" data-modal-close><span>${bookingBlock.modalClose}</span></button></span>
+  </dialog>`;
 }
 
 export function initBooking(): void {
@@ -197,14 +204,14 @@ export function initBooking(): void {
     phone.value = `+7${p[0] ? ` (${p[0]}` : ''}${p[0].length === 3 ? ')' : ''}${p[1] ? ` ${p[1]}` : ''}${p[2] ? `-${p[2]}` : ''}${p[3] ? `-${p[3]}` : ''}`;
   });
 
-  // рамка-билет формы: SVG-контур со срезанными углами по размеру блока
-  ticketFrame(form, 18);
-
   const err = (k: string, msg: string): void => {
     const el = form.querySelector<HTMLElement>(`[data-err="${k}"]`);
     if (el) el.textContent = msg;
   };
   const status = form.querySelector<HTMLElement>('[data-status]')!;
+  const modal = document.querySelector<HTMLDialogElement>('#booking-modal');
+  modal?.querySelector('[data-modal-close]')?.addEventListener('click', () => modal.close());
+  modal?.addEventListener('click', (e) => { if (e.target === modal) modal.close(); });
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -236,10 +243,16 @@ export function initBooking(): void {
       estimate: get('adults') * prices.adult + get('kids4') * prices.child,
       event: event.name,
     };
+    if (!booking.endpoint) {
+      // канал заявок ещё не подключён: честно говорим об этом и даём позвонить
+      const modal = document.querySelector<HTMLDialogElement>('#booking-modal');
+      if (modal && typeof modal.showModal === 'function') modal.showModal();
+      else status.innerHTML = `${bookingBlock.modalTitle}. ${bookingBlock.modalText} ${phones.map((p) => `<a href="${p.href}">${p.label}</a>`).join(' · ')}`;
+      return;
+    }
     const submit = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
     submit.disabled = true;
     try {
-      if (!booking.endpoint) throw new Error('no-endpoint');
       const res = await fetch(booking.endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       if (!res.ok) throw new Error(String(res.status));
       form.classList.add('is-sent');

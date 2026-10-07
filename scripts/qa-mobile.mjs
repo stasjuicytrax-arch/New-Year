@@ -19,6 +19,8 @@ const VIEWPORTS = [
   [412, 915],
   [430, 932],
   [768, 1024],
+  [1440, 900, true],
+  [1920, 1080, true],
 ];
 const PRELOAD_KEY = 'gnn-preloaded';
 
@@ -45,7 +47,7 @@ async function checkSource() {
 }
 
 /** Всё, что считается в браузере. Возвращает список нарушений строками. */
-async function inPage() {
+async function inPage(desktop) {
   const out = [];
   const atTop = window.scrollY < 5; // hero в покое: на скролле он масштабируется пином, это не баг вёрстки
   const vw = document.documentElement.clientWidth;
@@ -62,7 +64,7 @@ async function inPage() {
 
   // 2. центрирование ключевых медиа и обрезка краем экрана
   const media = [...document.querySelectorAll('.hero__hosts img, .ch__cutout, .ch__media--dj, .ch__media--fan, .ch__media--duo, .ch__mask--wide')].filter(visible);
-  for (const img of media) {
+  for (const img of desktop ? [] : media) {
     if (img.closest('#hero') && !atTop) continue;
     const b = rect(img);
     const left = b.left;
@@ -74,7 +76,7 @@ async function inPage() {
 
   // 3. резкость на ретине: naturalWidth ≥ 2 × CSS-ширина
   // naturalWidth у srcset с w-дескрипторами приведён к CSS-размеру, поэтому реальные пиксели берём у файла currentSrc
-  for (const img of document.images) {
+  for (const img of desktop ? [] : document.images) {
     if (!visible(img) || !img.complete || !img.naturalWidth || !img.currentSrc) continue;
     if (img.closest('[aria-hidden="true"]') || /\.svg(\?|$)/.test(img.currentSrc)) continue;
     const w = img.offsetWidth; // без transform-параллакса
@@ -97,7 +99,7 @@ async function inPage() {
     const min = isLabel ? 11 : 14;
     if (fs < min - 0.01) out.push(`текст ${fs.toFixed(1)}px < ${min}px: ${label(el)} «${t.textContent.trim().slice(0, 28)}»`);
   }
-  for (const el of document.querySelectorAll('a[href], button, input, select, textarea, summary, [role=button]')) {
+  for (const el of desktop ? [] : document.querySelectorAll('a[href], button, input, select, textarea, summary, [role=button]')) {
     if (!visible(el) || el.closest('.skip-link')) continue;
     if (el.matches('a') && el.closest('p, li, .check') && !el.classList.contains('btn')) continue; // инлайн-ссылка в тексте
     const b = rect(el);
@@ -163,17 +165,21 @@ async function inPage() {
     const gap = rr[2].top - rr[1].bottom;
     if (gap > fs * 0.3) out.push(`разрыв между «НОВОГОДНЯЯ» и «НОЧЬ 2027»: ${Math.round(gap)}px (кегль ${Math.round(fs)}px)`);
   }
-  // hero целиком на одном экране: низ блока с ценой не ниже низа вьюпорта
+  // hero-афиша: головы заходят на нижнюю часть «НОЧЬ 2027», но не выше её середины; цена и таймер в потоке hero
   const stage = document.querySelector('.hero__stage');
   if (stage && atTop) {
-    const cta = stage.querySelector('.hero__cta');
-    const bottom = cta ? cta.getBoundingClientRect().bottom : 0;
-    if (bottom > window.innerHeight + 1) out.push(`hero не помещается на экран: низ ${Math.round(bottom)}px > ${window.innerHeight}px`);
-    const head = stage.querySelector('.hero__head').getBoundingClientRect();
+    const l3 = stage.querySelector('.hero__line--3').getBoundingClientRect();
     const hh = stage.querySelector('.hero__hosts img').getBoundingClientRect();
     const headsTop = hh.top + hh.height * 0.08; // верх голов на 8% высоты холста
-    if (headsTop > head.bottom + window.innerHeight * 0.2) out.push('между H1 и ведущими большая пустота');
-    if (headsTop < head.bottom - 2) out.push(`ведущие налезают на заголовок на ${Math.round(head.bottom - headsTop)}px`);
+    if (headsTop < l3.top + l3.height * 0.35) out.push(`головы заходят на «НОЧЬ 2027» слишком высоко (${Math.round(l3.bottom - headsTop)}px из ${Math.round(l3.height)}px)`);
+    if (headsTop > l3.bottom + 8) out.push('между «НОЧЬ 2027» и головами пустота');
+    const timer = stage.querySelector('.hero__timer .countdown__num');
+    if (timer && parseFloat(getComputedStyle(timer).fontSize) < (desktop ? 56 : 36)) out.push('цифры таймера мельче нормы (' + getComputedStyle(timer).fontSize + ')');
+    const hr = stage.getBoundingClientRect();
+    for (const el of stage.querySelectorAll('.hero__info, .hero__names, .hero__timer')) {
+      const r = el.getBoundingClientRect();
+      if (r.bottom > hr.bottom + 1) out.push('элемент hero выходит за границы hero: ' + label(el));
+    }
   }
   const kids = document.querySelector('.hero__kids');
   if (kids && visible(kids) && atTop) {
@@ -181,16 +187,20 @@ async function inPage() {
     const rows = Math.round((rect(kids).height - parseFloat(cs.paddingTop) * 2 - 2) / parseFloat(cs.lineHeight));
     if (rows > 2) out.push(`детская плашка в ${rows} строк`);
   }
-  for (const b of document.querySelectorAll('.btn--primary')) {
-    const bg = getComputedStyle(b).backgroundImage;
-    if (!bg.includes('linear-gradient') || /rgb\(94, 104, 134\)|rgb\(154, 166, 196\)/.test(bg)) out.push('кнопка не на --chrome-button (тёмная полоса)');
+  // кнопки ВЕРСИИ 2: pill (999px), primary светлая заливка, без срезанных углов
+  for (const b of document.querySelectorAll('.btn, .site-header__cta, .menu__more')) {
+    const cs = getComputedStyle(b);
+    if (!visible(b)) continue;
+    if (cs.clipPath !== 'none') out.push('у кнопки срезаны углы (clip-path): ' + label(b));
+    if (parseFloat(cs.borderTopLeftRadius) < 20) out.push('кнопка не pill: ' + label(b) + ' радиус ' + cs.borderTopLeftRadius);
+    if (b.classList.contains('btn--primary') && cs.backgroundColor !== 'rgb(245, 248, 252)') out.push('primary не светлая заливка: ' + cs.backgroundColor);
   }
   return out;
 }
 
-async function run(browser, [width, height]) {
+async function run(browser, [width, height, desktop = false]) {
   const name = `${width}x${height}`;
-  const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 3, isMobile: true, hasTouch: true });
+  const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: desktop ? 1 : 3, isMobile: !desktop, hasTouch: !desktop });
   await ctx.addInitScript((k) => {
     try {
       sessionStorage.setItem(k, '1');
@@ -215,7 +225,7 @@ async function run(browser, [width, height]) {
   for (let y = 0; y < total; y += step) {
     await page.evaluate((v) => window.scrollTo(0, v), y);
     await page.waitForTimeout(450);
-    for (const v of await page.evaluate(inPage)) {
+    for (const v of await page.evaluate(inPage, desktop)) {
       if (!seen.has(v)) {
         seen.add(v);
         fail(name, `${v} (скролл ${y}px)`);

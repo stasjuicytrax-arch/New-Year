@@ -58,6 +58,13 @@
   .countdown--mini .countdown__unit { min-width: 2ch; }
   .countdown--mini .countdown__cap { font-size: 11px; }
 
+  /* poster: таймер как часть афиши, цифры 56-72px на desktop */
+  .countdown--poster .countdown__board { gap: clamp(8px, 1.4vw, 24px); align-items: flex-start; }
+  .countdown--poster .countdown__num,
+  .countdown--poster .countdown__sep { font-size: clamp(40px, 4.4vw, 72px); }
+  .countdown--poster .countdown__unit { min-width: 2.1ch; }
+  .countdown--poster .countdown__cap { font-family: var(--font-ui); font-size: 12px; letter-spacing: 0.2em; }
+
   .countdown--full .countdown__num,
   .countdown--full .countdown__sep { font-size: clamp(48px, 7vw, 112px); }
   .countdown--full .countdown__cap { font-size: var(--fs-label); }

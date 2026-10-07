@@ -10,7 +10,7 @@ const FULL = '(min-width: 1024px) 1280px, 100vw';
 
 const head = (c: Chapter, extra = ''): string => `
   <header class="ch__head">
-    <p class="ch__no"><span class="ch__digits chrome" data-count="${Number(c.n)}" data-pad="2">${c.n}</span><span class="label">${program.chapterLabel} ${c.n}</span></p>
+    <p class="ch__no"><span class="ch__digits chrome" data-count="${Number(c.n)}" data-pad="2">${c.n}</span><span class="label label--dot">${program.chapterLabel} ${c.n}</span></p>
     <h3 class="ch__title" data-split>${typo(c.title)}</h3>
     <p class="ch__text" data-fade>${typo(c.text)}</p>
     ${extra}
@@ -56,7 +56,7 @@ function ch02(c: Chapter): string {
   });
   return shell(
     c,
-    'right',
+    'split',
     `${titled(head(c), c)}
     <div class="ch__media ch__media--hosts"><div class="ch__halo" aria-hidden="true"></div><div class="ch__cutout" data-parallax="-4">${cutout}</div></div>`,
   );
@@ -78,11 +78,26 @@ function word04(c: Chapter): string {
   return shell(c, 'word ch--illusion', `${word(c)}${titled(head(c), c)}<div class="ch__fx ch__fx--smoke" aria-hidden="true"></div>`);
 }
 
-function word05(c: Chapter): string {
+/** Глава 05: «фотоплёнка» — лента поляроидов из фото страницы, едет по скроллу; на входе одна вспышка камеры. */
+const FILM = [
+  { name: 'ballet-violet', alt: 'Балет в роскошных костюмах', tilt: -2.2 },
+  { name: 'hosts', alt: 'Александр Меркурьев и Стас Торопов', tilt: 1.8 },
+  { name: 'ded-moroz', alt: 'Дед Мороз на сцене', tilt: -1.4 },
+  { name: 'snegurochka', alt: 'Снегурочка на сцене', tilt: 2.4 },
+  { name: 'dj-seven', alt: 'DJ Seven за пультом', tilt: -1.8 },
+  { name: 'ballet-feathers', alt: 'Танцовщицы с перьями', tilt: 1.5 },
+] as const;
+
+function ch05(c: Chapter): string {
+  const items = FILM.map(
+    (f) => `<figure class="film__item" style="--tilt:${f.tilt}deg">${picture({ name: f.name, alt: f.alt, sizes: '(min-width: 1024px) 22vw, 64vw', cls: 'film__img' })}</figure>`,
+  ).join('');
   return shell(
     c,
-    'word ch--photo',
-    `<div class="ch__finder" aria-hidden="true"><i></i><i></i><i></i><i></i>${word(c)}</div>${titled(head(c), c)}<div class="ch__flash" aria-hidden="true"></div>`,
+    'center ch--photo',
+    `${titled(head(c), c)}
+    <div class="film" data-film><div class="film__track">${items}</div></div>
+    <div class="ch__flash" aria-hidden="true"></div>`,
   );
 }
 
@@ -91,7 +106,7 @@ function ch06(c: Chapter): string {
   return shell(
     c,
     'right ch--kids',
-    `${titled(head(c, `<p class="ch__badge" data-fade>${typo(c.extra ?? '')}</p>`), c)}
+    `${titled(head(c, `<p class="ch__tag" data-fade><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2z"/></svg>${typo(c.extra ?? '')}</p>`), c)}
     <div class="ch__media ch__media--fan" data-fan>
       <div class="ch__polaroid ch__polaroid--1">${picture({ name: 'kids-1', alt: 'Аниматор в костюме принцессы на детском празднике', sizes: sz, cls: 'ch__img' })}</div>
       <div class="ch__polaroid ch__polaroid--2">${picture({ name: 'kids-2', alt: 'Детская анимация с воздушными шарами', sizes: sz, cls: 'ch__img' })}</div>
@@ -100,12 +115,11 @@ function ch06(c: Chapter): string {
   );
 }
 
-function word07(c: Chapter): string {
+function ch07(c: Chapter): string {
   return shell(
     c,
-    'word ch--zones',
-    `${word(c)}${titled(head(c), c)}
-    <div class="ch__zones" aria-hidden="true" data-cascade><i></i><i></i><i></i></div>`,
+    'center ch--bokeh',
+    `<div class="ch__bokeh" aria-hidden="true">${Array.from({ length: 9 }, (_, i) => `<i style="--i:${i}"></i>`).join('')}</div>${titled(head(c), c)}`,
   );
 }
 
@@ -157,7 +171,7 @@ function ch10(c: Chapter): string {
     'menu',
     `${titled(head(c, `<p class="ch__ribbon" data-fade>${c.extra ?? ''}</p>`), c)}
     <div class="menu" data-menu>
-      <div class="menu__card">
+      <div class="menu__card glass">
         <ol class="menu__list" data-cascade>${items}</ol>
         <button class="menu__more" type="button" aria-expanded="false" data-more>${menu.more}</button>
       </div>
@@ -171,9 +185,9 @@ const builders: Record<string, (c: Chapter) => string> = {
   'ch-02': ch02,
   'ch-03': ch03,
   'ch-04': word04,
-  'ch-05': word05,
+  'ch-05': ch05,
   'ch-06': ch06,
-  'ch-07': word07,
+  'ch-07': ch07,
   'ch-08': ch08,
   'ch-09': word09,
   'ch-10': ch10,
