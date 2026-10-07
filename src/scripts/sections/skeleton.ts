@@ -65,6 +65,6 @@ export function renderSkeleton(): void {
       <p>${footer.slogan}</p>
       <p><a href="${event.mapUrl}" target="_blank" rel="noopener">${footer.venueLine}</a></p>
       <p>${phones.map((p) => `<a href="${p.href}">${p.label}</a>`).join(' · ')}</p>
-      <p><a href="/privacy.html">${footer.privacy}</a> · ${footer.copyright}</p>
+      <p><a href="${import.meta.env.BASE_URL}privacy.html">${footer.privacy}</a> · ${footer.copyright}</p>
     </div>`;
 }
