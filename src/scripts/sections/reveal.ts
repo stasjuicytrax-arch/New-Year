@@ -18,20 +18,6 @@ function fmtCount(el: HTMLElement, v: number): string {
   return v.toFixed(dec).replace('.', ',') + unit;
 }
 
-/** Меню на mobile: первые 3 позиции открыты, «Всё меню» раскрывает остальные. */
-function initMenu(): void {
-  $$('[data-menu]').forEach((menu) => {
-    const btn = menu.querySelector<HTMLButtonElement>('[data-more]');
-    if (!btn) return;
-    btn.addEventListener('click', () => {
-      const open = menu.classList.toggle('is-open');
-      btn.setAttribute('aria-expanded', String(open));
-      btn.textContent = open ? 'Свернуть' : 'Всё меню';
-      ScrollTrigger.refresh();
-    });
-  });
-}
-
 const CYR = 'АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ';
 
 function scramble(el: HTMLElement): void {
@@ -50,7 +36,6 @@ function scramble(el: HTMLElement): void {
 }
 
 export function initReveals(): void {
-  initMenu();
   if (reducedMotion.matches) return;
 
   // Заголовки: h3 по строкам из-под маски; хромовые h2 целиком (background-clip:text ломается на вложенных масках)
@@ -62,6 +47,7 @@ export function initReveals(): void {
     SplitText.create(el, {
       type: 'lines',
       mask: 'lines',
+      maskClass: 'split-mask',
       autoSplit: true,
       onSplit: (self) =>
         gsap.from(self.lines, { yPercent: 110, duration: 0.9, ease: 'expo.out', stagger: 0.08, scrollTrigger: once(el) }),
@@ -112,11 +98,6 @@ export function initReveals(): void {
     gsap.fromTo(el, { yPercent: -d }, { yPercent: d, ease: 'none', scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true } });
   });
 
-  // Полоса перьев проезжает горизонтально
-  $$('.ch__strip img').forEach((img) => {
-    gsap.fromTo(img, { xPercent: 0 }, { xPercent: -8, ease: 'none', scrollTrigger: { trigger: img, start: 'top bottom', end: 'bottom top', scrub: true } });
-  });
-
   // Детские фото: стопка раскладывается веером
   $$('[data-fan]').forEach((fan) => {
     const [a, b, c] = $$('.ch__polaroid', fan);
@@ -160,7 +141,7 @@ export function initReveals(): void {
       type: 'words',
       autoSplit: true,
       onSplit: (self) =>
-        gsap.fromTo(self.words, { opacity: 0.16 }, { opacity: 1, ease: 'none', stagger: 0.12, scrollTrigger: { trigger: el, start: 'top 82%', end: 'bottom 48%', scrub: true } }),
+        gsap.fromTo(self.words, { opacity: 0.35 }, { opacity: 1, ease: 'none', stagger: 0.12, scrollTrigger: { trigger: el, start: 'top 82%', end: 'bottom 48%', scrub: true } }),
     });
   });
 

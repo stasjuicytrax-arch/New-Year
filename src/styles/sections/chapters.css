@@ -76,7 +76,7 @@
     font-family: var(--font-display);
     font-weight: 400;
     text-transform: uppercase;
-    font-size: min(calc(100cqw / (var(--len) * 0.84)), 340px);
+    font-size: min(calc(100cqw / (var(--len) * var(--k, 0.84))), 340px);
     line-height: 0.95;
     white-space: nowrap;
     font-variant-numeric: lining-nums;
@@ -275,9 +275,6 @@
   .menu__total { display: grid; gap: var(--space-1); }
   .menu__big { font-family: var(--font-display); font-weight: 400; font-size: clamp(44px, 6vw, 96px); line-height: 0.9; font-variant-numeric: lining-nums; }
 
-  @media (max-width: 1023px) {
-    .menu:not(.is-open) .menu__item:nth-child(n + 4) { display: none; }
-  }
 
   /* ---------- Desktop: чередование схем ---------- */
   @media (min-width: 1024px) {

@@ -64,11 +64,10 @@
   }
 
   .skip-link {
-    position: fixed; top: var(--space-3); left: var(--space-3); z-index: var(--z-preloader);
+    position: absolute; top: var(--space-3); left: -9999px; z-index: var(--z-preloader);
     padding: var(--space-3) var(--space-4); background: var(--snow-50); color: var(--night-950);
-    transform: translateY(-200%);
   }
-  .skip-link:focus { transform: none; }
+  .skip-link:focus { position: fixed; left: var(--space-3); }
 
   .container { width: var(--container); margin-inline: auto; }
 

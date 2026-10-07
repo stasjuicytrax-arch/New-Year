@@ -1,0 +1,106 @@
+@layer sections {
+  /* ===== 0. Обрезка глифов Prata =====
+     Причина: у Prata акценты и выносные элементы выше и ниже строки line-height < 1.1, а градиент (background-clip: text)
+     кончается на границе бокса. Одно правило для всех хром-текстов: бокс выше на 0.15em сверху и снизу
+     (padding), раскладка не меняется (отрицательный margin), line-height не меньше 1.1. */
+  .chrome,
+  .ch__digits,
+  .ticket__value,
+  .countdown__num,
+  .menu__big,
+  .price-ticket__value,
+  .why__date,
+  .footer__farewell,
+  .modal__title,
+  .chrome-char {
+    padding-block: 0.15em !important;
+    margin-block: -0.15em !important;
+    line-height: 1.1 !important;
+  }
+  /* маски SplitText обрезают по границе: даём запас, чтобы не резать Й, Ё и выносные элементы */
+  .chrome-mask { padding-block: 0.3em !important; margin-block: -0.3em !important; }
+  .split-mask { padding-block: 0.2em; margin-block: -0.2em; }
+
+  /* ===== 3. Типографическая шкала ===== */
+  .why__main h2, .manifest__in h2, .booking__lead h2, .program h2 { font-size: var(--fs-h2); }
+  .ch__title { font-size: var(--fs-h3); line-height: 1.15; }
+  .ch__digits { font-size: var(--fs-num); }
+  .lead, .intro__lead, .ch__text, .manifest__text, .booking__text, .footer__slogan, .intro__note { font-size: var(--fs-lead); line-height: 1.5; max-width: 640px; }
+  .intro__lead { text-align: center; margin-inline: auto; }
+  .manifest__text { margin-inline: auto; }
+  .why__item { font-size: var(--fs-lead); line-height: 1.4; }
+  .why__n { font-size: clamp(20px, 1.6vw + 12px, 28px); }
+  .footer__farewell { font-size: var(--fs-footer-title); }
+  .menu__big { font-size: clamp(40px, 5vw, 72px); text-transform: uppercase; }
+
+  /* Бегущая строка: фон, а не заголовок */
+  .marquee { padding-block: var(--space-4); opacity: 0.5; border-block: 1px solid rgba(255, 255, 255, 0.14); }
+  .marquee__track span { font-size: var(--fs-marquee); line-height: 1.2; }
+
+  /* ===== 4. Ритм и пустое место ===== */
+  .pause, .dense { padding-block: clamp(64px, 8vw, 120px); }
+  .program { padding-block: var(--pad-pause) 0; }
+  .program__head { padding-bottom: clamp(32px, 3vw, 48px); }
+  #booking.scene { min-height: 0; padding-block: var(--pad-pause); }
+  .why__main { display: grid; gap: clamp(32px, 3vw, 48px); }
+  .why__main h2 { margin-bottom: 0; }
+  .ch { padding-block: var(--pad-chapter); }
+  .ch > .container { width: min(100% - 2 * var(--margin), 1200px); }
+
+  /* Глава 02: сетка 5/7, ведущие крупнее, всё по центру по вертикали, без пустого куска снизу */
+  .ch--split { padding-block: clamp(32px, 4vw, 56px) clamp(24px, 3vw, 40px); }
+  @media (min-width: 1024px) {
+    .ch--split > .container { grid-template-columns: 5fr 7fr; gap: var(--space-7); align-items: center; }
+    .ch--split .ch__cutout { height: min(82vh, 780px); }
+    /* Глава 10: левая колонка закреплена, пока справа длинное меню */
+    .ch--menu .ch__head { position: sticky; top: 120px; align-self: start; }
+  }
+
+  /* ===== 5. Фото глав: один стиль ===== */
+  .ch__mask, .ch__mask--wide, .ch__strip, .ch__frame, .ch__square, .ch__polaroid { border-radius: 20px; }
+  .ch__mask--wide { width: 100%; max-width: 1200px; margin-inline: auto; }
+  /* вторая фотография главы 01 в той же рамке контейнера; ширина не больше naturalWidth/2 (1600px исходник → 800px) */
+  .ch__strip { width: 100%; max-width: 800px; margin-inline: auto; justify-self: center; max-height: none; overflow: hidden; }
+  .film { width: 100%; margin-inline: 0; border-radius: 20px; }
+  .film__item { border-radius: 20px; }
+  .film__item picture { border-radius: 12px; }
+
+  /* ===== 6. Меню ===== */
+  .ch__ribbon { width: fit-content; max-width: 100%; justify-self: start; white-space: normal; text-wrap: balance; }
+
+  /* ===== 2. Кнопки в модалке и форме: без растягивания ===== */
+  .modal .btn-wrap, .modal .btn { width: auto; }
+  .modal__calls { display: flex; flex-direction: column; align-items: center; gap: var(--space-3); width: 100%; }
+  .form__submit { justify-items: start; }
+  .form__submit .btn-wrap { width: auto; }
+
+  /* ===== 7. Футер: всё по центру, колонки по верхней линии ===== */
+  .footer__scene { gap: var(--space-5); }
+  .footer__cols { align-items: start; gap: var(--space-6); margin-top: var(--space-4); }
+  .footer__col { gap: 0; justify-items: center; text-align: center; }
+  .footer__col .label { margin-bottom: var(--space-2); }
+  .footer__col .btn-wrap { margin-top: 0; }
+  .footer__big { font-size: var(--fs-h3); line-height: 1.15; }
+  .footer__text { font-size: var(--fs-body); }
+  .footer__link { font-size: var(--fs-body); min-height: 44px; }
+  .footer__phone { display: flex; align-items: center; justify-content: center; min-height: 44px; font-size: calc(var(--fs-body) + 2px); line-height: 1.2; padding-block: 0; }
+  .footer__rule { margin-top: var(--space-4); }
+
+  /* Полоса перьев главы 01: та же рамка, что у остальных фото; без сдвига картинки (светлая кромка слева) */
+  .ch__strip { background: var(--night-900); }
+  .ch__strip img { width: 100%; max-width: 100%; }
+  .ch__strip picture { display: block; width: 100%; }
+
+  /* Фотоплёнка: края плавно растворяются, поляроиды не обрезаются жёстко */
+  .film { overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent); mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent); }
+  .film__track { padding-inline: 5%; padding-bottom: var(--space-3); }
+
+  /* Веер детских фото: поворот карточек не должен выходить за край экрана */
+  .ch__media--fan { width: min(88%, 520px); }
+  @media (min-width: 1024px) { .ch__media--fan { width: min(100%, 520px); } }
+  /* Телефоны друг под другом: интервал 8–12px между строками, высота нажатия 44px сохранена за счёт padding */
+  .footer__phone { min-height: 0; padding-block: 11px; margin-block: -1px; }
+  .footer__col--phones { gap: 0; }
+  /* Короткое слово-образ «ШОУ» шире по буквам: запас, чтобы «У» не уходила за край */
+  .ch--fx .ch__word { --k: 1.12; }
+}

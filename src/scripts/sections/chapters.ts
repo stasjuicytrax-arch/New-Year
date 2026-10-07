@@ -170,10 +170,9 @@ function ch10(c: Chapter): string {
     c,
     'menu',
     `${titled(head(c, `<p class="ch__ribbon" data-fade>${c.extra ?? ''}</p>`), c)}
-    <div class="menu" data-menu>
+    <div class="menu">
       <div class="menu__card glass">
         <ol class="menu__list" data-cascade>${items}</ol>
-        <button class="menu__more" type="button" aria-expanded="false" data-more>${menu.more}</button>
       </div>
       <div class="menu__totals"><p class="label">${menu.perGuest}</p>${totals}</div>
     </div>`,

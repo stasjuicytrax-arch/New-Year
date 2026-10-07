@@ -63,12 +63,15 @@
     /* Типографическая шкала */
     --fs-mega: clamp(40px, 13vw, 240px); /* min 40px вместо 64px: слово «НОВОГОДНЯЯ» должно влезать в 360px */
     --fs-display: clamp(40px, 8vw, 128px); /* min 40px вместо 48px: 10-буквенные слова должны влезать в 360px */
-    --fs-h2: clamp(36px, 5vw, 72px);
-    --fs-h3: clamp(24px, 2.6vw, 36px);
-    --fs-num: clamp(72px, 10vw, 180px);
-    --fs-lead: clamp(18px, 1.6vw, 24px);
-    --fs-body: clamp(16px, 1.1vw, 18px);
-    --fs-label: clamp(11px, 0.9vw, 13px);
+    --fs-h2: clamp(32px, 3.2vw + 12px, 56px);
+    --fs-h3: clamp(24px, 1.6vw + 14px, 36px);
+    --fs-num: clamp(44px, 5vw, 72px);
+    --fs-lead: clamp(18px, 1.2vw + 12px, 24px);
+    --fs-body: 16px;
+    --fs-label: clamp(12px, 0.2vw + 11px, 13px);
+    --fs-small: 14px;
+    --fs-footer-title: clamp(40px, 5vw, 88px);
+    --fs-marquee: clamp(20px, 2vw + 8px, 40px);
     --fs-button: 15px;
 
     /* Сетка */
@@ -92,9 +95,9 @@
 
     /* Ритм секций */
     --pad-scene: 100svh;
-    --pad-chapter: clamp(96px, 14vw, 224px);
-    --pad-pause: clamp(64px, 10vw, 160px);
-    --pad-dense: clamp(64px, 8vw, 128px);
+    --pad-chapter: clamp(40px, 5vw, 72px);
+    --pad-pause: clamp(64px, 8vw, 120px);
+    --pad-dense: clamp(64px, 8vw, 120px);
 
     /* Движение */
     --ease-out: cubic-bezier(0.16, 1, 0.3, 1);

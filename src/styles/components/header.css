@@ -77,31 +77,11 @@
   .site-header__phone:hover svg { color: var(--cyan-300); }
   .site-header__phone-text { display: inline; }
 
-  /* Кнопка брони в шапке только от планшета: на телефоне шапка = название + номер, бронь в hero и снизу */
-  .site-header__cta {
-    display: none;
-    place-items: center;
-    min-height: 44px;
-    padding-inline: var(--space-5);
-    font-family: var(--font-ui);
-    font-size: 14px;
-    font-weight: 600;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    text-decoration: none;
-    white-space: nowrap;
-    color: var(--snow-50);
-    border: 1px solid rgba(171, 195, 228, 0.4);
-    border-radius: 999px;
-    background: var(--glass-bg);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-    transition: background-color var(--dur-1) var(--ease-out);
-  }
-  .site-header__cta:hover { background: var(--night-800); }
+  /* Кнопка брони в шапке: общий .btn--secondary .btn--sm (44px), на телефоне скрыта */
+  .btn.site-header__cta { display: none; }
 
   @media (min-width: 768px) {
-    .site-header__cta { display: inline-grid; }
+    .btn.site-header__cta { display: inline-flex; }
   }
   @media (min-width: 1024px) {
     .site-header__actions { gap: var(--space-5); }

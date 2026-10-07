@@ -4,7 +4,6 @@ import { mountCountdown } from '../countdown';
 import { finePointer, gsap, reducedMotion } from '../scroll';
 import { magnetic } from '../ui';
 
-import snowflakeSvg from '../../assets/deco/snowflake.svg?raw';
 import hostsAvif1024 from '../../assets/img/hosts-cutout-1024.avif';
 import hostsAvif600 from '../../assets/img/hosts-cutout-600.avif';
 import hostsWebp1024 from '../../assets/img/hosts-cutout-1024.webp';
@@ -22,8 +21,6 @@ export interface Hero {
   /** Запустить вход (≤ 2.5 с). */
   play(): Promise<void>;
 }
-
-const glyph = (cls = ''): string => `<span class="glyph ${cls}" aria-hidden="true">${snowflakeSvg}</span>`;
 
 const SIZES = '(min-width: 1024px) 34vw, min(100vw, 480px)';
 
@@ -63,7 +60,7 @@ function markup(): string {
           <div class="ticket ticket--date" data-ticket>
             <span class="ticket__value">${dateT.value}</span>
           </div>
-          ${glyph('hero__flake')}
+          <span class="hero__sep" aria-hidden="true"></span>
           <div class="ticket ticket--time" data-ticket>
             <span class="label">${timeT.label}</span>
             <span class="ticket__value">${timeT.value}</span>
@@ -121,7 +118,7 @@ export function mountHero(): Hero {
     gsap.set(hosts, { '--r': 0, filter: 'brightness(0.45)' });
     gsap.set(label, { opacity: 0 });
     gsap.set(tickets, { opacity: 0, y: 16, scale: 0.96 });
-    gsap.set('.hero__flake', { opacity: 0, rotate: -60, scale: 0.6 });
+    gsap.set('.hero__sep', { opacity: 0, scaleY: 0 });
     gsap.set(fade, { opacity: 0, y: 24, filter: 'blur(8px)' });
     if (header) {
       gsap.set(header, { opacity: 0 });
@@ -203,7 +200,7 @@ export function mountHero(): Hero {
         .to(hosts, { filter: 'brightness(1)', duration: 1.1, ease: 'power1.out' }, 0.5)
         // 4. Плашки даты и времени
         .to(tickets, { opacity: 1, y: 0, scale: 1, duration: 0.7, stagger: 0.12 }, 1.1)
-        .to('.hero__flake', { opacity: 1, rotate: 0, scale: 1, duration: 0.7 }, 1.25)
+        .to('.hero__sep', { opacity: 1, scaleY: 1, duration: 0.7 }, 1.25)
         // 5. Имена, кнопка, таймер, цена, подзаголовок
         .to(fade, { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.7, stagger: 0.09 }, 1.2);
       if (header) tl.to(header, { opacity: 1, duration: 0.6 }, 1.6);

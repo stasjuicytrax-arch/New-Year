@@ -20,7 +20,7 @@ export function renderSkeleton(): void {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/></svg>
         <span class="site-header__phone-text">${phone.label}</span>
       </a>
-      <a class="site-header__cta" href="#booking" data-goal="book_click">${nav.cta}</a>
+      <a class="btn btn--secondary btn--sm site-header__cta" href="#booking" data-goal="book_click"><span>${nav.cta}</span></a>
     </div>`;
 
   const run = `<div class="marquee__track">${Array.from({ length: 8 }, () => `<span class="chrome">${marquee}</span>`).join('')}</div>`;
@@ -75,11 +75,11 @@ export function renderSkeleton(): void {
       <div class="footer__cols">
         <div class="footer__col">
           <p class="label label--dot">${footer.colAddress}</p>
-          <p class="footer__big">${event.venue}</p>
+          <h3 class="footer__big">${event.venue}</h3>
           <p class="footer__text">Пермь, ${event.address}</p>
           <a class="footer__link" href="${event.mapUrl}" target="_blank" rel="noopener">${footer.route}</a>
         </div>
-        <div class="footer__col">
+        <div class="footer__col footer__col--phones">
           <p class="label label--dot">${footer.colPhones}</p>
           ${phones.map((p) => `<a class="footer__phone" href="${p.href}" data-goal="${p.goal}">${p.label}</a>`).join('')}
         </div>

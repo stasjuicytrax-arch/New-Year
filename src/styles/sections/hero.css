@@ -5,8 +5,8 @@
   html.fx-intro .hero__stage { visibility: hidden; }
 
   /* ---------- Афиша: центрированная композиция ----------
-     метка и H1 по центру → ведущие крупно (головы перекрывают низ «НОЧЬ 2027») →
-     билеты и кнопка → крупный таймер → цена. Всё в обычном потоке: уходит вместе с hero. */
+     метка и H1 → ведущие (макушки ниже H1 минимум на --gap-h1) → имена → дата · время · кнопка → таймер → цена.
+     Всё в обычном потоке: уходит вместе с hero. На десктопе всё до кнопки влезает в первый экран. */
   .hero__stage {
     position: relative;
     isolation: isolate;
@@ -15,9 +15,9 @@
     flex-direction: column;
     align-items: center;
     padding-top: calc(64px + 3svh);
-    padding-bottom: var(--space-9);
-    /* --hw: ширина холста ведущих (2:3), --h1: кегль «НОВОГОДНЯЯ», --fs3: кегль «НОЧЬ 2027» */
-    --hw: min(100vw, 480px);
+    padding-bottom: var(--space-8);
+    --gap-h1: 24px; /* от низа H1 до макушек: ≥24px на мобиле, ≥32px на десктопе */
+    --hw: min(100vw, 480px); /* ширина холста ведущих (2:3) */
     --h1: min(11.2vw, 84px);
     --fs3: calc(var(--h1) * 0.9);
   }
@@ -82,31 +82,23 @@
 
   /* ---------- Заголовок ---------- */
   .hero__head { position: relative; z-index: 4; width: 100%; padding-inline: var(--margin); text-align: center; }
-  .hero__label {
-    margin-inline: auto;
-    margin-bottom: var(--space-3);
-    font-size: 12px;
-    letter-spacing: 0.14em;
-    line-height: 1.5;
-    color: var(--text);
-  }
+  .hero__label { margin: 0 auto var(--space-3); font-size: 12px; letter-spacing: 0.14em; line-height: 1.5; color: var(--text); }
   .hero__line {
     position: relative;
     display: block;
     font-size: var(--h1);
-    line-height: 0.9;
+    line-height: 1.1;
     white-space: nowrap;
     font-variant-numeric: lining-nums;
   }
-  .hero__line--1 { font-size: calc(var(--h1) * 0.62); z-index: 4; }
-  .hero__line--2 { line-height: 0.86; z-index: 4; }
-  /* «НОЧЬ 2027» лежит за ведущими: головы перекрывают нижнюю четверть букв, лица чистые */
-  .hero__line--3 { font-size: var(--fs3); z-index: 1; }
+  .hero__line--1 { font-size: calc(var(--h1) * 0.62); margin-bottom: -0.12em; }
+  .hero__line--2 { margin-bottom: -0.1em; }
+  .hero__line--3 { font-size: var(--fs3); }
 
   /* ---------- Ведущие ----------
-     Холст 1024x1536, головы на 8% высоты. Поднимаем кадр так, чтобы головы заходили на низ третьей строки;
-     тело растворяется (46% → 62%) до начала нижнего блока. */
-  .hero__figure { position: relative; z-index: 2; width: var(--hw); margin: calc(var(--fs3) * -0.2 - var(--hw) * 0.12) auto calc(var(--hw) * -0.57); }
+     Холст 1024x1536, макушки на 8% высоты. Поднимаем кадр на 0.12 hw так, чтобы макушки стояли на --gap-h1 ниже H1;
+     низ растворяется (46% → 62%) и уходит под блок имён и билетов. */
+  .hero__figure { position: relative; z-index: 2; width: var(--hw); margin: calc(var(--gap-h1) - var(--hw) * 0.12) auto calc(var(--hw) * -0.64); }
   .hero__hosts {
     --r: 1;
     display: block;
@@ -120,50 +112,38 @@
   }
   .hero__hosts img { display: block; width: 100%; height: 100%; }
 
-  /* ---------- Нижний блок: билеты · кнопка → таймер → цена ---------- */
-  .hero__info {
-    position: relative;
-    z-index: 4;
-    display: grid;
-    justify-items: center;
-    gap: var(--space-5);
-    width: 100%;
-    padding-inline: var(--margin);
-    text-align: center;
-  }
+  /* ---------- Нижний блок: имена → дата · время · кнопка → таймер → цена ---------- */
+  .hero__info { position: relative; z-index: 4; display: grid; justify-items: center; gap: var(--space-5); width: 100%; padding-inline: var(--margin); text-align: center; }
   .hero__names { margin: 0; font-size: 12px; line-height: 1.6; color: var(--text-strong); }
-  .hero__row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--space-4); width: 100%; }
-  .hero__tickets { display: flex; align-items: center; justify-content: center; gap: var(--space-2); }
-  .hero__flake { width: 1.2em; height: 1.2em; }
-  .ticket { min-height: 54px; padding: var(--space-2) var(--space-4); }
-  .ticket__value { font-size: 22px; }
-  .hero__cta { width: 100%; }
+  .hero__row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--space-4) var(--space-6); width: 100%; }
+  .hero__tickets { display: flex; align-items: center; justify-content: center; gap: var(--space-5); }
+  .hero__sep { flex: none; width: 1px; height: 44px; background: rgba(255, 255, 255, 0.28); transform-origin: 50% 50%; }
+  .hero__cta { display: flex; justify-content: center; }
 
   /* Таймер: часть композиции, цифры крупно */
   .hero__timer { gap: var(--space-2); justify-items: center; text-align: center; }
   .hero__timer .countdown__label { max-width: none; font-size: 14px; letter-spacing: 0.14em; text-align: center; }
   .hero__timer .countdown__board { justify-content: center; gap: var(--space-2); }
 
-  .hero__price { max-width: 44ch; font-family: var(--font-text); font-size: 16px; font-weight: 600; letter-spacing: 0.03em; line-height: 1.45; color: var(--text-strong); text-wrap: balance; }
+  .hero__price { max-width: 44ch; font-family: var(--font-text); font-size: 16px; font-weight: 600; line-height: 1.45; color: var(--text-strong); text-wrap: balance; }
   .hero__note { display: block; font-weight: 400; color: var(--text); }
-  .hero__sub { max-width: 32ch; font-size: 16px; line-height: 1.4; color: var(--text); text-wrap: balance; }
+  .hero__sub { max-width: 32ch; font-size: var(--fs-lead); line-height: 1.5; color: var(--text); text-wrap: balance; }
 
-  /* ---------- Desktop ---------- */
+  /* ---------- Desktop: метка, H1, ведущие, имена, дата, время и кнопка целиком в первом экране ---------- */
   @media (min-width: 1024px) {
     .hero__stage {
       min-height: 100svh;
       padding-top: calc(64px + 4svh);
-      --hw: min(34vw, 60svh, 700px);
-      --h1: min(6.4vw, 13svh, 128px);
+      padding-bottom: var(--space-8);
+      --gap-h1: 32px;
+      --h1: min(6.4vw, 8svh, 128px);
+      /* бюджет высоты: 99.5svh - 347px оставляем под ведущих (0.74 hw от макушек до блока имён) */
+      --hw: clamp(260px, min(34vw, calc(99.5svh - 347px)), 700px);
     }
-    .hero__label { font-size: 13px; letter-spacing: 0.14em; }
-    .hero__row { flex-wrap: nowrap; width: auto; gap: var(--space-5); }
-    .hero__cta { width: auto; }
-    .ticket { min-height: 64px; padding: var(--space-3) var(--space-5); }
-    .ticket__value { font-size: clamp(26px, 2.4vw, 42px); }
-    .hero__flake { width: 1.6em; height: 1.6em; }
-    .hero__sub { font-size: clamp(18px, 1.4vw, 24px); max-width: none; }
-    .hero__price { font-size: clamp(16px, 1.2vw, 20px); }
+    .hero__label { font-size: 13px; }
+    .hero__row { flex-wrap: nowrap; width: auto; gap: var(--space-7); }
+    .hero__sep { height: 52px; }
+    .ticket__value { font-size: clamp(26px, 2.2vw, 40px); }
     .hero__timer .countdown__label { font-size: 16px; }
   }
 

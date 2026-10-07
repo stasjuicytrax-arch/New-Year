@@ -18,36 +18,36 @@ const IMAGES = [
   {
     name: 'hosts',
     src: 'Ведущие и организаторы главной новогодней ночи/IMG_1984.JPG',
-    widths: [640, 960, 1440],
+    widths: [640, 960, 1440, 1707],
   },
   {
     name: 'ballet-violet',
     src: 'Шоу балет/653A0543_resized.jpg',
-    widths: [640, 960, 1440, 2048],
+    widths: [640, 960, 1440, 2048, 2560],
     grade: 'violet-to-blue',
   },
   {
     name: 'ballet-feathers',
     src: 'Шоу балет/302edb11f64fe9062424e652296e12e7.jpg',
-    widths: [640, 960, 1440],
+    widths: [640, 960, 1440, 1600],
     grade: 'cold',
   },
   {
     name: 'ded-moroz',
     src: 'Остальные картинки/0321-DSD01342.jpg',
-    widths: [640, 960, 1440, 2048],
+    widths: [640, 960, 1440, 2048, 2560],
     grade: 'cold',
   },
   {
     name: 'snegurochka',
     src: 'Остальные картинки/0322-DSD01350.jpg',
-    widths: [640, 960, 1440],
+    widths: [640, 960, 1440, 2048],
     grade: 'cold',
   },
-  { name: 'kids-1', src: 'Для блока на детскую анимацию/hd_6878aff74ab59_1.jpg', widths: [640, 960, 1440] },
-  { name: 'kids-2', src: 'Для блока на детскую анимацию/a-min.jpg', widths: [640, 960, 1440] },
-  { name: 'kids-3', src: 'Для блока на детскую анимацию/XXL_height.jpeg', widths: [600] },
-  { name: 'dj-seven', src: 'Наш диджей DJ Seven/IMG_5835.PNG', widths: [640, 900] },
+  { name: 'kids-1', src: 'Для блока на детскую анимацию/hd_6878aff74ab59_1.jpg', widths: [640, 960, 1440, 2144] },
+  { name: 'kids-2', src: 'Для блока на детскую анимацию/a-min.jpg', widths: [640, 960, 1440, 2048] },
+  { name: 'kids-3', src: 'Для блока на детскую анимацию/XXL_height.jpeg', widths: [600, 1024] },
+  { name: 'dj-seven', src: 'Наш диджей DJ Seven/IMG_5835.PNG', widths: [640, 900, 1254] },
 ];
 
 const NIGHT = { r: 0, g: 16, b: 46 }; // --night-900
@@ -78,9 +78,9 @@ async function build({ name, src, widths, grade: mode, crop }) {
     const pipe = sharp(base).resize({ width, withoutEnlargement: true });
     const stem = join(OUT, `${name}-${w}`);
     const height = Math.round((meta.height * width) / meta.width);
-    await pipe.clone().avif({ quality: 55, effort: 5 }).toFile(`${stem}.avif`);
-    await pipe.clone().webp({ quality: 78 }).toFile(`${stem}.webp`);
-    await pipe.clone().jpeg({ quality: 80, mozjpeg: true }).toFile(`${stem}.jpg`);
+    await pipe.clone().avif({ quality: 62, effort: 5 }).toFile(`${stem}.avif`);
+    await pipe.clone().webp({ quality: 84 }).toFile(`${stem}.webp`);
+    await pipe.clone().jpeg({ quality: 86, mozjpeg: true }).toFile(`${stem}.jpg`);
     manifest.push({ w, width, height });
   }
   console.log(`${name}: ${manifest.map((m) => `${m.width}x${m.height}`).join(', ')}`);

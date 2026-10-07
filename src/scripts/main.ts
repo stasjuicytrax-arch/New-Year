@@ -12,6 +12,7 @@ import '../styles/sections/layout.css';
 import '../styles/sections/hero.css';
 import '../styles/sections/chapters.css';
 import '../styles/sections/page.css';
+import '../styles/sections/polish.css';
 
 import { initHeader } from './header';
 import { initScroll, lockScroll, scrollToTarget, ScrollTrigger } from './scroll';

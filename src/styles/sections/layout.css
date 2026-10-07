@@ -11,10 +11,10 @@
   .chapter { padding-block: var(--pad-chapter); }
   .program { padding-top: var(--pad-pause); }
 
-  h2 { font-size: var(--fs-display); line-height: 0.9; }
+  h2 { font-size: var(--fs-h2); line-height: 1.1; }
   .lead { font-size: var(--fs-lead); line-height: 1.45; max-width: 48ch; color: var(--text-strong); }
 
   /* Футер: мягкий переход из фона страницы, без плиты */
-  .site-footer { padding-block: clamp(96px, 14vw, 200px) var(--space-8); background: linear-gradient(180deg, transparent 0%, color-mix(in oklab, var(--night-1000) 70%, transparent) 50%, var(--night-1000) 100%); }
-  .site-footer a { display: inline-block; padding-block: 12px; }
+  .site-footer { padding-block: clamp(48px, 6vw, 80px) var(--space-6); background: linear-gradient(180deg, transparent 0%, color-mix(in oklab, var(--night-1000) 70%, transparent) 40%, var(--night-1000) 100%); }
+  .site-footer a:not(.btn) { display: inline-block; padding-block: 12px; }
 }

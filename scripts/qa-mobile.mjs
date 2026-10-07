@@ -24,6 +24,8 @@ const VIEWPORTS = [
 ];
 const PRELOAD_KEY = 'gnn-preloaded';
 
+const only = process.env.QA_ONLY?.split(',');
+const VPS = only ? VIEWPORTS.filter(([w, h]) => only.includes(`${w}x${h}`)) : VIEWPORTS;
 const errors = [];
 const fail = (vp, msg) => errors.push(`[${vp}] ${msg}`);
 
@@ -175,35 +177,74 @@ async function inPage(desktop) {
     const gap = rr[2].top - rr[1].bottom;
     if (gap > fs * 0.3) out.push(`разрыв между «НОВОГОДНЯЯ» и «НОЧЬ 2027»: ${Math.round(gap)}px (кегль ${Math.round(fs)}px)`);
   }
-  // hero-афиша: головы заходят на нижнюю часть «НОЧЬ 2027», но не выше её середины; цена и таймер в потоке hero
+  // hero-афиша: макушки ниже H1 на 24px (mobile) / 32px (desktop); таймер крупно; на десктопе всё до кнопки в первом экране
   const stage = document.querySelector('.hero__stage');
   if (stage && atTop) {
-    const l3 = stage.querySelector('.hero__line--3').getBoundingClientRect();
+    const title = stage.querySelector('.hero__title').getBoundingClientRect();
     const hh = stage.querySelector('.hero__hosts img').getBoundingClientRect();
     const headsTop = hh.top + hh.height * 0.08; // верх голов на 8% высоты холста
-    if (headsTop < l3.top + l3.height * 0.35) out.push(`головы заходят на «НОЧЬ 2027» слишком высоко (${Math.round(l3.bottom - headsTop)}px из ${Math.round(l3.height)}px)`);
-    if (headsTop > l3.bottom + 8) out.push('между «НОЧЬ 2027» и головами пустота');
+    const need = desktop || window.innerWidth >= 1024 ? 32 : 24;
+    if (headsTop - title.bottom < need - 1) out.push(`отступ от H1 до макушек ${Math.round(headsTop - title.bottom)}px < ${need}px`);
+    if (headsTop - title.bottom > need + 60) out.push('между H1 и ведущими лишняя пустота: ' + Math.round(headsTop - title.bottom) + 'px');
     const timer = stage.querySelector('.hero__timer .countdown__num');
     if (timer && parseFloat(getComputedStyle(timer).fontSize) < (desktop ? 56 : 36)) out.push('цифры таймера мельче нормы (' + getComputedStyle(timer).fontSize + ')');
+    if (desktop) {
+      const lab = stage.querySelector('.hero__label').getBoundingClientRect();
+      const names = stage.querySelector('.hero__names').getBoundingClientRect();
+      const cta = stage.querySelector('.hero__cta .btn').getBoundingClientRect();
+      const tick = stage.querySelector('.hero__tickets').getBoundingClientRect();
+      if (lab.top < 64) out.push('метка hero под шапкой: top ' + Math.round(lab.top));
+      for (const [n, r] of [['имена', names], ['билеты', tick], ['кнопка', cta]]) {
+        if (r.bottom > window.innerHeight) out.push(`в первый экран не влезает: ${n} (низ ${Math.round(r.bottom)}px > ${window.innerHeight}px)`);
+      }
+    }
     const hr = stage.getBoundingClientRect();
     for (const el of stage.querySelectorAll('.hero__info, .hero__names, .hero__timer')) {
       const r = el.getBoundingClientRect();
       if (r.bottom > hr.bottom + 1) out.push('элемент hero выходит за границы hero: ' + label(el));
     }
   }
-  const kids = document.querySelector('.hero__kids');
-  if (kids && visible(kids) && atTop) {
-    const cs = getComputedStyle(kids);
-    const rows = Math.round((rect(kids).height - parseFloat(cs.paddingTop) * 2 - 2) / parseFloat(cs.lineHeight));
-    if (rows > 2) out.push(`детская плашка в ${rows} строк`);
+
+  // обрезка глифов: у каждого элемента с background-clip:text высота бокса не меньше 1.1 кегля
+  for (const el of document.querySelectorAll('*')) {
+    const cs = getComputedStyle(el);
+    if (cs.webkitBackgroundClip !== 'text' && cs.backgroundClip !== 'text') continue;
+    if (!visible(el) || cs.display === 'inline') continue;
+    const fs = parseFloat(cs.fontSize);
+    const h = el.offsetHeight;
+    if (h < fs * 1.1 - 0.5) out.push(`обрезка глифов: ${label(el)} высота ${h}px < 1.1 × ${Math.round(fs)}px («${(el.textContent || '').trim().slice(0, 18)}»)`);
   }
-  // кнопки ВЕРСИИ 2: pill (999px), primary светлая заливка, без срезанных углов
-  for (const b of document.querySelectorAll('.btn, .site-header__cta, .menu__more')) {
+
+  // шкала: ни один заголовок секции не крупнее H2, ни один абзац не крупнее lead
+  const sizeOf = (el) => parseFloat(getComputedStyle(el).fontSize);
+  for (const el of document.querySelectorAll('h2')) if (visible(el) && sizeOf(el) > 56.1) out.push(`H2 крупнее 56px: ${Math.round(sizeOf(el))}px («${el.textContent.trim().slice(0, 20)}»)`);
+  for (const el of document.querySelectorAll('h3, .ch__title')) if (visible(el) && sizeOf(el) > 36.1) out.push(`H3 крупнее 36px: ${Math.round(sizeOf(el))}px`);
+  for (const el of document.querySelectorAll('.ch__digits')) if (visible(el) && sizeOf(el) > 72.1) out.push(`номер главы крупнее 72px: ${Math.round(sizeOf(el))}px`);
+  for (const el of document.querySelectorAll('.intro__lead, .ch__text, .manifest__text, .booking__text, .footer__slogan, .hero__sub, .lead')) {
+    if (visible(el) && sizeOf(el) > 24.1) out.push(`абзац крупнее lead (24px): ${label(el)} ${Math.round(sizeOf(el))}px`);
+  }
+
+  // кнопки: один компонент, две вариации, pill, высота 56 (desktop) / 52 (mobile) / 44 (шапка), текст по центру
+  for (const b of document.querySelectorAll('.btn')) {
     const cs = getComputedStyle(b);
     if (!visible(b)) continue;
     if (cs.clipPath !== 'none') out.push('у кнопки срезаны углы (clip-path): ' + label(b));
     if (parseFloat(cs.borderTopLeftRadius) < 20) out.push('кнопка не pill: ' + label(b) + ' радиус ' + cs.borderTopLeftRadius);
+    if (!b.classList.contains('btn--primary') && !b.classList.contains('btn--secondary')) out.push('кнопка без варианта primary/secondary: ' + label(b));
     if (b.classList.contains('btn--primary') && cs.backgroundColor !== 'rgb(245, 248, 252)') out.push('primary не светлая заливка: ' + cs.backgroundColor);
+    const want = b.classList.contains('btn--sm') ? 44 : window.innerWidth >= 768 ? 56 : 52;
+    const r = b.getBoundingClientRect();
+    if (Math.abs(r.height - want) > 1.5) out.push(`высота кнопки ${Math.round(r.height)}px, нужно ${want}px: ${label(b)}`);
+    const sp = b.querySelector('span');
+    if (sp) {
+      const sr = sp.getBoundingClientRect();
+      if (Math.abs((sr.top + sr.bottom) / 2 - (r.top + r.bottom) / 2) > 2 || Math.abs((sr.left + sr.right) / 2 - (r.left + r.right) / 2) > 2) out.push(`текст кнопки не по центру: ${label(b)} dy=${Math.round((sr.top + sr.bottom) / 2 - (r.top + r.bottom) / 2)} dx=${Math.round((sr.left + sr.right) / 2 - (r.left + r.right) / 2)} (btn ${Math.round(r.top)}+${Math.round(r.height)}, span ${Math.round(sr.top)}+${Math.round(sr.height)})`);
+    }
+  }
+  const skip = document.querySelector('.skip-link');
+  if (skip && document.activeElement !== skip) {
+    const r = skip.getBoundingClientRect();
+    if (r.right > 0 && r.bottom > 0 && r.left < window.innerWidth) out.push('skip-link виден без фокуса (белая плашка)');
   }
   return out;
 }
@@ -277,15 +318,15 @@ try {
   await waitForServer();
   browser = await chromium.launch();
   // по три вьюпорта параллельно: весь прогон укладывается в 5 минут
-  for (let i = 0; i < VIEWPORTS.length; i += 3) await Promise.all(VIEWPORTS.slice(i, i + 3).map((vp) => run(browser, vp)));
+  for (let i = 0; i < VPS.length; i += 3) await Promise.all(VPS.slice(i, i + 3).map((vp) => run(browser, vp)));
 } finally {
   await browser?.close();
   killServer();
 }
 
 if (errors.length) {
-  console.error(`Mobile QA: ${VIEWPORTS.length} вьюпортов, ${errors.length} ошибок\n` + errors.map((e) => ` - ${e}`).join('\n'));
+  console.error(`Mobile QA: ${VPS.length} вьюпортов, ${errors.length} ошибок\n` + errors.map((e) => ` - ${e}`).join('\n'));
   process.exit(1);
 }
-console.log(`Mobile QA: ${VIEWPORTS.length} вьюпортов, 0 ошибок`);
+console.log(`Mobile QA: ${VPS.length} вьюпортов, 0 ошибок`);
 process.exit(0);
