@@ -1,6 +1,9 @@
 @layer sections {
   /* Ритм: Сцена > Пауза > Глава > Плотная > Пауза > Сцена (DESIGN-SYSTEM §6.2) */
-  .scene { min-height: var(--pad-scene); display: grid; align-content: center; padding-block: var(--pad-pause); background: var(--scene); }
+  /* Фон-сцена живёт на фиксированной подложке body::before, поэтому WebGL-слой виден сквозь секции */
+  body::before { content: ''; position: fixed; inset: 0; z-index: -1; background: var(--scene); pointer-events: none; }
+  main, .site-footer { position: relative; z-index: var(--z-content); }
+  .scene { min-height: var(--pad-scene); display: grid; align-content: center; padding-block: var(--pad-pause); }
   .pause { padding-block: var(--pad-pause); }
   .dense { padding-block: var(--pad-dense); }
   .chapter { padding-block: var(--pad-chapter); }

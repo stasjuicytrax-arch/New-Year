@@ -1,0 +1,17 @@
+@layer components {
+  .gl-canvas,
+  .gl-static {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: var(--z-gl);
+    pointer-events: none;
+  }
+
+  /* Фоллбэк: reduced-motion, нет WebGL, слабое устройство. Один статичный слой снега и боке. */
+  .gl-static {
+    background: url('../../assets/deco/snow-static.webp') center / cover no-repeat;
+    opacity: 0.85;
+  }
+}

@@ -110,8 +110,8 @@
     --chamfer: 14px;
 
     /* Слои (z-index scale) */
-    --z-gl: 0;
     --z-content: 1;
+    --z-gl: 0; /* снег и боке под контентом: текст всегда читается */
     --z-header: 50;
     --z-menu: 60;
     --z-preloader: 100;

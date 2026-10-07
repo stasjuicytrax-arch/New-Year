@@ -2,6 +2,7 @@ import '../styles/base.css';
 import '../styles/fonts.css';
 import '../styles/tokens.css';
 import '../styles/components/header.css';
+import '../styles/components/gl.css';
 import '../styles/sections/layout.css';
 
 import { initScroll, scrollToTarget, ScrollTrigger } from './scroll';
@@ -9,6 +10,9 @@ import { renderSkeleton } from './sections/skeleton';
 
 renderSkeleton();
 initScroll();
+
+// WebGL-слой (three.js) грузится лениво и не блокирует первый экран
+export const effects = import('./gl/index').then((m) => m.initEffects());
 
 // Якоря идут через Lenis, если он включён
 document.addEventListener('click', (e) => {
