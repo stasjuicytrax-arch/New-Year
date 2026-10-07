@@ -16,7 +16,7 @@ export interface Effects {
 }
 
 const SNOW = { full: 1000, lite: 330 } as const;
-const BOKEH = { full: 30, lite: 10 } as const;
+const BOKEH = { full: 25, lite: 12 } as const; // DESIGN-SYSTEM §7.4: до 25 в hero и финале, вне их 8
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const mobile = window.matchMedia('(max-width: 767px), (pointer: coarse)');

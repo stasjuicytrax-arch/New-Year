@@ -8,9 +8,16 @@ const $ = <T extends HTMLElement>(sel: string): T => {
 
 /** Каркас секций: заголовки и якоря из content.ts. Вёрстка секций наполняется в шагах 5-8 плана. */
 export function renderSkeleton(): void {
+  const [phone] = phones;
   $('#site-header').innerHTML = `
     <a class="site-header__brand" href="#hero">${nav.brand}</a>
-    <a class="site-header__cta" href="#booking">${nav.cta}</a>`;
+    <div class="site-header__actions">
+      <a class="site-header__phone" href="${phone.href}" data-goal="${phone.goal}" aria-label="${nav.callAria} ${phone.label}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/></svg>
+        <span class="site-header__phone-text">${phone.label}</span>
+      </a>
+      <a class="site-header__cta" href="#booking" data-goal="book_click">${nav.cta}</a>
+    </div>`;
 
   $('#intro').innerHTML = `
     <div class="container">

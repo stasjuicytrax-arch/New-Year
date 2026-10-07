@@ -57,7 +57,8 @@ export const booking = {
 export const socials: ReadonlyArray<{ label: string; href: string }> = [];
 
 export const nav = {
-  brand: 'ГНН 2027',
+  brand: 'НОВОГОДНЯЯ НОЧЬ 2027',
+  callAria: 'Позвонить',
   cta: 'Забронировать',
   ctaSticky: 'Забронировать стол',
   menuTitle: 'Программа',

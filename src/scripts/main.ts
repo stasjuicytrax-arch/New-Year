@@ -11,6 +11,7 @@ import '../styles/components/preloader.css';
 import '../styles/sections/layout.css';
 import '../styles/sections/hero.css';
 
+import { initHeader } from './header';
 import { initScroll, lockScroll, scrollToTarget, ScrollTrigger } from './scroll';
 import { mountHero } from './sections/hero';
 import { runPreloader } from './sections/preloader';
@@ -20,6 +21,7 @@ const html = document.documentElement;
 
 renderSkeleton();
 const hero = mountHero();
+initHeader();
 initScroll();
 
 // WebGL-слой (three.js) грузится лениво и не блокирует первый экран; снег включается вручную (fadeTo)

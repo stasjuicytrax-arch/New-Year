@@ -5,11 +5,11 @@ import { finePointer, gsap, reducedMotion, ScrollTrigger } from '../scroll';
 import { magnetic, ticketFrame } from '../ui';
 
 import snowflakeSvg from '../../assets/deco/snowflake.svg?raw';
-import hostsAvif1400 from '../../assets/img/hosts-cutout-1400.avif';
-import hostsAvif900 from '../../assets/img/hosts-cutout-900.avif';
-import hostsWebp1400 from '../../assets/img/hosts-cutout-1400.webp';
-import hostsWebp900 from '../../assets/img/hosts-cutout-900.webp';
-import hostsPng900 from '../../assets/img/hosts-cutout-900.png';
+import hostsAvif1024 from '../../assets/img/hosts-cutout-1024.avif';
+import hostsAvif600 from '../../assets/img/hosts-cutout-600.avif';
+import hostsWebp1024 from '../../assets/img/hosts-cutout-1024.webp';
+import hostsWebp600 from '../../assets/img/hosts-cutout-600.webp';
+import hostsPng600 from '../../assets/img/hosts-cutout-600.png';
 import fir1 from '../../assets/deco/fir-1.webp';
 import fir2 from '../../assets/deco/fir-2.webp';
 import baubleGraphiteL from '../../assets/deco/bauble-graphite-l.webp';
@@ -52,17 +52,17 @@ function markup(): string {
 
     <div class="hero__inner container">
       <p class="label label-lines hero__label" data-label><span>${hero.label}</span></p>
-      <h1 id="hero-title" class="hero__title" data-title>
+      <h1 id="hero-title" class="hero__title" data-title aria-label="Главная новогодняя ночь 2027">
         <span class="hero__line hero__line--1" data-line>${t1}</span>
         <span class="hero__line hero__line--2" data-line>${t2}</span>
-        <span class="hero__line hero__line--3" data-line>${t3}</span>
+        <span class="hero__line hero__line--3" data-line><span>${t3.split(' ')[0]}</span> <span>${t3.split(' ').slice(1).join(' ')}</span></span>
       </h1>
     </div>
 
     <picture class="hero__hosts" data-hosts>
-      <source type="image/avif" srcset="${hostsAvif900} 926w, ${hostsAvif1400} 1441w" sizes="(min-width: 768px) 60vw, 92vw">
-      <source type="image/webp" srcset="${hostsWebp900} 926w, ${hostsWebp1400} 1441w" sizes="(min-width: 768px) 60vw, 92vw">
-      <img src="${hostsPng900}" width="926" height="900" alt="${event.hosts.join(' и ')}, ведущие Главной новогодней ночи" fetchpriority="high" decoding="async">
+      <source type="image/avif" srcset="${hostsAvif600} 600w, ${hostsAvif1024} 1024w" sizes="(min-width: 1024px) 40svh, min(88vw, 400px)">
+      <source type="image/webp" srcset="${hostsWebp600} 600w, ${hostsWebp1024} 1024w" sizes="(min-width: 1024px) 40svh, min(88vw, 400px)">
+      <img src="${hostsPng600}" width="1024" height="1536" alt="${event.hosts.join(' и ')}, ведущие Главной новогодней ночи" fetchpriority="high" decoding="async">
     </picture>
 
     <div class="hero__decor" aria-hidden="true" data-decor>
@@ -191,7 +191,7 @@ export function mountHero(): Hero {
   /** Скролл-сцена: «камера влетает в зал». Pinned ~150vh на desktop, лёгкий выход на mobile. */
   const scrollScene = (): void => {
     const mm = gsap.matchMedia();
-    mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', () => {
+    mm.add('(min-width: 1024px) and (prefers-reduced-motion: no-preference)', () => {
       const tl = gsap.timeline({
         defaults: { ease: 'none' },
         // ~100vh вместо 150: гость быстрее доходит до брони
@@ -214,7 +214,7 @@ export function mountHero(): Hero {
         .to('.beam--r', { rotation: -34 }, 0)
         .to('.hero__corridor', { opacity: 0.6, scaleX: 1, duration: 0.45 }, 0.5);
     });
-    mm.add('(max-width: 767px) and (prefers-reduced-motion: no-preference)', () => {
+    mm.add('(max-width: 1023px) and (prefers-reduced-motion: no-preference)', () => {
       gsap.to([...lineEls, hosts], {
         yPercent: -6,
         opacity: 0.2,

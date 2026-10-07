@@ -3,10 +3,12 @@
   .btn-wrap {
     display: inline-block;
     position: relative;
+    /* лёгкое синее свечение в покое, сильнее на hover */
+    filter: drop-shadow(0 0 14px color-mix(in oklab, var(--electric-500) 55%, transparent));
     transition: filter var(--dur-2) var(--ease-out);
   }
   .btn-wrap:hover {
-    filter: drop-shadow(0 0 16px color-mix(in oklab, var(--electric-500) 60%, transparent));
+    filter: drop-shadow(0 0 22px color-mix(in oklab, var(--electric-500) 80%, transparent));
   }
   .btn-wrap:has(:focus-visible) {
     outline: 2px solid var(--neon-400);
@@ -37,8 +39,10 @@
   .btn:active { transform: scale(0.98); }
 
   .btn--primary {
-    background: var(--chrome);
+    background: var(--chrome-button);
     color: var(--night-950);
+    /* Подсветка кромки сверху и тонкая тень снизу: объём без тёмной полосы посередине */
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.95), inset 0 -1px 0 rgb(110 130 170 / 0.35);
   }
   /* Блик пробегает по кнопке при наведении */
   .btn--primary::after {

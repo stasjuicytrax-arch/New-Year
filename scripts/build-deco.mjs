@@ -201,13 +201,14 @@ for (const b of baubles) {
 {
   const W = 1600, H = 1000, r = rng(2027);
   const bokeh = [];
-  const palette = [
-    ['#5dc0e1', 0.16], ['#598bfb', 0.18], ['#1f5bff', 0.14], ['#ffb36b', 0.13], ['#ffe1bc', 0.09],
-  ];
-  for (let i = 0; i < 26; i++) {
-    const [col, op] = palette[i % 9 === 0 ? 3 + (i % 2) : Math.floor(r() * 3)];
-    const rad = 28 + r() * 90;
-    bokeh.push(`<circle cx="${f(r() * W)}" cy="${f(r() * H * 0.9)}" r="${f(rad)}" fill="${col}" fill-opacity="${op}" filter="url(#s)"/>`);
+  // DESIGN-SYSTEM §7.4: только мелкие огоньки 6-28px, размытый край, opacity 0.04-0.12, по краям, тёплых ~30%
+  for (let i = 0; i < 22; i++) {
+    const warm = r() < 0.3;
+    const col = warm ? '#ffd49a' : (r() < 0.5 ? '#5dc0e1' : '#598bfb');
+    const rad = 3 + r() * 11;
+    const op = 0.04 + r() * 0.08;
+    const cx = r() < 0.5 ? r() * W * 0.12 : W * 0.88 + r() * W * 0.12;
+    bokeh.push(`<circle cx="${f(cx)}" cy="${f(r() * H * 0.95)}" r="${f(rad)}" fill="${col}" fill-opacity="${f(op)}" filter="url(#s)"/>`);
   }
   const flakes = [];
   for (let i = 0; i < 360; i++) {
@@ -217,7 +218,7 @@ for (const b of baubles) {
     flakes.push(`<circle cx="${f(r() * W)}" cy="${f(r() * H)}" r="${f(rad)}" fill="#f5f8fc" fill-opacity="${f(op * (0.6 + r() * 0.4))}"${depth > 0.92 ? ' filter="url(#n)"' : ''}/>`);
   }
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">
-<defs><filter id="s"><feGaussianBlur stdDeviation="9"/></filter><filter id="n"><feGaussianBlur stdDeviation="1.6"/></filter></defs>
+<defs><filter id="s"><feGaussianBlur stdDeviation="3"/></filter><filter id="n"><feGaussianBlur stdDeviation="1.6"/></filter></defs>
 ${bokeh.join('')}${flakes.join('')}</svg>`;
   await sharp(Buffer.from(svg)).webp({ quality: 70, alphaQuality: 80 }).toFile(join(OUT, 'snow-static.webp'));
 }

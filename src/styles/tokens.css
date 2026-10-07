@@ -46,6 +46,8 @@
 
     /* Градиенты */
     --chrome: linear-gradient(180deg, #ffffff 0%, #eaf0f8 30%, #9aa6c4 48%, #5e6886 52%, #e6ecf5 64%, #b9c3d8 82%, #8591b2 100%);
+    /* ХРОМ ДЛЯ КНОПОК И ПЛАШЕК: мягкое серебро без тёмной «линии горизонта» (--chrome оставлен только для текста) */
+    --chrome-button: linear-gradient(180deg, #ffffff 0%, #eef3fa 35%, #d9e2ef 70%, #c3cee0 100%);
     --chrome-sheen: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.95) 50%, transparent 60%);
     --beam: linear-gradient(180deg,
       color-mix(in oklab, var(--cyan-300) 70%, transparent) 0%,

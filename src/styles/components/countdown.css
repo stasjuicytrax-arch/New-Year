@@ -34,8 +34,8 @@
     color: transparent;
   }
   .countdown__cap {
-    font-size: 10px;
-    letter-spacing: 0.24em;
+    font-size: 11px;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--text-muted);
   }

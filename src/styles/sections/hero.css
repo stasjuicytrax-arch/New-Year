@@ -9,6 +9,12 @@
     isolation: isolate;
     display: flex;
     flex-direction: column;
+    /* Дуэт ведущих (холст 1024x1536, не кадрирован): --hw ширина фигуры. Головы занимают 37..77% ширины,
+       верх голов на 8% высоты; «НОЧЬ» стоит слева от голов, «2027» справа, обе вплотную под «НОВОГОДНЯЯ» */
+    --hosts-h: min(60svh, 48vw);
+    --hw: calc(var(--hosts-h) * 0.667);
+    --heads: calc(var(--hw) * 0.44);
+    --fs3: calc(var(--hw) * 0.092);
     min-height: 100svh;
     padding-top: clamp(76px, 11svh, 120px);
     padding-bottom: var(--space-6);
@@ -92,25 +98,40 @@
   /* Слово «НОВОГОДНЯЯ» лежит за ведущими: плечи перекрывают буквы */
   .hero__line--2 { z-index: 1; font-size: var(--fs-mega); line-height: 0.86; }
   .hero__line { font-variant-numeric: lining-nums; }
-  /* «НОЧЬ 2027» ложится на торсы, а не на лица: лица остаются чистыми между строками 2 и 3 */
-  .hero__line--3 { margin-top: clamp(8px, 7svh, 80px); }
+  /* Заголовок читается одним блоком: «НОЧЬ» и «2027» стоят вплотную под «НОВОГОДНЯЯ» по сторонам голов,
+     лица ведущих остаются чистыми, а головы перекрывают низ букв второй строки */
+  .hero__line--3 {
+    /* колонки 1fr | просвет под головы | 1fr: слова не зависят от своей ширины и не заходят на лица */
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--heads) minmax(0, 1fr);
+    /* центр голов правее центра кадра на 0.08 hw: сдвигаем рамкой (margin + ширина), а не left, чтобы блок не вылезал за экран */
+    margin-left: calc(var(--hw) * 0.146);
+    font-size: var(--fs3);
+    margin-top: -0.04em;
+  }
+  .hero__line--3 > :first-child { grid-column: 1; justify-self: end; }
+  .hero__line--3 > :last-child { grid-column: 3; justify-self: start; }
 
   /* ---------- Ведущие ---------- */
+  /* В потоке, строго по центру: верх фигуры заходит на низ «НОВОГОДНЯЯ», низ уходит под нижний ряд */
   .hero__hosts {
     --r: 1;
-    position: absolute;
+    position: relative;
     z-index: 2;
-    left: 50%;
-    bottom: 0;
-    translate: -50% 0;
     display: block;
-    width: min(104vw, 520px);
-    aspect-ratio: 1441 / 1400;
-    -webkit-mask-image: linear-gradient(to top, #000 calc(var(--r) * 135% - 35%), transparent calc(var(--r) * 135%));
-    mask-image: linear-gradient(to top, #000 calc(var(--r) * 135% - 35%), transparent calc(var(--r) * 135%));
+    width: var(--hw);
+    /* верх холста выше голов на 0.12 hw: поднимаем кадр так, чтобы головы заходили на низ «НОВОГОДНЯЯ» на 0.03 hw;
+       низ уходит под нижний ряд (кадр по колено, ниже растворяется) */
+    margin: calc(var(--fs3) * -0.86 - var(--hw) * 0.15) auto calc(var(--hw) * -0.72);
+    aspect-ratio: 2 / 3;
+    /* первая маска: вход «свет снизу вверх»; вторая: ноги растворяются в подложке под текстом */
+    -webkit-mask-image: linear-gradient(to top, #000 calc(var(--r) * 135% - 35%), transparent calc(var(--r) * 135%)), linear-gradient(to bottom, #000 50%, transparent 82%);
+    mask-image: linear-gradient(to top, #000 calc(var(--r) * 135% - 35%), transparent calc(var(--r) * 135%)), linear-gradient(to bottom, #000 50%, transparent 82%);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
     pointer-events: none;
   }
-  .hero__hosts img { width: 100%; height: 100%; object-fit: contain; object-position: 50% 100%; }
+  .hero__hosts img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: 50% 0; }
 
   /* ---------- Передний план: ветки и шары ---------- */
   .hero__decor { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
@@ -165,15 +186,16 @@
   .hero__label { color: var(--text); font-size: 13px; }
   .hero__names { line-height: 1.5; }
   .hero__kids {
-    max-width: 36ch;
-    padding: var(--space-3) var(--space-5);
+    max-width: 30ch;
+    padding: 8px 18px;
     font-size: 14px;
-    line-height: 1.4;
+    line-height: 1.3;
     color: var(--text);
     border: 1px solid var(--line);
     border-radius: 999px;
     text-wrap: balance;
   }
+  @media (min-width: 1500px) { .hero__kids { max-width: none; white-space: nowrap; } }
 
   /* Метка локации длинная: на планшете и ниже переносится, линии скрыты */
   @media (max-width: 1023px) {
@@ -193,15 +215,14 @@
   }
 
   /* Mobile: «НОВОГОДНЯЯ» целиком по ширине, фигура ниже и меньше, два луча */
-  @media (max-width: 767px) {
+  @media (max-width: 1023px) {
     .beam--c { display: none; }
     .beam--l { rotate: -26deg; }
     .beam--r { rotate: 26deg; }
-    .hero__stage { padding-top: 76px; }
+    .hero__stage { padding-top: 76px; --hw: min(88vw, 400px); }
     .hero__line { font-size: clamp(40px, 12vw, 64px); }
     .hero__line--2 { font-size: var(--fs-mega); }
-    .hero__line--3 { margin-top: var(--space-1); }
-    .hero__hosts { position: relative; left: auto; bottom: auto; translate: none; margin: 0 auto calc(-15vw); width: min(88vw, 400px); }
+    .hero__line--3 { font-size: var(--fs3); }
     .hero__decor .fir, .bauble { display: none; }
     .hero__sub { font-size: 16px; }
     .hero__tickets { flex-wrap: nowrap; gap: var(--space-2); }
@@ -215,9 +236,16 @@
   }
 
   /* Desktop: три колонки, центр занят ведущими */
-  @media (min-width: 768px) {
-    .hero__hosts { width: auto; height: min(63svh, 50vw); }
+  @media (min-width: 1024px) {
+    /* Нижний ряд прижат к низу экрана и не растягивает сцену: высота hero = 100svh, фигура занимает центр */
+    .hero__stage { --hosts-h: min(80svh, 62vw); }
     .hero__bottom {
+      position: absolute;
+      left: 50%;
+      bottom: var(--space-6);
+      translate: -50% 0;
+      width: var(--container);
+      margin-top: 0;
       grid-template-columns: minmax(0, 1fr) minmax(0, 34vw) minmax(0, 1fr);
       align-items: end;
       gap: var(--gutter);

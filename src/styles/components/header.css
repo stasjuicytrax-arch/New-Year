@@ -6,9 +6,32 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: var(--space-3);
     height: 64px;
     padding-inline: var(--margin);
     background: linear-gradient(180deg, color-mix(in oklab, var(--night-1000) 85%, transparent), transparent);
+    isolation: isolate;
+  }
+
+  /* Подложка после ухода с hero (класс is-solid ставит src/scripts/header.ts):
+     тёмное стекло с blur, только на фиксированном элементе, поэтому сколлящийся контент не страдает */
+  .site-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: color-mix(in oklab, var(--night-950) 78%, transparent);
+    -webkit-backdrop-filter: blur(14px) saturate(1.15);
+    backdrop-filter: blur(14px) saturate(1.15);
+    border-bottom: 1px solid color-mix(in oklab, var(--line-strong) 28%, transparent);
+    opacity: 0;
+    transition: opacity var(--dur-2) var(--ease-out);
+    pointer-events: none;
+  }
+  .site-header.is-solid { background: none; }
+  .site-header.is-solid::before { opacity: 1; }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .site-header::before { background: color-mix(in oklab, var(--night-950) 94%, transparent); }
   }
 
   .site-header__brand {
@@ -16,27 +39,74 @@
     align-items: center;
     min-height: 44px;
     font-family: var(--font-display);
-    font-size: 22px;
+    font-size: clamp(15px, 1.5vw, 22px);
     font-weight: 700;
     letter-spacing: 0.06em;
+    line-height: 1;
+    text-transform: uppercase;
     text-decoration: none;
+    white-space: nowrap;
     color: var(--text-strong);
   }
 
+  .site-header__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  /* Телефон: на desktop номер текстом, на mobile иконка звонка 44x44 */
+  .site-header__phone {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-width: 44px;
+    min-height: 44px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    text-decoration: none;
+    color: var(--text-strong);
+    transition: color var(--dur-1) var(--ease-out);
+  }
+  .site-header__phone svg { width: 22px; height: 22px; color: var(--neon-400); flex: none; }
+  .site-header__phone:hover { color: var(--snow-50); }
+  .site-header__phone:hover svg { color: var(--cyan-300); }
+  .site-header__phone-text { display: inline; }
+
+  /* Кнопка брони в шапке только от планшета: на телефоне шапка = название + номер, бронь в hero и снизу */
   .site-header__cta {
-    display: inline-grid;
+    display: none;
     place-items: center;
     min-height: 44px;
     padding-inline: var(--space-5);
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
     letter-spacing: 0.16em;
     text-transform: uppercase;
     text-decoration: none;
+    white-space: nowrap;
     color: var(--snow-50);
     border: 1px solid var(--line-strong);
     clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
     transition: background-color var(--dur-1) var(--ease-out);
   }
   .site-header__cta:hover { background: var(--night-800); }
+
+  @media (min-width: 768px) {
+    .site-header__cta { display: inline-grid; }
+  }
+  @media (min-width: 1024px) {
+    .site-header__actions { gap: var(--space-5); }
+  }
+
+  /* Телефон: иконка скрыта, номер текстом (14px). Название и номер в 360px помещаются в одну строку */
+  @media (max-width: 767px) {
+    .site-header { gap: var(--space-3); }
+    .site-header__brand { font-size: 14px; letter-spacing: 0.02em; }
+    .site-header__phone svg { display: none; }
+    .site-header__phone { letter-spacing: 0.02em; }
+  }
 }

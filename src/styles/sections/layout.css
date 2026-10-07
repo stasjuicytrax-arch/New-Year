@@ -13,7 +13,7 @@
   .scene h1 .hero__line { display: block; }
   .scene h1 .hero__line:nth-child(2) { font-size: var(--fs-mega); line-height: 0.86; }
   h2 { font-size: var(--fs-display); line-height: 0.9; }
-  .chapter h3 { font-size: clamp(28px, 5vw, 72px); line-height: 0.95; margin-block: var(--space-4) var(--space-6); overflow-wrap: anywhere; }
+  .chapter h3 { font-size: clamp(28px, 5vw, 72px); line-height: 0.95; margin-block: var(--space-4) var(--space-6); text-wrap: balance; }
   .lead { font-size: var(--fs-lead); line-height: 1.45; max-width: 48ch; color: var(--text-strong); }
 
   .why__list { padding-left: 0; list-style-position: inside; font-weight: 500; font-size: var(--fs-h3); }
