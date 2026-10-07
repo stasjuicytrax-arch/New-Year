@@ -1,0 +1,48 @@
+@layer components {
+  /* Рамка-билет (DESIGN-SYSTEM §7.6): контур рисует SVG из src/scripts/ui.ts */
+  .ticket {
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--space-1);
+    min-height: 64px;
+    padding: var(--space-3) var(--space-5);
+  }
+
+  .ticket__frame {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+    filter: drop-shadow(0 0 9px color-mix(in oklab, var(--electric-500) 45%, transparent));
+  }
+  .ticket__fill { fill: color-mix(in oklab, var(--night-800) 62%, transparent); }
+  .ticket__stroke {
+    fill: none;
+    stroke: var(--line-strong);
+    stroke-width: 1;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+  }
+
+  .ticket .label { font-size: clamp(10px, 0.8vw, 12px); white-space: nowrap; }
+
+  .ticket__value {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(26px, 3vw, 50px);
+    line-height: 0.95;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    background: var(--chrome);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+}

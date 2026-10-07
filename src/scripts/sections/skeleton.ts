@@ -1,4 +1,4 @@
-import { bookingBlock, event, footer, hero, intro, manifest, nav, phones, program, typo, why } from '../../content/content';
+import { bookingBlock, event, footer, intro, manifest, nav, phones, program, typo, why } from '../../content/content';
 
 const $ = <T extends HTMLElement>(sel: string): T => {
   const el = document.querySelector<T>(sel);
@@ -11,13 +11,6 @@ export function renderSkeleton(): void {
   $('#site-header').innerHTML = `
     <a class="site-header__brand" href="#hero">${nav.brand}</a>
     <a class="site-header__cta" href="#booking">${nav.cta}</a>`;
-
-  $('#hero').innerHTML = `
-    <div class="container">
-      <p class="label">${hero.label}</p>
-      <h1 id="hero-title">${hero.titleLines.map((l) => `<span class="hero__line">${l}</span>`).join('')}</h1>
-      <p>${typo(hero.subtitle)}</p>
-    </div>`;
 
   $('#intro').innerHTML = `
     <div class="container">

@@ -1,0 +1,64 @@
+@layer components {
+  /* Свечение живёт на обёртке: clip-path кнопки срезал бы собственную тень */
+  .btn-wrap {
+    display: inline-block;
+    position: relative;
+    transition: filter var(--dur-2) var(--ease-out);
+  }
+  .btn-wrap:hover {
+    filter: drop-shadow(0 0 16px color-mix(in oklab, var(--electric-500) 60%, transparent));
+  }
+  .btn-wrap:has(:focus-visible) {
+    outline: 2px solid var(--neon-400);
+    outline-offset: 5px;
+  }
+
+  .btn {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    min-height: 56px;
+    padding-inline: 36px;
+    overflow: hidden;
+    font-family: var(--font-text);
+    font-size: var(--fs-button);
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+    transition: transform var(--dur-1) var(--ease-out);
+  }
+  /* Внутренний контур внутри среза clip-path виден везде; обводка на обёртке (:has) добавляет внешнюю */
+  .btn:focus-visible { box-shadow: none; outline: 2px solid var(--night-950); outline-offset: -5px; }
+  .btn:active { transform: scale(0.98); }
+
+  .btn--primary {
+    background: var(--chrome);
+    color: var(--night-950);
+  }
+  /* Блик пробегает по кнопке при наведении */
+  .btn--primary::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--chrome-sheen);
+    transform: translateX(-130%);
+  }
+  .btn--primary:hover::after {
+    transform: translateX(130%);
+    transition: transform 0.9s var(--ease-out);
+  }
+  .btn > span { position: relative; z-index: 1; }
+
+  @media (min-width: 768px) {
+    .btn { min-height: 60px; }
+  }
+  @media (max-width: 767px) {
+    .btn { width: 100%; }
+    .btn-wrap { display: block; width: 100%; }
+  }
+}

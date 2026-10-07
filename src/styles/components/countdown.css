@@ -1,0 +1,55 @@
+@layer components {
+  .countdown {
+    display: grid;
+    gap: var(--space-3);
+    justify-items: end;
+    text-align: right;
+  }
+  .countdown__label { max-width: 26ch; }
+
+  .countdown__board {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+  .countdown__unit {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-1);
+    min-width: 2.15ch;
+  }
+  .countdown__num,
+  .countdown__sep {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(34px, 3.4vw, 56px);
+    line-height: 0.9;
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+  .countdown__num {
+    background: var(--chrome);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .countdown__cap {
+    font-size: 10px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  /* Двоеточие мигает тёплым янтарём: единственное постоянное тёплое пятно счётчика */
+  .countdown__sep {
+    color: var(--amber-400);
+    animation: cd-blink 2s steps(1, end) infinite;
+  }
+  @keyframes cd-blink {
+    0%, 60% { opacity: 1; }
+    61%, 100% { opacity: 0.25; }
+  }
+
+  .countdown--full .countdown__num,
+  .countdown--full .countdown__sep { font-size: clamp(48px, 7vw, 112px); }
+  .countdown--full .countdown__cap { font-size: var(--fs-label); }
+}

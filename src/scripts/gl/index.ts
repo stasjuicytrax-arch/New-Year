@@ -55,7 +55,7 @@ function el<T extends HTMLElement>(tag: string, className: string): T {
 export async function initEffects(): Promise<Effects> {
   let mode = pickMode();
   let stage: Stage | null = null;
-  let pendingFade = 1;
+  let pendingFade = 0; // включает вызывающий (прелоадер или main), чтобы снег не появлялся раньше времени
   let pendingSeconds = 1.6;
   let canvas: HTMLCanvasElement | null = null;
   let staticLayer: HTMLElement | null = null;

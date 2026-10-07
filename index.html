@@ -7,6 +7,23 @@
   <title>Главная новогодняя ночь 2027 в Перми — WHITE HALL, 31 декабря</title>
   <meta name="description" content="Шоу-программа, балет, иллюзионисты, лучший DJ, меню от бренд-шефа и детская анимация. WHITE HALL, Монастырская, 2а. Взрослый — от 15 000 ₽, детский — 7 000 ₽.">
   <link rel="canonical" href="https://ngperm.ru/">
+  <script>
+    /* До загрузки JS: закрываем экран на время прелоадера и прячем hero до начальных состояний входа */
+    (function () {
+      var d = document.documentElement;
+      try {
+        // fx-intro прячет hero, пока не готовы шрифты и фигура (без подмены шрифтов и сдвига макета);
+        // это же работает и при reduced-motion
+        d.classList.add('fx-intro');
+        if (!matchMedia('(prefers-reduced-motion: reduce)').matches && !sessionStorage.getItem('gnn-preloaded')) {
+          d.classList.add('preloading');
+        }
+        // Страховка: если скрипт не отработал, страница всё равно откроется
+        setTimeout(function () { d.classList.remove('fx-intro', 'preloading'); }, 5000);
+      } catch (e) {}
+    })();
+  </script>
+  <noscript><style>html.fx-intro .hero__stage { visibility: visible !important; } html.preloading::before { display: none; } html.preloading { overflow: auto; }</style></noscript>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="preload" href="./src/assets/fonts/cormorant-sc-cyrillic-700-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="./src/assets/fonts/onest-cyrillic-400-normal.woff2" as="font" type="font/woff2" crossorigin>

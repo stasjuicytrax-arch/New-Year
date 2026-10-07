@@ -1,0 +1,239 @@
+@layer sections {
+  .hero { position: relative; display: block; min-height: 0; padding: 0; }
+
+  /* inline-скрипт в head ставит fx-intro, пока hero.ts не выставит начальные состояния входа */
+  html.fx-intro .hero__stage { visibility: hidden; }
+
+  .hero__stage {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    min-height: 100svh;
+    padding-top: clamp(76px, 11svh, 120px);
+    padding-bottom: var(--space-6);
+    overflow: clip;
+  }
+
+  /* ---------- Свет: три прожектора ---------- */
+  .hero__beams { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+  .hero:is(.is-settled) .beam, .hero:is(.is-settled) .fir, .hero:is(.is-settled) .bauble { will-change: auto; }
+  .beam {
+    position: absolute;
+    top: -6%;
+    width: min(110svh, 160vw);
+    height: 125%;
+    transform-origin: 50% 0;
+    translate: -50% 0;
+    mix-blend-mode: screen;
+    will-change: transform, opacity;
+  }
+  .beam i {
+    position: absolute;
+    inset: 0;
+    transform-origin: 50% 0;
+    background: conic-gradient(from 162deg at 50% 0,
+      transparent 0deg,
+      color-mix(in oklab, var(--electric-500) 26%, transparent) 9deg,
+      color-mix(in oklab, var(--cyan-300) 58%, transparent) 18deg,
+      color-mix(in oklab, var(--electric-500) 26%, transparent) 27deg,
+      transparent 36deg,
+      transparent 360deg);
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, rgb(0 0 0 / 0.55) 45%, transparent 92%);
+    mask-image: linear-gradient(180deg, #000 0%, rgb(0 0 0 / 0.55) 45%, transparent 92%);
+    animation: beam-sway var(--sway, 10s) var(--ease-swing) infinite alternate;
+  }
+  .beam--l { left: 3%; rotate: -34deg; --sway: 9s; }
+  .beam--r { left: 97%; rotate: 34deg; --sway: 12s; }
+  .beam--c { left: 50%; rotate: -4deg; width: min(80svh, 120vw); opacity: 0.55; --sway: 14s; }
+  .beam--c i { animation-direction: alternate-reverse; }
+  @keyframes beam-sway {
+    from { rotate: -6deg; }
+    to { rotate: 6deg; }
+  }
+
+  .hero__corridor {
+    position: absolute;
+    left: 50%;
+    top: -10%;
+    z-index: 1;
+    width: min(60vw, 720px);
+    height: 130%;
+    translate: -50% 0;
+    opacity: 0;
+    background: linear-gradient(90deg, transparent, rgb(170 205 255 / 0.5) 44%, rgb(255 255 255 / 0.85) 50%, rgb(170 205 255 / 0.5) 56%, transparent);
+    -webkit-mask-image: linear-gradient(180deg, #000, transparent 95%);
+    mask-image: linear-gradient(180deg, #000, transparent 95%);
+    mix-blend-mode: screen;
+    pointer-events: none;
+  }
+  .hero__flash {
+    position: absolute;
+    inset: 0;
+    z-index: 6;
+    opacity: 0;
+    background: radial-gradient(60% 50% at 50% 18%, rgb(225 238 255 / 0.9), transparent 70%);
+    mix-blend-mode: screen;
+    pointer-events: none;
+  }
+
+  /* ---------- Заголовок ---------- */
+  .hero__inner { text-align: center; }
+  .hero__label { position: relative; z-index: 3; margin-bottom: var(--space-4); white-space: nowrap; }
+
+  .hero__line {
+    position: relative;
+    z-index: 3;
+    display: block;
+    font-size: var(--fs-display);
+    line-height: 0.9;
+    white-space: nowrap;
+  }
+  /* Слово «НОВОГОДНЯЯ» лежит за ведущими: плечи перекрывают буквы */
+  .hero__line--2 { z-index: 1; font-size: var(--fs-mega); line-height: 0.86; }
+  .hero__line { font-variant-numeric: lining-nums; }
+  /* «НОЧЬ 2027» ложится на торсы, а не на лица: лица остаются чистыми между строками 2 и 3 */
+  .hero__line--3 { margin-top: clamp(8px, 7svh, 80px); }
+
+  /* ---------- Ведущие ---------- */
+  .hero__hosts {
+    --r: 1;
+    position: absolute;
+    z-index: 2;
+    left: 50%;
+    bottom: 0;
+    translate: -50% 0;
+    display: block;
+    width: min(104vw, 520px);
+    aspect-ratio: 1441 / 1400;
+    -webkit-mask-image: linear-gradient(to top, #000 calc(var(--r) * 135% - 35%), transparent calc(var(--r) * 135%));
+    mask-image: linear-gradient(to top, #000 calc(var(--r) * 135% - 35%), transparent calc(var(--r) * 135%));
+    pointer-events: none;
+  }
+  .hero__hosts img { width: 100%; height: 100%; object-fit: contain; object-position: 50% 100%; }
+
+  /* ---------- Передний план: ветки и шары ---------- */
+  .hero__decor { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+  .fir { position: absolute; top: 0; width: clamp(240px, 38vw, 640px); height: auto; will-change: transform; }
+  .fir--l { left: -10vw; top: -3vw; rotate: 34deg; transform-origin: 0 50%; }
+  .fir--r { right: -10vw; top: -3vw; rotate: -34deg; scale: -1 1; transform-origin: 100% 50%; }
+
+  .bauble {
+    position: absolute;
+    top: calc(var(--w) * 1.444 * var(--drop) * -1);
+    width: var(--w);
+    will-change: transform;
+  }
+  .bauble img {
+    width: 100%;
+    height: auto;
+    transform-origin: 50% 0;
+    animation: bauble-swing var(--dur) var(--ease-swing) var(--delay) infinite alternate;
+  }
+  @keyframes bauble-swing {
+    from { rotate: -2.8deg; }
+    to { rotate: 2.8deg; }
+  }
+  .b1 { left: 8%; }
+  .b3 { right: 3%; }
+  .b5 { right: 18%; }
+
+  /* ---------- Нижний ряд ---------- */
+  .hero__bottom {
+    position: relative;
+    z-index: 5;
+    display: grid;
+    gap: var(--space-5);
+    margin-top: auto;
+    justify-items: center;
+    text-align: center;
+  }
+  .hero__col { display: grid; gap: var(--space-4); justify-items: center; }
+  .hero__sub {
+    max-width: 30ch;
+    font-size: var(--fs-lead);
+    line-height: 1.4;
+    color: var(--text-strong);
+    text-wrap: balance;
+  }
+  .hero__tickets { display: flex; align-items: center; justify-content: center; gap: var(--space-3); flex-wrap: wrap; }
+  .hero__flake { width: 2.2em; height: 2.2em; }
+  .hero__cta { display: grid; gap: var(--space-3); justify-items: center; width: 100%; }
+  /* Цена: главный довод к покупке, поэтому крупно и рядом с кнопкой */
+  .hero__price { font-family: var(--font-text); font-size: clamp(16px, 1.3vw, 20px); font-weight: 600; letter-spacing: 0.04em; color: var(--text-strong); }
+  .hero__note { max-width: 36ch; line-height: 1.5; letter-spacing: 0.16em; font-size: 12px; color: var(--text); }
+  .hero__label { color: var(--text); font-size: 13px; }
+  .hero__names { line-height: 1.5; }
+  .hero__kids {
+    max-width: 36ch;
+    padding: var(--space-3) var(--space-5);
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    text-wrap: balance;
+  }
+
+  /* Метка локации длинная: на планшете и ниже переносится, линии скрыты */
+  @media (max-width: 1023px) {
+    .hero__label { white-space: normal; letter-spacing: 0.2em; padding-inline: var(--space-2); line-height: 1.5; }
+    .hero__label::before, .hero__label::after { display: none; }
+  }
+
+  /* Подложка под нижним рядом: мелкий текст не теряется на лучах и снегу */
+  .hero__stage::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0 0;
+    z-index: 3;
+    height: 42%;
+    background: linear-gradient(0deg, color-mix(in oklab, var(--night-1000) 82%, transparent), transparent);
+    pointer-events: none;
+  }
+
+  /* Mobile: «НОВОГОДНЯЯ» целиком по ширине, фигура ниже и меньше, два луча */
+  @media (max-width: 767px) {
+    .beam--c { display: none; }
+    .beam--l { rotate: -26deg; }
+    .beam--r { rotate: 26deg; }
+    .hero__stage { padding-top: 76px; }
+    .hero__line { font-size: clamp(40px, 12vw, 64px); }
+    .hero__line--2 { font-size: var(--fs-mega); }
+    .hero__line--3 { margin-top: var(--space-1); }
+    .hero__hosts { position: relative; left: auto; bottom: auto; translate: none; margin: 0 auto calc(-15vw); width: min(88vw, 400px); }
+    .hero__decor .fir, .bauble { display: none; }
+    .hero__sub { font-size: 16px; }
+    .hero__tickets { flex-wrap: nowrap; gap: var(--space-2); }
+    .ticket { min-height: 54px; padding: var(--space-2) var(--space-4); }
+    .ticket__value { font-size: 22px; }
+    .hero__flake { width: 1.2em; height: 1.2em; }
+    .hero__col--r { order: 3; }
+    .hero__names { display: none; }
+    .hero__count .countdown { justify-items: center; text-align: center; }
+    .hero__count .countdown__label { max-width: 30ch; }
+  }
+
+  /* Desktop: три колонки, центр занят ведущими */
+  @media (min-width: 768px) {
+    .hero__hosts { width: auto; height: min(63svh, 50vw); }
+    .hero__bottom {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 34vw) minmax(0, 1fr);
+      align-items: end;
+      gap: var(--gutter);
+      justify-items: stretch;
+      text-align: left;
+    }
+    .hero__col--l { justify-items: start; grid-column: 1; gap: var(--space-5); }
+    .hero__col--r { justify-items: end; grid-column: 3; text-align: right; gap: var(--space-4); }
+    .hero__cta { justify-items: start; width: auto; }
+    .hero__tickets { justify-content: flex-start; flex-wrap: nowrap; }
+  }
+
+  /* Нет WebGL / reduced-motion: лучи статичные градиенты, без качания */
+  html[data-fx='static'] .beam i,
+  html[data-fx='static'] .bauble img { animation: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .beam i, .bauble img { animation: none; }
+  }
+}

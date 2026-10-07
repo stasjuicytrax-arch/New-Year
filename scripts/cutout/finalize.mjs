@@ -32,8 +32,36 @@ for (let i = 0; i < info.width * info.height; i++) {
   data[i * 4 + 3] = Math.round((a * m[i]) / 255);
 }
 const base = sharp(data, { raw: info }).trim({ threshold: 2 });
-const buf = await base.png().toBuffer();
-const meta = await sharp(buf).metadata();
+let buf = await base.png().toBuffer();
+
+// Серые остатки зеркального шара и цифры у макушки: убираем малонасыщенные светлые пиксели
+// в зоне головы, но только рядом с краем силуэта (кожа и глаза внутри не трогаем)
+{
+  const { data: d, info: i } = await sharp(buf).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const W2 = i.width;
+  const x0 = Math.floor(W2 * 0.34), x1 = Math.ceil(W2 * 0.56), y1 = Math.ceil(i.height * 0.1), R = 12;
+  for (let pass = 0; pass < 3; pass++) {
+    const kill = [];
+    for (let y = 0; y < y1; y++) {
+      for (let x = x0; x < x1; x++) {
+        const k = (y * W2 + x) * 4;
+        if (d[k + 3] < 10) continue;
+        const mx = Math.max(d[k], d[k + 1], d[k + 2]), mn = Math.min(d[k], d[k + 1], d[k + 2]);
+        if (!(mx - mn < 30 && mx > 70)) continue;
+        let edge = false;
+        for (let dy = -R; dy <= R && !edge; dy += 2) {
+          for (let dx = -R; dx <= R; dx += 2) {
+            const yy = y + dy, xx = x + dx;
+            if (yy < 0 || xx < 0 || xx >= W2 || d[(yy * W2 + xx) * 4 + 3] < 10) { edge = true; break; }
+          }
+        }
+        if (edge) kill.push(k);
+      }
+    }
+    for (const k of kill) d[k + 3] = 0;
+  }
+  buf = await sharp(d, { raw: i }).png().toBuffer();
+}const meta = await sharp(buf).metadata();
 console.log('trimmed', meta.width, meta.height);
 
 for (const h of [900, 1400]) {
