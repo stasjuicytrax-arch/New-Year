@@ -245,7 +245,7 @@
     border-block: 1px solid var(--line-strong);
     background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--electric-500) 22%, transparent), transparent);
   }
-  .menu { display: grid; gap: var(--space-6); min-width: 0; order: -1; }
+  .menu { display: grid; gap: var(--space-6); min-width: 0; }
   .menu__card { position: relative; isolation: isolate; padding: clamp(20px, 3vw, 40px); }
   .menu__list { display: grid; padding: 0; list-style: none; margin: 0; }
   .menu__item { display: grid; grid-template-columns: 2.6rem minmax(0, 1fr); gap: var(--space-3); padding-block: var(--space-4); border-bottom: 1px solid var(--line); }
