@@ -361,4 +361,10 @@
   .marquee { overflow: hidden; padding-block: var(--space-6); -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
   .marquee__track { display: flex; width: max-content; animation: marquee 60s linear infinite; }
   .marquee__track span { flex: none; padding-right: var(--space-8); font-family: var(--font-display); font-weight: 600; font-size: clamp(28px, 4vw, 56px); line-height: 1.1; letter-spacing: 0.06em; white-space: nowrap; }
+
+  /* Меню по ВЕРСИИ 2: Inter Tight + Onest, антиква только для хромовых акцентов */
+  .menu__name, .menu__opt b, .menu__or { font-family: var(--font-ui); text-transform: none; letter-spacing: -0.005em; }
+  .menu__name { font-size: clamp(18px, 1.5vw, 22px); }
+  .menu__opt b { font-size: 17px; }
+  .menu__or { font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase; }
 }
