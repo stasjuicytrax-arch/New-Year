@@ -224,7 +224,7 @@ npx impeccable install
 - **Vite + TypeScript, ванильный** (без фреймворка: one-page, максимум контроля над анимацией и весом). Альтернатива по согласованию — Astro.
 - CSS: нативный CSS + custom properties (токены из DESIGN-SYSTEM), `@layer`, container queries где уместно. Без Tailwind (токены уже заданы).
 - Шрифты: Cormorant SC, Onest, (Unbounded) — self-host woff2, subset `cyrillic+latin`, `font-display: swap`, preload двух начертаний для hero.
-- Деплой: GitHub Pages или Vercel (автодеплой из `main`). **Домен: `ngperm.ru`** (куплен). Основной адрес `https://ngperm.ru`, редирект `www.ngperm.ru` → `ngperm.ru`, HTTPS обязателен. DNS настроить под выбранный хостинг (A/CNAME); для GitHub Pages — файл `public/CNAME` с `ngperm.ru`.
+- Деплой: **GitHub Pages через GitHub Actions** (`.github/workflows/deploy.yml`, Pages включён 07.10.2026): каждый пуш в `main` автоматически собирается и публикуется. Ссылка для просмотра: https://stasjuicytrax-arch.github.io/New-Year/ (до подключения домена). `base` подставляется в CI автоматически из настроек Pages, в `vite.config.ts` его не хардкодить. **Домен: `ngperm.ru`** (куплен). Основной адрес `https://ngperm.ru`, редирект `www.ngperm.ru` → `ngperm.ru`, HTTPS обязателен. DNS настроить под выбранный хостинг (A/CNAME); для GitHub Pages — файл `public/CNAME` с `ngperm.ru`.
 
 ### 7.2 Структура проекта
 ```
