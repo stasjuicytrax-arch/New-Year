@@ -1,4 +1,5 @@
-import { bookingBlock, event, footer, intro, manifest, nav, phones, program, typo, why } from '../../content/content';
+import { bookingBlock, event, footer, hero as heroContent, intro, manifest, nav, phones, program, typo, why } from '../../content/content';
+import { mountCountdown } from '../countdown';
 
 const $ = <T extends HTMLElement>(sel: string): T => {
   const el = document.querySelector<T>(sel);
@@ -18,6 +19,8 @@ export function renderSkeleton(): void {
       </a>
       <a class="site-header__cta" href="#booking" data-goal="book_click">${nav.cta}</a>
     </div>`;
+
+  mountCountdown($('#countdown'), heroContent.countdownLabel, 'compact');
 
   $('#intro').innerHTML = `
     <div class="container">

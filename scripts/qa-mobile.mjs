@@ -155,8 +155,23 @@ async function inPage() {
       return range.getBoundingClientRect();
     });
     const fs = parseFloat(getComputedStyle(l[1]).fontSize);
+    const fs3 = parseFloat(getComputedStyle(l[2]).fontSize);
+    if (fs3 < fs * 0.5 - 0.01) out.push(`«НОЧЬ 2027» ${Math.round(fs3)}px < половины «НОВОГОДНЯЯ» (${Math.round(fs / 2)}px)`);
+    if (rr[2].height > fs3 * 1.3) out.push('«НОЧЬ 2027» не в одну строку');
+    const mid = (rr[2].left + rr[2].right) / 2;
+    if (Math.abs(mid - document.documentElement.clientWidth / 2) > 4) out.push(`«НОЧЬ 2027» не по центру (смещение ${Math.round(mid - document.documentElement.clientWidth / 2)}px)`);
     const gap = rr[2].top - rr[1].bottom;
     if (gap > fs * 0.3) out.push(`разрыв между «НОВОГОДНЯЯ» и «НОЧЬ 2027»: ${Math.round(gap)}px (кегль ${Math.round(fs)}px)`);
+  }
+  // hero целиком на одном экране: низ блока с ценой не ниже низа вьюпорта
+  const stage = document.querySelector('.hero__stage');
+  if (stage && atTop) {
+    const cta = stage.querySelector('.hero__cta');
+    const bottom = Math.max(stage.getBoundingClientRect().bottom, cta ? cta.getBoundingClientRect().bottom : 0);
+    if (bottom > window.innerHeight + 1) out.push(`hero не помещается на экран: низ ${Math.round(bottom)}px > ${window.innerHeight}px`);
+    const head = stage.querySelector('.hero__head').getBoundingClientRect();
+    const hh = stage.querySelector('.hero__hosts img').getBoundingClientRect();
+    if (hh.top > head.bottom + window.innerHeight * 0.2) out.push('между H1 и ведущими большая пустота');
   }
   const kids = document.querySelector('.hero__kids');
   if (kids && visible(kids) && atTop) {

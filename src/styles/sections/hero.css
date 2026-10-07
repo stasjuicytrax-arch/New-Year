@@ -4,26 +4,27 @@
   /* inline-скрипт в head ставит fx-intro, пока hero.ts не выставит начальные состояния входа */
   html.fx-intro .hero__stage { visibility: hidden; }
 
+  /* ---------- Каркас афиши ----------
+     Mobile: head (метка + H1) / figure (ведущие) / info (ТОП-150, билеты, кнопка, цена), всё в один экран.
+     Desktop: сплит 40/60, слева head + info одной колонкой, справа ведущие крупно. */
   .hero__stage {
     position: relative;
     isolation: isolate;
-    display: flex;
-    flex-direction: column;
-    /* Дуэт ведущих (холст 1024x1536, не кадрирован): --hw ширина фигуры. Головы занимают 37..77% ширины,
-       верх голов на 8% высоты; «НОЧЬ» стоит слева от голов, «2027» справа, обе вплотную под «НОВОГОДНЯЯ» */
-    --hosts-h: min(60svh, 48vw);
-    --hw: calc(var(--hosts-h) * 0.667);
-    --heads: calc(var(--hw) * 0.44);
-    --fs3: calc(var(--hw) * 0.092);
-    min-height: 100svh;
-    padding-top: clamp(76px, 11svh, 120px);
-    padding-bottom: var(--space-6);
     overflow: clip;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas: 'head' 'fig' 'info';
+    min-height: 100svh;
+    padding-top: 76px;
+    padding-bottom: var(--space-5);
+    /* --hw: ширина холста ведущих (пропорция 2:3), --h1: кегль «НОВОГОДНЯЯ» */
+    --hw: min(100vw, 500px, 56svh);
+    --h1: min(13.4vw, 84px);
   }
 
-  /* ---------- Свет: три прожектора ---------- */
+  /* ---------- Свет: два прожектора и голубое свечение за ведущими ---------- */
   .hero__beams { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
-  .hero:is(.is-settled) .beam, .hero:is(.is-settled) .fir, .hero:is(.is-settled) .bauble { will-change: auto; }
   .beam {
     position: absolute;
     top: -6%;
@@ -34,6 +35,7 @@
     mix-blend-mode: screen;
     will-change: transform, opacity;
   }
+  .hero.is-settled .beam { will-change: auto; }
   .beam i {
     position: absolute;
     inset: 0;
@@ -49,28 +51,21 @@
     mask-image: linear-gradient(180deg, #000 0%, rgb(0 0 0 / 0.55) 45%, transparent 92%);
     animation: beam-sway var(--sway, 10s) var(--ease-swing) infinite alternate;
   }
-  .beam--l { left: 3%; rotate: -34deg; --sway: 9s; }
-  .beam--r { left: 97%; rotate: 34deg; --sway: 12s; }
-  .beam--c { left: 50%; rotate: -4deg; width: min(80svh, 120vw); opacity: 0.55; --sway: 14s; }
-  .beam--c i { animation-direction: alternate-reverse; }
+  .beam--l { left: 3%; rotate: -26deg; --sway: 9s; }
+  .beam--r { left: 97%; rotate: 26deg; --sway: 12s; }
   @keyframes beam-sway {
     from { rotate: -6deg; }
     to { rotate: 6deg; }
   }
 
-  .hero__corridor {
+  .hero__glow {
     position: absolute;
-    left: 50%;
-    top: -10%;
     z-index: 1;
-    width: min(60vw, 720px);
-    height: 130%;
-    translate: -50% 0;
-    opacity: 0;
-    background: linear-gradient(90deg, transparent, rgb(170 205 255 / 0.5) 44%, rgb(255 255 255 / 0.85) 50%, rgb(170 205 255 / 0.5) 56%, transparent);
-    -webkit-mask-image: linear-gradient(180deg, #000, transparent 95%);
-    mask-image: linear-gradient(180deg, #000, transparent 95%);
-    mix-blend-mode: screen;
+    inset: 18% -20% 0 -20%;
+    background:
+      radial-gradient(45% 55% at 50% 62%, color-mix(in oklab, var(--cyan-300) 30%, transparent), transparent 70%),
+      radial-gradient(60% 70% at 50% 70%, color-mix(in oklab, var(--electric-500) 34%, transparent), transparent 75%);
+    filter: blur(24px);
     pointer-events: none;
   }
   .hero__flash {
@@ -78,190 +73,143 @@
     inset: 0;
     z-index: 6;
     opacity: 0;
-    background: radial-gradient(60% 50% at 50% 18%, rgb(225 238 255 / 0.9), transparent 70%);
+    background: radial-gradient(60% 50% at 50% 30%, rgb(225 238 255 / 0.9), transparent 70%);
     mix-blend-mode: screen;
     pointer-events: none;
   }
 
-  /* ---------- Заголовок ---------- */
-  .hero__inner { text-align: center; }
-  .hero__label { position: relative; z-index: 3; margin-bottom: var(--space-4); white-space: nowrap; }
-
-  .hero__line {
-    position: relative;
-    z-index: 3;
-    display: block;
-    font-size: var(--fs-display);
-    line-height: 0.9;
-    white-space: nowrap;
-  }
-  /* Слово «НОВОГОДНЯЯ» лежит за ведущими: плечи перекрывают буквы */
-  .hero__line--2 { z-index: 1; font-size: var(--fs-mega); line-height: 0.86; }
-  .hero__line { font-variant-numeric: lining-nums; }
-  /* Заголовок читается одним блоком: «НОЧЬ» и «2027» стоят вплотную под «НОВОГОДНЯЯ» по сторонам голов,
-     лица ведущих остаются чистыми, а головы перекрывают низ букв второй строки */
-  .hero__line--3 {
-    /* колонки 1fr | просвет под головы | 1fr: слова не зависят от своей ширины и не заходят на лица */
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) var(--heads) minmax(0, 1fr);
-    /* центр голов правее центра кадра на 0.08 hw: сдвигаем рамкой (margin + ширина), а не left, чтобы блок не вылезал за экран */
-    margin-left: calc(var(--hw) * 0.146);
-    font-size: var(--fs3);
-    margin-top: -0.04em;
-  }
-  .hero__line--3 > :first-child { grid-column: 1; justify-self: end; }
-  .hero__line--3 > :last-child { grid-column: 3; justify-self: start; }
-
-  /* ---------- Ведущие ---------- */
-  /* В потоке, строго по центру: верх фигуры заходит на низ «НОВОГОДНЯЯ», низ уходит под нижний ряд */
-  .hero__hosts {
-    --r: 1;
-    position: relative;
-    z-index: 2;
-    display: block;
-    width: var(--hw);
-    /* верх холста выше голов на 0.12 hw: поднимаем кадр так, чтобы головы заходили на низ «НОВОГОДНЯЯ» на 0.03 hw;
-       низ уходит под нижний ряд (кадр по колено, ниже растворяется) */
-    margin: calc(var(--fs3) * -0.86 - var(--hw) * 0.15) auto calc(var(--hw) * -0.72);
-    aspect-ratio: 2 / 3;
-    /* первая маска: вход «свет снизу вверх»; вторая: ноги растворяются в подложке под текстом */
-    -webkit-mask-image: linear-gradient(to top, #000 calc(var(--r) * 135% - 35%), transparent calc(var(--r) * 135%)), linear-gradient(to bottom, #000 50%, transparent 82%);
-    mask-image: linear-gradient(to top, #000 calc(var(--r) * 135% - 35%), transparent calc(var(--r) * 135%)), linear-gradient(to bottom, #000 50%, transparent 82%);
-    -webkit-mask-composite: source-in;
-    mask-composite: intersect;
-    pointer-events: none;
-  }
-  .hero__hosts img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: 50% 0; }
-
-  /* ---------- Передний план: ветки и шары ---------- */
-  .hero__decor { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
-  .fir { position: absolute; top: 0; width: clamp(240px, 38vw, 640px); height: auto; will-change: transform; }
-  .fir--l { left: -10vw; top: -3vw; rotate: 34deg; transform-origin: 0 50%; }
-  .fir--r { right: -10vw; top: -3vw; rotate: -34deg; scale: -1 1; transform-origin: 100% 50%; }
-
-  .bauble {
-    position: absolute;
-    top: calc(var(--w) * 1.444 * var(--drop) * -1);
-    width: var(--w);
-    will-change: transform;
-  }
-  .bauble img {
-    width: 100%;
-    height: auto;
-    transform-origin: 50% 0;
-    animation: bauble-swing var(--dur) var(--ease-swing) var(--delay) infinite alternate;
-  }
-  @keyframes bauble-swing {
-    from { rotate: -2.8deg; }
-    to { rotate: 2.8deg; }
-  }
-  .b1 { left: 8%; }
-  .b3 { right: 3%; }
-  .b5 { right: 18%; }
-
-  /* ---------- Нижний ряд ---------- */
-  .hero__bottom {
-    position: relative;
-    z-index: 5;
-    display: grid;
-    gap: var(--space-5);
-    margin-top: auto;
-    justify-items: center;
-    text-align: center;
-  }
-  .hero__col { display: grid; gap: var(--space-4); justify-items: center; }
-  .hero__sub {
-    max-width: 30ch;
-    font-size: var(--fs-lead);
-    line-height: 1.4;
-    color: var(--text-strong);
-    text-wrap: balance;
-  }
-  .hero__tickets { display: flex; align-items: center; justify-content: center; gap: var(--space-3); flex-wrap: wrap; }
-  .hero__flake { width: 2.2em; height: 2.2em; }
-  .hero__cta { display: grid; gap: var(--space-3); justify-items: center; width: 100%; }
-  /* Цена: главный довод к покупке, поэтому крупно и рядом с кнопкой */
-  .hero__price { font-family: var(--font-text); font-size: clamp(16px, 1.3vw, 20px); font-weight: 600; letter-spacing: 0.04em; color: var(--text-strong); }
-  .hero__note { max-width: 36ch; line-height: 1.5; letter-spacing: 0.16em; font-size: 12px; color: var(--text); }
-  .hero__label { color: var(--text); font-size: 13px; }
-  .hero__names { line-height: 1.5; }
-  .hero__kids {
-    max-width: 30ch;
-    padding: 8px 18px;
-    font-size: 14px;
-    line-height: 1.3;
-    color: var(--text);
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    text-wrap: balance;
-  }
-  @media (min-width: 1500px) { .hero__kids { max-width: none; white-space: nowrap; } }
-
-  /* Метка локации длинная: на планшете и ниже переносится, линии скрыты */
-  @media (max-width: 1023px) {
-    .hero__label { white-space: normal; letter-spacing: 0.2em; padding-inline: var(--space-2); line-height: 1.5; }
-    .hero__label::before, .hero__label::after { display: none; }
-  }
-
-  /* Подложка под нижним рядом: мелкий текст не теряется на лучах и снегу */
+  /* Тёмная подложка под нижним блоком: мелкий текст не теряется на лучах и снеге */
   .hero__stage::after {
     content: '';
     position: absolute;
     inset: auto 0 0 0;
     z-index: 3;
-    height: 42%;
-    background: linear-gradient(0deg, color-mix(in oklab, var(--night-1000) 82%, transparent), transparent);
+    height: 36%;
+    background: linear-gradient(0deg, color-mix(in oklab, var(--night-1000) 80%, transparent), transparent);
     pointer-events: none;
   }
 
-  /* Mobile: «НОВОГОДНЯЯ» целиком по ширине, фигура ниже и меньше, два луча */
-  @media (max-width: 1023px) {
-    .beam--c { display: none; }
-    .beam--l { rotate: -26deg; }
-    .beam--r { rotate: 26deg; }
-    .hero__stage { padding-top: 76px; --hw: min(88vw, 400px); }
-    .hero__line { font-size: clamp(40px, 12vw, 64px); }
-    .hero__line--2 { font-size: var(--fs-mega); }
-    .hero__line--3 { font-size: var(--fs3); }
-    .hero__decor .fir, .bauble { display: none; }
-    .hero__sub { font-size: 16px; }
-    .hero__tickets { flex-wrap: nowrap; gap: var(--space-2); }
-    .ticket { min-height: 54px; padding: var(--space-2) var(--space-4); }
-    .ticket__value { font-size: 22px; }
-    .hero__flake { width: 1.2em; height: 1.2em; }
-    .hero__col--r { order: 3; }
-    .hero__names { display: none; }
-    .hero__count .countdown { justify-items: center; text-align: center; }
-    .hero__count .countdown__label { max-width: 30ch; }
+  /* ---------- Заголовок ---------- */
+  .hero__head {
+    grid-area: head;
+    position: relative;
+    z-index: 4;
+    padding-inline: var(--margin);
+    text-align: center;
   }
+  .hero__label {
+    margin-bottom: var(--space-3);
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    line-height: 1.5;
+    color: var(--text);
+  }
+  .hero__line {
+    position: relative;
+    display: block;
+    font-size: var(--h1);
+    line-height: 0.9;
+    white-space: nowrap;
+    font-variant-numeric: lining-nums;
+  }
+  .hero__line--1 { font-size: calc(var(--h1) * 0.62); }
+  .hero__line--2 { line-height: 0.86; }
+  .hero__line--3 { font-size: calc(var(--h1) * 0.9); }
 
-  /* Desktop: три колонки, центр занят ведущими */
+  /* ---------- Ведущие ----------
+     Холст 1024x1536 не кадрирован: головы на 8% высоты, бёдра на ~52%. Низ растворяется с 46% до 66%
+     и уходит под нижний блок (кадр по бёдра). */
+  .hero__figure { grid-area: fig; position: relative; min-height: 0; }
+  .hero__hosts {
+    --r: 1;
+    position: absolute;
+    z-index: 2;
+    left: 50%;
+    bottom: calc(var(--hw) * -0.5);
+    translate: -50% 0;
+    display: block;
+    width: var(--hw);
+    aspect-ratio: 2 / 3;
+    /* первая маска: вход «свет снизу вверх»; вторая: растворение ниже бёдер */
+    -webkit-mask-image: linear-gradient(to top, #000 calc(var(--r) * 135% - 35%), transparent calc(var(--r) * 135%)), linear-gradient(to bottom, #000 46%, transparent 66%);
+    mask-image: linear-gradient(to top, #000 calc(var(--r) * 135% - 35%), transparent calc(var(--r) * 135%)), linear-gradient(to bottom, #000 46%, transparent 66%);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+    pointer-events: none;
+  }
+  .hero__hosts img { display: block; width: 100%; height: 100%; }
+  .hero__names { display: none; }
+
+  /* ---------- Нижний блок ---------- */
+  .hero__info {
+    grid-area: info;
+    position: relative;
+    z-index: 4;
+    display: grid;
+    gap: var(--space-4);
+    justify-items: center;
+    padding-inline: var(--margin);
+    text-align: center;
+  }
+  .hero__sub {
+    max-width: 30ch;
+    font-size: 16px;
+    line-height: 1.4;
+    color: var(--text-strong);
+    text-wrap: balance;
+  }
+  .hero__tickets { display: flex; align-items: center; justify-content: center; gap: var(--space-2); }
+  .hero__flake { width: 1.2em; height: 1.2em; }
+  .ticket { min-height: 54px; padding: var(--space-2) var(--space-4); }
+  .ticket__value { font-size: 22px; }
+  .hero__cta { display: grid; gap: var(--space-2); justify-items: center; width: 100%; }
+  .hero__price { max-width: 36ch; font-family: var(--font-text); font-size: 15px; font-weight: 600; letter-spacing: 0.03em; line-height: 1.4; color: var(--text-strong); text-wrap: balance; }
+  .hero__note { display: block; font-weight: 400; color: var(--text); }
+
+  /* ---------- Desktop: сплит 40/60 ---------- */
   @media (min-width: 1024px) {
-    /* Нижний ряд прижат к низу экрана и не растягивает сцену: высота hero = 100svh, фигура занимает центр */
-    .hero__stage { --hosts-h: min(80svh, 62vw); }
-    .hero__bottom {
-      position: absolute;
-      left: 50%;
-      bottom: var(--space-6);
-      translate: -50% 0;
-      width: var(--container);
-      margin-top: 0;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 34vw) minmax(0, 1fr);
-      align-items: end;
-      gap: var(--gutter);
-      justify-items: stretch;
-      text-align: left;
+    .hero__stage {
+      grid-template-columns: minmax(0, 40fr) minmax(0, 60fr);
+      grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-areas: 'head fig' 'info fig';
+      height: 100svh;
+      min-height: 560px;
+      padding-top: 72px;
+      padding-bottom: var(--space-6);
+      /* фигура крупно: ширина холста до 60vw или 96svh. Колонка текста не шире 40% */
+      --hw: min(60vw, 96svh, 1024px);
+      --h1: min(5vw, 11.5svh);
     }
-    .hero__col--l { justify-items: start; grid-column: 1; gap: var(--space-5); }
-    .hero__col--r { justify-items: end; grid-column: 3; text-align: right; gap: var(--space-4); }
+    .hero__head { align-self: end; padding-left: var(--margin); padding-right: 0; margin-bottom: var(--space-5); text-align: left; }
+    .hero__label { font-size: 13px; letter-spacing: 0.24em; }
+    .hero__info { align-self: start; justify-items: start; padding-left: var(--margin); padding-right: 0; text-align: left; gap: var(--space-5); }
+    .hero__sub { max-width: 34ch; font-size: clamp(18px, 1.6vw, 26px); }
+    .hero__tickets { justify-content: flex-start; gap: var(--space-3); }
+    .hero__flake { width: 1.6em; height: 1.6em; }
+    .ticket { min-height: 64px; padding: var(--space-3) var(--space-5); }
+    .ticket__value { font-size: clamp(26px, 2.6vw, 44px); }
     .hero__cta { justify-items: start; width: auto; }
-    .hero__tickets { justify-content: flex-start; flex-wrap: nowrap; }
+    .hero__price { font-size: clamp(16px, 1.2vw, 19px); text-align: left; }
+    .hero__hosts { left: auto; right: 0; translate: none; }
+    .hero__glow { inset: 8% -4% 0 36%; }
+    .hero__stage::after { height: 26%; }
+    .beam--l { opacity: 0.7; }
+    .hero__names {
+      display: block;
+      position: absolute;
+      z-index: 4;
+      right: var(--margin);
+      bottom: var(--space-1);
+      text-align: right;
+      line-height: 1.6;
+      font-size: 12px;
+      color: var(--text-strong);
+    }
   }
 
   /* Нет WebGL / reduced-motion: лучи статичные градиенты, без качания */
-  html[data-fx='static'] .beam i,
-  html[data-fx='static'] .bauble img { animation: none; }
+  html[data-fx='static'] .beam i { animation: none; }
   @media (prefers-reduced-motion: reduce) {
-    .beam i, .bauble img { animation: none; }
+    .beam i { animation: none; }
   }
 }

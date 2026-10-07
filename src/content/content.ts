@@ -65,7 +65,7 @@ export const nav = {
 } as const;
 
 export const hero = {
-  label: `ЛОКАЦИЯ — ${event.venue} · ${event.addressShort.toUpperCase()}`,
+  label: `${event.venue} · 31 ДЕКАБРЯ · ${event.city.toUpperCase()}`,
   titleLines: ['ГЛАВНАЯ', 'НОВОГОДНЯЯ', 'НОЧЬ 2027'],
   subtitle: 'Попадите в ТОП-150 гостей самой яркой новогодней ночи!',
   hostsLine: 'АЛЕКСАНДР МЕРКУРЬЕВ · СТАС ТОРОПОВ',
@@ -73,7 +73,6 @@ export const hero = {
     { label: '', value: '31 ДЕКАБРЯ' },
     { label: 'СБОР ГОСТЕЙ', value: '21:00' },
   ],
-  kidsBadge: 'Детская анимационная программа в отдельном зале',
   cta: 'Забронировать стол',
   ctaNote: 'Количество мест ограничено',
   priceNote: 'от 15 000 ₽ за гостя',

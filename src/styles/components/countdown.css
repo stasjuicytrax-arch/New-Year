@@ -1,11 +1,13 @@
 @layer components {
   .countdown {
+    position: relative; /* держит .visually-hidden внутри блока, иначе он даёт 1px горизонтального скролла */
     display: grid;
     gap: var(--space-3);
     justify-items: end;
     text-align: right;
   }
   .countdown__label { max-width: 26ch; }
+  .countdown .visually-hidden { top: 0; left: 0; }
 
   .countdown__board {
     display: flex;
