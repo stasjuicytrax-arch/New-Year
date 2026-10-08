@@ -47,7 +47,7 @@ export const prices = {
 /** ⚠ Канал заявок: Telegram-бот через serverless-функцию. Эндпоинт задаётся при деплое. */
 export const booking = {
   channel: 'telegram' as 'telegram' | 'email' | 'link',
-  endpoint: 'https://functions.yandexcloud.net/d4eq5kgv2lge2tsl864f' as string,
+  endpoint: '' as string,
   /** Фоллбэк, пока бот не подключён. ⚠ ссылку предоставит клиент. */
   fallbackUrl: '' as string,
   metrikaId: '' as string, // ⚠ ID счётчика Яндекс.Метрики
