@@ -43,7 +43,7 @@ export interface HallTable {
 }
 
 /** Размеры в единицах viewBox. Стул — капсула 14×8 по касательной к столу. */
-export const GEOM = { table: 26, orbit: 38, seatW: 16, seatD: 10, seatHit: 12, tableHit: 54 } as const;
+export const GEOM = { table: 26, orbit: 38, seatW: 16, seatD: 10, seatHit: 12, tableHit: 60 } as const;
 
 /**
  * Раскладка по сетке, взаимное расположение как на rassadka.jpg: три колонки (слева, центр, справа), восемь рядов.
@@ -83,7 +83,7 @@ export const TABLES: readonly HallTable[] = GRID.map(([n, c, r]) => ({ n, zone: 
 const hallRight = COL(2) + WALL_GAP;
 const hallBottom = ROW(7) + WALL_GAP;
 export const HALL = { x: MARGIN, y: MARGIN, w: hallRight - MARGIN, h: hallBottom - MARGIN };
-export const VIEWBOX = { w: hallRight + MARGIN, h: hallBottom + 46 };
+export const VIEWBOX = { w: hallRight + MARGIN, h: hallBottom + 60 };
 
 /** Сцена у правой стены, передний край (дуга) смотрит в зал. */
 const stageX = COL(1) + 70;
@@ -112,3 +112,45 @@ export const zoneById = (id: Zone['id']): Zone => ZONES.find((z) => z.id === id)
 export const tableByN = (n: number): HallTable => TABLES.find((t) => t.n === n)!;
 export const seatKey = (table: number, seat: number): string => `${table}-${seat}`;
 export const seatPrice = (table: number): number => zoneById(tableByN(table).zone).price;
+
+/**
+ * Две ориентации одной схемы. 'v' — вертикальная (телефон): сцена справа. 'h' — горизонтальная (десктоп): зал повёрнут
+ * на 90° против часовой стрелки, сцена сверху; взаимное расположение столов относительно сцены сохраняется.
+ */
+export type Orient = 'v' | 'h';
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+export interface Layout {
+  orient: Orient;
+  tables: HallTable[];
+  hall: Rect;
+  stage: Rect;
+  dance: Rect;
+  viewBox: { w: number; h: number };
+  /** Точка вертикальной раскладки → координаты этой раскладки. */
+  pt: (x: number, y: number) => [number, number];
+}
+
+export function layoutFor(orient: Orient): Layout {
+  const vw = VIEWBOX.w;
+  const vh = VIEWBOX.h;
+  const v = orient === 'v';
+  const pt = (x: number, y: number): [number, number] => (v ? [x, y] : [y, vw - x]);
+  const rc = (r: Rect): Rect => (v ? r : { x: r.y, y: vw - r.x - r.w, w: r.h, h: r.w });
+  return {
+    orient,
+    tables: TABLES.map((t) => {
+      const [x, y] = pt(t.x, t.y);
+      return { ...t, x, y };
+    }),
+    hall: rc(HALL),
+    stage: rc(STAGE),
+    dance: rc(DANCE),
+    viewBox: v ? { w: vw, h: vh } : { w: vh, h: vw },
+    pt,
+  };
+}

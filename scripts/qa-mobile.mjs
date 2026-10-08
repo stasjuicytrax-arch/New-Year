@@ -19,8 +19,9 @@ const VIEWPORTS = [
   [412, 915],
   [430, 932],
   [768, 1024],
-  [1440, 900, true],
-  [1920, 1080, true],
+  [1920, 950, true],
+  [1440, 800, true],
+  [1366, 650, true],
 ];
 const PRELOAD_KEY = 'gnn-preloaded';
 
@@ -305,7 +306,7 @@ async function run(browser, [width, height, desktop = false]) {
     await page.waitForTimeout(700);
     await el?.screenshot({ path: `${dir}/${id}.png` }).catch(() => undefined);
   }
-  await seatingScenario(page, name, dir, desktop).catch((e) => fail(name, `схема зала, сценарий упал: ${String(e.message).split(String.fromCharCode(10))[0]}`));
+  await seatingScenario(page, name, dir, desktop).catch((e) => fail(name, `схема зала, сценарий упал: ${String(e.message).split(String.fromCharCode(10)).slice(0, 12).join(' | ')}`));
   await ctx.close();
 }
 
@@ -322,6 +323,54 @@ async function seatingScenario(page, name, dir, desktop) {
   await page.waitForTimeout(2200);
   const anchorTop = await page.evaluate(() => document.querySelector('#seats-title').getBoundingClientRect().top);
   if (anchorTop < 64) bad(`после перехода к #seats заголовок под шапкой (top ${Math.round(anchorTop)}px)`);
+
+  // схема целиком в кадре: сцена и все 15 столов видны без прокрутки (десктоп: вместе с заголовком, легендой и над панелью итога;
+  // телефон: карта не выше экрана без шапки и 120px, ставим её под шапку)
+  if (!desktop) {
+    await page.evaluate(() => { const m = document.querySelector('#seats [data-map]'); window.scrollBy(0, m.getBoundingClientRect().top - 72); });
+    await page.waitForTimeout(900);
+  }
+  const fit = await page.evaluate(() => {
+    const vh = window.innerHeight;
+    const vw = window.innerWidth;
+    const svg = document.querySelector('#seats svg.hall');
+    const sr = svg.getBoundingClientRect();
+    const panel = document.querySelector('#seats-panel');
+    const panelShown = panel && getComputedStyle(panel).display !== 'none';
+    const panelTop = panelShown ? panel.getBoundingClientRect().top : vh;
+    const legend = document.querySelector('#seats .seats__legend').getBoundingClientRect();
+    const title = document.querySelector('#seats-title').getBoundingClientRect();
+    const items = [...document.querySelectorAll('#seats .tbl__body'), document.querySelector('#seats .hall__stage')].map((e) => e.getBoundingClientRect());
+    const out = items.filter((r) => r.left < -0.5 || r.right > vw + 0.5 || r.top < 63.5 || r.bottom > panelTop + 0.5).length;
+    return { orient: svg.dataset.orient, w: sr.width, h: sr.height, top: sr.top, bottom: sr.bottom, panelTop, panelShown, legendBottom: legend.bottom, titleTop: title.top, out, count: items.length, vh };
+  });
+  if (fit.count !== 16) bad(`в кадре ${fit.count} объектов вместо 15 столов и сцены`);
+  if (fit.out) bad(`схема не помещается в экран: за пределами кадра ${fit.out} из ${fit.count} (вьюпорт ${fit.vh}px, схема ${Math.round(fit.top)}–${Math.round(fit.bottom)}, панель ${Math.round(fit.panelTop)})`);
+  if (desktop) {
+    if (fit.orient !== 'h' || fit.w <= fit.h) bad(`на десктопе схема должна быть горизонтальной (orient ${fit.orient}, ${Math.round(fit.w)}×${Math.round(fit.h)})`);
+    if (fit.titleTop < 63) bad(`заголовок блока под шапкой (top ${Math.round(fit.titleTop)}px)`);
+    if (!fit.panelShown) bad('на десктопе панель итога не закреплена внизу');
+    if (fit.legendBottom > fit.panelTop + 0.5) bad(`легенда уходит под панель (низ ${Math.round(fit.legendBottom)}, панель ${Math.round(fit.panelTop)})`);
+  } else {
+    if (fit.orient !== 'v') bad(`на телефоне схема должна быть вертикальной (orient ${fit.orient})`);
+    if (fit.h > fit.vh - 64 - 120 + 1) bad(`схема выше 100svh − шапка − 120px: ${Math.round(fit.h)}px при экране ${fit.vh}px`);
+  }
+  await page.screenshot({ path: `${dir}/seats-fit.png` });
+
+  // список столов: на десктопе компактный диалог по ссылке «Список столов», на телефоне список под схемой
+  if (desktop) {
+    await page.locator('[data-openlist]').click();
+    await page.waitForSelector('#tables-dialog[open]', { timeout: 3000 }).catch(() => bad('«Список столов» не открыл диалог'));
+    const rows = await page.locator('#tables-dialog .tlist__row').count();
+    if (rows !== 15) bad(`в диалоге списка ${rows} столов, нужно 15`);
+    if (await page.locator('#seats-list').isVisible()) bad('на десктопе остался большой список из 15 карточек под схемой');
+    await page.screenshot({ path: `${dir}/seats-list-dialog.png` });
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(250);
+  } else {
+    const rows = await page.locator('#seats-list .tlist__row').count();
+    if (rows !== 15 || !(await page.locator('#seats-list').isVisible())) bad('на телефоне нет списка столов под схемой');
+  }
 
   const geo = await page.evaluate(() => {
     const map = document.querySelector('#seats [data-map]').getBoundingClientRect();
@@ -395,10 +444,21 @@ async function seatingScenario(page, name, dir, desktop) {
   await page.locator('[data-kstep="-1"]').click();
   await page.waitForTimeout(200);
   await page.locator('#seats .kids').screenshot({ path: `${dir}/seats-kids.png` });
-  if (!desktop) await page.locator('#seats-panel [data-toggle]').tap();
+  // возвращаемся к заголовку блока: на десктопе форма брони стоит в первой строке своей секции, и панель прячется, когда форма видна
+  await page.evaluate(() => document.querySelector('#seats-title').scrollIntoView({ block: 'start' }));
+  await page.waitForTimeout(1200);
+  const toggle = page.locator('#seats-panel [data-toggle]');
+  const setPanel = async (open) => {
+    if (((await toggle.getAttribute('aria-expanded')) === 'true') !== open) await (desktop ? toggle.click() : toggle.tap());
+    await page.waitForTimeout(250);
+  };
+  await setPanel(true);
   await page.screenshot({ path: `${dir}/seats-selected.png` });
 
-  // зум кнопками
+  // зум кнопками (панель свёрнута, кнопка по центру экрана: её не перекрывают шапка и панель)
+  await setPanel(false);
+  await page.evaluate(() => document.querySelector('[data-zoom="in"]').scrollIntoView({ block: 'center' }));
+  await page.waitForTimeout(1200);
   await page.locator('[data-zoom="in"]').click();
   if (!(await page.evaluate(() => document.querySelector('[data-map]').classList.contains('is-zoomed')))) bad('кнопка + не приблизила схему');
   await page.locator('[data-zoom="reset"]').click();
@@ -417,8 +477,9 @@ async function seatingScenario(page, name, dir, desktop) {
   await page.locator('#booking').screenshot({ path: `${dir}/booking-with-choice.png` });
 
   // ---- 3. только дети (места сняты, билет остаётся) ----
-  await page.locator('#seats-title').scrollIntoViewIfNeeded();
-  await page.waitForTimeout(900);
+  await page.evaluate(() => document.querySelector('#seats-title').scrollIntoView({ block: 'start' }));
+  await page.waitForTimeout(1200);
+  await setPanel(true);
   const seatRows = () => page.locator('#seats-panel .prow[data-key] [data-del]');
   for (let guard = 0; guard < 12 && (await seatRows().count()) > 0; guard++) {
     await seatRows().first().click();
@@ -451,8 +512,8 @@ let browser;
 try {
   await waitForServer();
   browser = await chromium.launch();
-  // по три вьюпорта параллельно: весь прогон укладывается в 5 минут
-  for (let i = 0; i < VPS.length; i += 3) await Promise.all(VPS.slice(i, i + 3).map((vp) => run(browser, vp)));
+  // по четыре вьюпорта параллельно: весь прогон укладывается в 5 минут
+  for (let i = 0; i < VPS.length; i += 4) await Promise.all(VPS.slice(i, i + 4).map((vp) => run(browser, vp)));
 } finally {
   await browser?.close();
   killServer();

@@ -1,7 +1,9 @@
 @layer sections {
   /* Якоря не прячут заголовок под шапкой: высота шапки + 24px */
-  :root { --header-h: 64px; }
-  #seats, #booking, .tlist { scroll-margin-top: calc(var(--header-h) + 24px); }
+  :root { --header-h: 64px; --seats-chrome: 272px; }
+  /* Lenis и браузер складывают scroll-margin элемента и scroll-padding страницы: общий отступ обнуляем, каждой секции даём свой */
+  html { scroll-padding-top: 0; }
+  main > section[id], .ch[id], .tlist { scroll-margin-top: calc(var(--header-h) + 24px); }
 
   /* ---------- Блок «Выберите места» (#seats) ---------- */
   .seats { display: grid; gap: var(--space-6); }
@@ -14,12 +16,11 @@
     .seats__lead--touch { display: block; }
   }
   .seats__skip { display: inline-flex; align-items: center; min-height: 44px; padding-inline: 8px; font-family: var(--font-ui); font-size: 14px; font-weight: 600; color: var(--text-muted); text-underline-offset: 4px; }
-  .seats__grid { display: grid; gap: var(--space-6); align-items: start; }
   .seats__mapcol { display: grid; gap: var(--space-5); min-width: 0; }
-  .seats__side { display: grid; gap: var(--space-6); min-width: 0; }
 
-  /* Схема */
-  .seats__map { position: relative; width: min(100%, 560px); margin-inline: auto; overflow: hidden; border-radius: 24px; border: 1px solid var(--glass-line); background: color-mix(in oklab, var(--night-950) 78%, transparent); box-shadow: 0 24px 60px -28px rgba(0, 0, 0, 0.7); touch-action: pan-x pan-y; }
+  /* Схема: на телефоне вертикальная, высота не больше экрана без шапки и 120px; на десктопе горизонтальная на всю ширину */
+  .seats__map { position: relative; width: min(100%, calc((100svh - var(--header-h) - 120px) * var(--ratio, 0.4))); margin-inline: auto; overflow: hidden; border-radius: 24px; border: 1px solid var(--glass-line); background: color-mix(in oklab, var(--night-950) 78%, transparent); box-shadow: 0 24px 60px -28px rgba(0, 0, 0, 0.7); touch-action: pan-x pan-y; }
+  .hall-host { display: block; }
   .hall { display: block; width: 100%; height: auto; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
 
   /* Зал: тонкая двойная линия, окна, танцпол, сцена, вход */
@@ -32,7 +33,7 @@
   .hall__stage-t { font-family: var(--font-ui); font-size: 24px; font-weight: 600; letter-spacing: 0.24em; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
   .hall__gap { fill: var(--night-900); }
   .hall__arrow { fill: none; stroke: var(--ice-200); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; opacity: 0.85; }
-  .hall__door-t { font-family: var(--font-ui); font-size: 15px; font-weight: 600; letter-spacing: 0.22em; text-anchor: middle; fill: var(--ice-200); opacity: 0.85; }
+  .hall__door-t { font-family: var(--font-ui); font-size: 14px; font-weight: 600; letter-spacing: 0.14em; text-anchor: middle; fill: var(--ice-200); opacity: 0.85; }
 
   /* Стол: стеклянный диск, ободок цвета зоны; зоны 1–2 и 3–5 подсвечены, 6–15 без сияния */
   .tbl { transition: transform 0.5s var(--ease-out); transform-box: fill-box; transform-origin: center; }
@@ -65,7 +66,7 @@
   /* Подсказка над столом (мышь, клавиатурный фокус) */
   .seats__tip { position: absolute; z-index: 3; padding: 8px 12px; border: 1px solid var(--glass-line); border-radius: 12px; background: rgba(4, 14, 42, 0.95); color: var(--text-strong); font-family: var(--font-ui); font-size: 14px; font-weight: 600; line-height: 1.35; white-space: nowrap; pointer-events: none; box-shadow: 0 12px 28px -10px rgba(0, 0, 0, 0.7); }
   .seats__tip[hidden] { display: none; }
-  @media (pointer: coarse) { .seats__tip { display: none; } }
+  @media (pointer: coarse), (max-width: 1023.98px) { .seats__tip { display: none; } }
 
   /* Масштаб */
   .seats__zoom { position: absolute; top: 12px; right: 12px; display: grid; gap: 8px; }
@@ -74,7 +75,8 @@
   .zbtn[hidden] { display: none; }
   .zbtn:focus-visible { box-shadow: var(--focus-ring); }
 
-  /* Легенда: чипы зон в одну строку (на телефоне в две), ниже статусы мест */
+  /* Легенда: чипы зон, статусы мест, на десктопе всё в одну строку */
+  .seats__legend { display: grid; gap: var(--space-5); }
   .seats__zones, .seats__states { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
   .seats__zones { flex-wrap: nowrap; }
   .chip { display: inline-flex; flex: 1 1 0; min-width: 0; align-items: center; justify-content: center; gap: 8px; min-height: 52px; padding: 8px 10px; border: 1px solid color-mix(in oklab, var(--zc) 38%, var(--glass-line)); border-radius: 18px; background: color-mix(in oklab, var(--zc) 9%, rgba(0, 16, 46, 0.5)); font-size: 14px; line-height: 1.25; white-space: nowrap; }
@@ -89,6 +91,8 @@
   .cap--sel { background: var(--ice-200); box-shadow: 0 2px 6px rgba(171, 195, 228, 0.6); }
   .cap--held { border-color: #f4d24e; background: repeating-linear-gradient(45deg, #f4d24e 0 2px, #2b2a18 2px 4px); }
   .cap--booked { border-color: #4f5a78; background: #394360; }
+  .seats__listbtn { display: none; align-items: center; min-height: 36px; padding: 0 4px; border: 0; background: none; color: var(--text-strong); font: inherit; font-size: 14px; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
+  .seats__listbtn:focus-visible { box-shadow: var(--focus-ring); border-radius: 6px; }
 
   /* Детские билеты: отдельный зал, без места за столом */
   .kids { display: grid; gap: var(--space-3); padding: var(--space-4) var(--space-5); border: 1px solid var(--glass-line); border-radius: 18px; background: color-mix(in oklab, var(--night-800) 45%, transparent); }
@@ -113,31 +117,37 @@
   .tlist__zone { color: var(--text-strong); font-weight: 600; }
   .tlist__price { color: var(--text-muted); }
   .tlist__free { font-size: 14px; color: var(--text); text-align: right; }
+  .tlist--dlg { width: 100%; max-height: 62vh; overflow: auto; overscroll-behavior: contain; text-align: left; }
 
-  /* Панель итога */
-  .seats__panel.glass { display: grid; gap: var(--space-4); padding: clamp(18px, 2.4vw, 28px); }
+  /* Панель итога: полоса, закреплённая снизу, пока блок в кадре и форма не видна */
+  .seats__panel.glass { position: fixed; left: 0; right: 0; bottom: 0; z-index: calc(var(--z-header) - 1); display: grid; gap: var(--space-3); padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); border-radius: 18px 18px 0 0; border-bottom: 0; background: #040e2a; box-shadow: 0 -14px 40px rgba(0, 0, 0, 0.5); }
+  .seats__panel:not([data-inview="true"]), .seats__panel[data-formview="true"] { display: none; }
   .panel__bar { display: grid; gap: var(--space-3); }
-  .panel__sum { font-size: 15px; line-height: 1.45; color: var(--text-strong); }
+  .panel__txt { display: grid; gap: 2px; min-width: 0; }
+  .panel__sum { display: -webkit-box; -webkit-line-clamp: 1; line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; font-size: 14px; line-height: 1.45; color: var(--text-strong); }
+  .panel__note { display: none; font-size: 14px; line-height: 1.45; color: var(--text-muted); }
   .panel__row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-4); }
+  .panel__row .btn-wrap { flex: 1 1 150px; }
+  .panel__row .btn { width: 100%; }
   .panel__total { display: grid; gap: 2px; margin-right: auto; font-size: 14px; color: var(--text-muted); }
   .panel__total b { font-family: var(--font-display); font-weight: 400; font-size: clamp(26px, 3vw, 34px); line-height: 1; color: var(--text-strong); font-variant-numeric: lining-nums; white-space: nowrap; }
-  .panel__toggle { display: none; min-height: 44px; padding-inline: 14px; border: 1px solid var(--glass-line); border-radius: 12px; background: transparent; color: var(--text); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .panel__toggle { display: inline-grid; place-items: center; min-height: 44px; padding-inline: 14px; border: 1px solid var(--glass-line); border-radius: 12px; background: transparent; color: var(--text); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
   .panel__empty { font-size: 15px; color: var(--text-muted); }
   .seats__panel[data-empty="false"] .panel__empty { display: none; }
-  .seats__panel[data-empty="true"] .panel__bar, .seats__panel[data-empty="true"] .panel__list, .seats__panel[data-empty="true"] .panel__clear { display: none; }
-  .panel__list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); max-height: 360px; overflow: auto; overscroll-behavior: contain; }
+  .seats__panel[data-empty="true"] .panel__bar, .seats__panel[data-empty="true"] .panel__more { display: none; }
+  .panel__more { display: none; gap: var(--space-2); }
+  .seats__panel.is-open .panel__more { display: grid; }
+  .seats__panel.is-open .panel__note { display: block; }
+  .seats__panel.is-open .panel__sum { -webkit-line-clamp: 3; line-clamp: 3; }
+  .panel__list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); max-height: 38vh; overflow: auto; overscroll-behavior: contain; }
   .prow { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 6px var(--space-3); padding: 10px 0; border-top: 1px solid var(--glass-line); }
   .prow__name { display: grid; gap: 2px; font-size: 14px; color: var(--text-strong); font-weight: 600; }
   .prow__name b { font-weight: 500; color: var(--text-muted); }
-  .seg2 { grid-column: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-  .seg2__b { min-height: 44px; padding: 6px 10px; border: 1px solid var(--glass-line); border-radius: 10px; background: rgba(0, 16, 46, 0.6); color: var(--text); font: inherit; font-size: 14px; line-height: 1.2; cursor: pointer; }
-  .seg2__b[aria-pressed="true"] { border-color: var(--ice-200); background: color-mix(in oklab, var(--electric-500) 38%, transparent); color: var(--text-strong); }
-  .prow__x { grid-column: 2; grid-row: 1 / span 2; display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--glass-line); border-radius: 12px; background: transparent; color: var(--text); font-size: 22px; line-height: 1; cursor: pointer; }
-  .seg2__b:focus-visible, .prow__x:focus-visible, .panel__toggle:focus-visible, .panel__clear:focus-visible { box-shadow: var(--focus-ring); }
-  .panel__note { font-size: 14px; line-height: 1.45; color: var(--text-muted); }
+  .prow__x { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--glass-line); border-radius: 12px; background: transparent; color: var(--text); font-size: 22px; line-height: 1; cursor: pointer; }
+  .prow__x:focus-visible, .panel__toggle:focus-visible, .panel__clear:focus-visible { box-shadow: var(--focus-ring); }
   .panel__clear { justify-self: start; min-height: 44px; padding-inline: 4px; border: 0; background: none; color: var(--text-muted); font: inherit; font-size: 14px; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
 
-  /* Карточка стола (телефон): стулья-капсулы, как на схеме */
+  /* Карточка стола (телефон) и список столов (десктоп): стулья-капсулы, как на схеме */
   .tcard { width: min(94vw, 420px); padding: clamp(20px, 4vw, 32px); margin: auto; color: var(--text-strong); border: 1px solid var(--glass-line); background: rgba(6, 18, 52, 0.92); }
   .tcard::backdrop { background: rgba(0, 2, 8, 0.66); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
   .tcard[open] { display: block; }
@@ -156,31 +166,45 @@
   .cseat:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
   .tcard__actions { display: grid; gap: var(--space-3); width: 100%; }
   .tcard__actions .btn-wrap, .tcard__actions .btn { width: 100%; }
+  .tdlg .btn-wrap, .tdlg .btn { width: 100%; }
 
-  /* Телефон: панель закреплена снизу, пока схема в кадре, есть выбор и форма не видна */
+  /* Телефон: пустая панель не показывается; запас снизу, чтобы закреплённая панель не закрывала конец блока */
   @media (max-width: 1023.98px) {
-    .seats__panel.glass { position: fixed; left: 0; right: 0; bottom: 0; z-index: calc(var(--z-header) - 1); gap: var(--space-3); padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); border-radius: 18px 18px 0 0; border-bottom: 0; background: #040e2a; box-shadow: 0 -14px 40px rgba(0, 0, 0, 0.5); }
-    .seats__panel[data-empty="true"], .seats__panel:not([data-inview="true"]), .seats__panel[data-formview="true"] { display: none; }
-    .panel__sum { display: -webkit-box; -webkit-line-clamp: 1; line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; font-size: 14px; }
-    .panel__toggle { display: inline-grid; place-items: center; }
-    .panel__list, .panel__note, .panel__clear { display: none; }
-    .seats__panel.is-open .panel__list { display: grid; max-height: 38vh; }
-    .seats__panel.is-open .panel__note { display: block; }
-    .seats__panel.is-open .panel__clear { display: inline-block; }
-    .seats__panel.is-open .panel__sum { -webkit-line-clamp: 3; line-clamp: 3; }
-    .panel__row .btn-wrap { flex: 1 1 150px; }
-    .panel__row .btn { width: 100%; }
-    /* Запас снизу, чтобы закреплённая панель не закрывала конец блока */
+    .seats__panel[data-empty="true"] { display: none; }
     #seats { padding-bottom: calc(var(--pad-dense) + 24px); }
   }
 
-  /* Десктоп */
+  /* Десктоп: схема горизонтальная на всю ширину контейнера (до 1400px), весь экран = заголовок + схема + легенда + панель */
   @media (min-width: 1024px) {
-    .seats__grid { grid-template-columns: minmax(0, 520px) minmax(0, 1fr); gap: var(--space-8); }
-    .seats__map { width: 100%; }
-    .seats__side { position: sticky; top: calc(var(--header-h) + 24px); align-self: start; }
-    .seats__panel.glass { position: static; }
-    .tlist { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    #seats { padding-block: 12px 130px; }
+    .seats { gap: 14px; }
+    .seats__head { gap: 6px; }
+    .seats__head h2 { font-size: clamp(26px, 2.4vw, 38px); }
+    .seats__lead { font-size: 15px; line-height: 1.4; max-width: none; }
+    .seats__skip { display: none; }
+    .seats__mapcol { gap: 12px; }
+    .seats__map { width: min(100%, 1400px, calc((100svh - var(--header-h) - var(--seats-chrome)) * var(--ratio, 2.5))); }
+    .seats__zoom { top: auto; bottom: 12px; }
+    .seats__legend { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 24px; }
+    .seats__zones { flex: 0 0 auto; }
+    .chip { flex: 0 0 auto; min-height: 36px; padding: 6px 14px; border-radius: 999px; }
+    .chip__txt { display: flex; gap: 8px; align-items: baseline; }
+    .seats__listbtn { display: inline-flex; }
+    .kids { justify-self: center; width: min(100%, 900px); }
+    #seats-list { display: none; }
+    .tdlg { width: min(94vw, 760px); }
+    .tlist--dlg { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+    .seats__panel.glass { padding: 12px max(var(--margin), calc((100% - 1400px) / 2)) 14px; gap: 10px; }
+    .panel__bar { grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 24px; }
+    .panel__sum { -webkit-line-clamp: 2; line-clamp: 2; font-size: 15px; }
+    .panel__note { display: block; }
+    .panel__row { flex-wrap: nowrap; }
+    .panel__row .btn-wrap { flex: 0 0 auto; }
+    .panel__list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--space-6); }
+  }
+  @media (min-width: 1024px) and (max-width: 1299.98px) {
+    :root { --seats-chrome: 300px; }
   }
 
   @media (prefers-reduced-motion: reduce) {
