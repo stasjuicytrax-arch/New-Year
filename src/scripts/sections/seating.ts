@@ -5,6 +5,8 @@ import {
   DOOR,
   GEOM,
   HALL,
+  KIDS_MAX,
+  KID_AGE,
   SEATING_STATUS_URL,
   SEATS_PER_TABLE,
   STAGE,
@@ -18,7 +20,6 @@ import {
   tableByN,
   zoneById,
   type HallTable,
-  type SeatKind,
   type SeatStatus,
 } from '../../data/seating';
 
@@ -30,11 +31,12 @@ import {
 export interface Pick {
   table: number;
   seat: number;
-  kind: SeatKind;
 }
 
 const picks = new Map<string, Pick>();
 const status = new Map<string, SeatStatus>();
+/** Детские билеты: возраст каждого ребёнка. Без мест, без привязки к схеме. */
+const kids: number[] = [];
 const listeners = new Set<() => void>();
 
 const fmt = (n: number): string => new Intl.NumberFormat('ru-RU').format(n).replace(/\s/g, ' ');
@@ -53,8 +55,25 @@ const MAX_PICKS = 40;
 export function getPicks(): Pick[] {
   return [...picks.values()].sort((a, b) => a.table - b.table || a.seat - b.seat);
 }
-export const pickPrice = (p: Pick): number => seatPrice(p.table, p.kind);
-export const totalPrice = (): number => getPicks().reduce((s, p) => s + pickPrice(p), 0);
+export const pickPrice = (p: Pick): number => seatPrice(p.table);
+export const seatsTotal = (): number => getPicks().reduce((s, p) => s + pickPrice(p), 0);
+export const getKids = (): number[] => [...kids];
+export const kidsTotal = (): number => kids.length * CHILD_PRICE;
+export const totalPrice = (): number => seatsTotal() + kidsTotal();
+export const hasSelection = (): boolean => picks.size > 0 || kids.length > 0;
+
+const ageWord = (a: number): string => (a >= 5 && a <= 20 ? 'лет' : a % 10 === 1 ? 'год' : a % 10 >= 2 && a % 10 <= 4 ? 'года' : 'лет');
+
+/** «Детские билеты: 2 (6 и 9 лет) — 14 000 ₽» */
+export function kidsText(): string {
+  if (!kids.length) return '';
+  const ages = [...kids].sort((a, b) => a - b);
+  const list = ages.length === 1 ? `${ages[0]} ${ageWord(ages[0])}` : `${ages.slice(0, -1).join(', ')} и ${ages[ages.length - 1]} лет`;
+  return `${t.kidsTitle}: ${kids.length} (${list}) — ${rub(kidsTotal())}`;
+}
+
+/** «Стол 7: места 1, 2 — 30 000 ₽» */
+export const seatsText = (): string => (picks.size ? `${selectionText()} — ${rub(seatsTotal())}` : '');
 
 /** «Стол 7: места 2, 3 · Стол 8: место 1» */
 export function selectionText(): string {
@@ -69,13 +88,12 @@ export function onSelectionChange(fn: () => void): void {
 
 /* ---------- разметка ---------- */
 
-const stateWord = (p: Pick | undefined, st: SeatStatus): string =>
-  p ? (p.kind === 'child' ? 'выбрано, детское место' : 'выбрано') : st === 'held' ? 'удержано' : st === 'booked' ? 'занято' : 'свободно';
+const stateWord = (p: Pick | undefined, st: SeatStatus): string => (p ? 'выбрано' : st === 'held' ? 'удержано' : st === 'booked' ? 'занято' : 'свободно');
 
 const seatLabel = (n: number, s: number): string => {
   const key = seatKey(n, s);
   const p = picks.get(key);
-  const price = p ? pickPrice(p) : seatPrice(n, 'adult');
+  const price = p ? pickPrice(p) : seatPrice(n);
   return `Стол ${n}, место ${s}, ${rub(price)}, ${stateWord(p, statusOf(key))}`;
 };
 
@@ -208,6 +226,19 @@ export function renderSeating(): string {
           </div>
         </div>
         ${legendMarkup()}
+        <section class="kids" aria-labelledby="kids-title">
+          <h3 class="kids__title" id="kids-title">${t.kidsTitle}</h3>
+          <p class="kids__note">${typo(t.kidsNote)}</p>
+          <div class="kids__row">
+            <div class="stepper kids__step" role="group" aria-label="${t.kidsStepper}">
+              <button type="button" class="stepper__btn" data-kstep="-1" aria-label="Меньше: ${t.kidsStepper}">−</button>
+              <output class="stepper__val" data-kcount aria-live="polite">0</output>
+              <button type="button" class="stepper__btn" data-kstep="1" aria-label="Больше: ${t.kidsStepper}">+</button>
+            </div>
+            <p class="kids__price"><b>${rub(CHILD_PRICE)}</b> ${t.kidsPerChild}</p>
+          </div>
+          <ul class="kids__ages" data-ages></ul>
+        </section>
       </div>
       <div class="seats__side">
         <aside class="seats__panel glass" id="seats-panel" aria-label="${t.choiceTitle}" data-empty="true">
@@ -250,7 +281,7 @@ function toggleSeat(n: number, s: number): void {
   const key = seatKey(n, s);
   if (statusOf(key) !== 'free') return;
   if (picks.has(key)) picks.delete(key);
-  else if (picks.size < MAX_PICKS) picks.set(key, { table: n, seat: s, kind: 'adult' });
+  else if (picks.size < MAX_PICKS) picks.set(key, { table: n, seat: s });
   notify();
 }
 
@@ -259,16 +290,33 @@ function toggleTable(n: number): void {
   const all = free.length > 0 && free.every((s) => picks.has(seatKey(n, s)));
   for (const s of free) {
     if (all) picks.delete(seatKey(n, s));
-    else if (!picks.has(seatKey(n, s)) && picks.size < MAX_PICKS) picks.set(seatKey(n, s), { table: n, seat: s, kind: 'adult' });
+    else if (!picks.has(seatKey(n, s)) && picks.size < MAX_PICKS) picks.set(seatKey(n, s), { table: n, seat: s });
   }
   notify();
 }
 
-function setKind(key: string, kind: SeatKind): void {
-  const p = picks.get(key);
-  if (!p) return;
-  p.kind = kind;
+function setKids(n: number): void {
+  n = Math.max(0, Math.min(KIDS_MAX, n));
+  while (kids.length > n) kids.pop();
+  while (kids.length < n) kids.push(kids.length ? kids[kids.length - 1] : KID_AGE.byDefault);
   notify();
+}
+
+/** Счётчик и выпадающие списки возраста: список пересобирается, только когда меняется число детей. */
+function paintKids(): void {
+  root.querySelector<HTMLElement>('[data-kcount]')!.textContent = String(kids.length);
+  root.querySelector<HTMLButtonElement>('[data-kstep="-1"]')!.disabled = kids.length <= 0;
+  root.querySelector<HTMLButtonElement>('[data-kstep="1"]')!.disabled = kids.length >= KIDS_MAX;
+  const ul = root.querySelector<HTMLElement>('[data-ages]')!;
+  if (ul.children.length !== kids.length) {
+    const opts = Array.from({ length: KID_AGE.max - KID_AGE.min + 1 }, (_, i) => KID_AGE.min + i);
+    ul.innerHTML = kids
+      .map(
+        (_, i) => `<li class="kids__age"><label for="kid-age-${i}">Ребёнок ${i + 1}, возраст</label><select id="kid-age-${i}" class="input kids__select" data-age="${i}" aria-label="${t.kidsAge} ${i + 1}">${opts.map((a) => `<option value="${a}">${a} ${ageWord(a)}</option>`).join('')}</select></li>`,
+      )
+      .join('');
+  }
+  ul.querySelectorAll<HTMLSelectElement>('[data-age]').forEach((sel) => { sel.value = String(kids[Number(sel.dataset.age)]); });
 }
 
 function paint(): void {
@@ -312,31 +360,33 @@ function paint(): void {
     if (row) row.textContent = (sel ? `Выбрано ${sel} · ` : '') + (free.length === 0 ? 'Мест нет' : `Свободно ${free.length} из ${SEATS_PER_TABLE}`);
   }
 
+  paintKids();
   paintPanel();
   if (card.open) paintCard();
 }
 
 function paintPanel(): void {
   const list = getPicks();
-  const total = totalPrice();
-  const empty = list.length === 0;
+  const empty = !hasSelection();
   panel.dataset.empty = String(empty);
-  panel.querySelector('[data-sum]')!.textContent = empty ? '' : selectionText();
-  panel.querySelector('[data-total]')!.innerHTML = empty ? '' : `<span>${seatsWord(list.length)}</span><b>${rub(total)}</b>`;
+  panel.querySelector('[data-sum]')!.textContent = [seatsText(), kidsText()].filter(Boolean).join(' · ');
+  const counts = [list.length ? seatsWord(list.length) : '', kids.length ? `${kids.length} ${plural(kids.length, ['детский билет', 'детских билета', 'детских билетов'])}` : ''].filter(Boolean).join(' · ');
+  panel.querySelector('[data-total]')!.innerHTML = empty ? '' : `<span>${t.total} · ${counts}</span><b>${rub(totalPrice())}</b>`;
   const ul = panel.querySelector<HTMLElement>('[data-list]')!;
-  ul.innerHTML = list
-    .map((p) => {
-      const key = seatKey(p.table, p.seat);
-      return `<li class="prow" data-key="${key}">
+  const seatRows = list.map((p) => {
+    const key = seatKey(p.table, p.seat);
+    return `<li class="prow" data-key="${key}">
         <span class="prow__name">Стол ${p.table}, место ${p.seat}<b>${rub(pickPrice(p))}</b></span>
-        <span class="seg2" role="group" aria-label="Тип места: стол ${p.table}, место ${p.seat}">
-          <button type="button" class="seg2__b" data-kind="adult" aria-pressed="${p.kind === 'adult'}">${t.adult}</button>
-          <button type="button" class="seg2__b" data-kind="child" aria-pressed="${p.kind === 'child'}">${t.child}</button>
-        </span>
         <button type="button" class="prow__x" data-del aria-label="${t.remove}: стол ${p.table}, место ${p.seat}"><span aria-hidden="true">×</span></button>
       </li>`;
-    })
-    .join('');
+  });
+  const kidRows = kids.map(
+    (age, i) => `<li class="prow" data-kid="${i}">
+        <span class="prow__name">${t.kidsRow}, ${age} ${ageWord(age)}<b>${rub(CHILD_PRICE)}</b></span>
+        <button type="button" class="prow__x" data-del aria-label="Убрать детский билет: ${age} ${ageWord(age)}"><span aria-hidden="true">×</span></button>
+      </li>`,
+  );
+  ul.innerHTML = [...seatRows, ...kidRows].join('');
   if (empty) {
     panel.classList.remove('is-open');
     panel.querySelector('[data-toggle]')!.setAttribute('aria-expanded', 'false');
@@ -571,15 +621,27 @@ export function initSeating(): void {
   panel.addEventListener('click', (e) => {
     const target = e.target as Element;
     const row = target.closest<HTMLElement>('.prow');
-    const kind = target.closest<HTMLElement>('[data-kind]');
-    if (row && kind) { setKind(row.dataset.key!, kind.dataset.kind as SeatKind); return; }
-    if (row && target.closest('[data-del]')) { picks.delete(row.dataset.key!); notify(); return; }
-    if (target.closest('[data-clear]')) { picks.clear(); notify(); return; }
+    if (row && target.closest('[data-del]')) {
+      if (row.dataset.kid !== undefined) kids.splice(Number(row.dataset.kid), 1);
+      else picks.delete(row.dataset.key!);
+      notify();
+      return;
+    }
+    if (target.closest('[data-clear]')) { picks.clear(); kids.length = 0; notify(); return; }
     const tg = target.closest<HTMLElement>('[data-toggle]');
     if (tg) {
       const open = panel.classList.toggle('is-open');
       tg.setAttribute('aria-expanded', String(open));
     }
+  });
+
+  // Детские билеты: степпер и возраст каждого ребёнка
+  el.querySelectorAll<HTMLButtonElement>('[data-kstep]').forEach((b) => b.addEventListener('click', () => setKids(kids.length + Number(b.dataset.kstep))));
+  el.querySelector('[data-ages]')!.addEventListener('change', (e) => {
+    const sel = (e.target as Element).closest<HTMLSelectElement>('[data-age]');
+    if (!sel) return;
+    kids[Number(sel.dataset.age)] = Number(sel.value);
+    notify();
   });
 
   // На телефоне панель закреплена снизу, пока блок схемы в кадре

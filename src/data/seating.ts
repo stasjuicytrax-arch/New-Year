@@ -5,7 +5,10 @@
 import { prices } from '../content/content';
 
 export const SEATS_PER_TABLE = 8;
+/** Детский билет — входной, без места за столом (отдельный детский зал). */
 export const CHILD_PRICE: number = prices.child;
+export const KIDS_MAX = 10;
+export const KID_AGE = { min: 4, max: 14, byDefault: 6 } as const;
 
 /**
  * Статус мест. Сейчас статический файл (все места свободны). Позже заменить адресом функции Яндекса:
@@ -14,7 +17,6 @@ export const CHILD_PRICE: number = prices.child;
 export const SEATING_STATUS_URL = `${import.meta.env.BASE_URL}seating-status.json`;
 
 export type SeatStatus = 'free' | 'held' | 'booked';
-export type SeatKind = 'adult' | 'child';
 
 export interface Zone {
   id: 1 | 2 | 3;
@@ -109,4 +111,4 @@ export function seatPos(t: HallTable, seat: number): { x: number; y: number; rot
 export const zoneById = (id: Zone['id']): Zone => ZONES.find((z) => z.id === id)!;
 export const tableByN = (n: number): HallTable => TABLES.find((t) => t.n === n)!;
 export const seatKey = (table: number, seat: number): string => `${table}-${seat}`;
-export const seatPrice = (table: number, kind: SeatKind): number => (kind === 'child' ? CHILD_PRICE : zoneById(tableByN(table).zone).price);
+export const seatPrice = (table: number): number => zoneById(tableByN(table).zone).price;

@@ -1,5 +1,5 @@
 import { booking, bookingBlock, event, phones, prices, seating, typo } from '../../content/content';
-import { getPicks, onSelectionChange, pickPrice, selectionText, totalPrice } from './seating';
+import { getKids, getPicks, hasSelection, kidsText, onSelectionChange, pickPrice, seatsText, totalPrice } from './seating';
 
 /**
  * Финальный CTA + форма брони (TZ §5.6): цены двумя билетами, форма со степперами, выбор горячего,
@@ -60,6 +60,7 @@ export function renderBooking(): string {
         <div class="form__choice" data-choice hidden>
           <p class="label label--dot">${seating.choiceTitle}</p>
           <p class="form__choice-sel" data-choice-sel></p>
+          <p class="form__choice-kids" data-choice-kids></p>
           <p class="form__choice-sum" data-choice-sum></p>
           <p class="form__choice-note">${seating.note}</p>
           <a class="form__choice-edit" href="#seats">${seating.choiceEdit}</a>
@@ -197,24 +198,32 @@ export function initBooking(): void {
   const tablePos = form.querySelector<HTMLElement>('[data-tablepos]')!;
   const applyPicks = (): void => {
     const picks = getPicks();
-    const lock = picks.length > 0;
+    const kidsList = getKids();
+    const lock = hasSelection();
     choice.hidden = !lock;
-    tablePos.hidden = lock;
+    tablePos.hidden = picks.length > 0;
     const adultsStep = steps.get('adults')!;
     const kidsStep = steps.get('kids4')!;
     adultsStep.dataset.min = lock ? '0' : '1';
     adultsStep.dataset.max = lock ? '40' : '20';
     kidsStep.dataset.max = lock ? '40' : '10';
     if (lock) {
-      const kids = picks.filter((p) => p.kind === 'child').length;
-      set('adults', picks.length - kids);
-      set('kids4', kids);
+      // Взрослые = выбранные места; дети от 4 лет = детские билеты (без мест)
+      set('adults', picks.length);
+      set('kids4', kidsList.length);
       hot('adults');
-      const zone = Math.min(...picks.map((p) => (p.table <= 2 ? 1 : p.table <= 5 ? 2 : 3)));
-      const want = zone === 3 ? bookingBlock.tablePositions[1] : bookingBlock.tablePositions[0];
-      form.querySelectorAll<HTMLInputElement>('input[name="table"]').forEach((r) => { r.checked = r.value === want; });
-      choice.querySelector('[data-choice-sel]')!.textContent = selectionText();
-      choice.querySelector('[data-choice-sum]')!.textContent = `${picks.length} ${picks.length === 1 ? 'место' : picks.length < 5 ? 'места' : 'мест'}: взрослых ${picks.length - kids}, детей от 4 лет ${kids} · ${fmt(totalPrice())} ${prices.currency}`;
+      if (picks.length) {
+        const zone = Math.min(...picks.map((p) => (p.table <= 2 ? 1 : p.table <= 5 ? 2 : 3)));
+        const want = zone === 3 ? bookingBlock.tablePositions[1] : bookingBlock.tablePositions[0];
+        form.querySelectorAll<HTMLInputElement>('input[name="table"]').forEach((r) => { r.checked = r.value === want; });
+      }
+      const selEl = choice.querySelector<HTMLElement>('[data-choice-sel]')!;
+      selEl.textContent = seatsText();
+      selEl.hidden = picks.length === 0;
+      const kidsEl = choice.querySelector<HTMLElement>('[data-choice-kids]')!;
+      kidsEl.textContent = kidsText();
+      kidsEl.hidden = kidsList.length === 0;
+      choice.querySelector('[data-choice-sum]')!.textContent = `${seating.total} ${fmt(totalPrice())} ${prices.currency}`;
     } else {
       set('adults', Math.max(1, Math.min(20, get('adults'))));
       set('kids4', Math.min(10, get('kids4')));
@@ -274,7 +283,8 @@ export function initBooking(): void {
       table: String(fd.get('table')),
       hot: { veal: get('veal'), zander: get('zander') },
       comment: String(fd.get('comment') ?? '').trim(),
-      seats: getPicks().map((p) => ({ table: p.table, seat: p.seat, kind: p.kind, price: pickPrice(p) })),
+      seats: getPicks().map((p) => ({ table: p.table, seat: p.seat, price: pickPrice(p) })),
+      kids: getKids().map((age) => ({ age, price: prices.child })),
       total: totalPrice(),
       event: event.name,
     };

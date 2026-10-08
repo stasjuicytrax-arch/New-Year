@@ -37,12 +37,16 @@ function validate(body) {
   if (digits.length !== 11) return { error: 'Укажите телефон целиком' };
 
   const hot = body.hot && typeof body.hot === 'object' ? body.hot : {};
-  // Места со схемы зала: [{ table, seat, kind: 'adult' | 'child', price }]
+  // Места со схемы зала: [{ table, seat, price }]. Дети сидят в отдельном зале: детские билеты без мест, [{ age, price }].
   const seats = (Array.isArray(body.seats) ? body.seats : [])
     .slice(0, 40)
-    .map((x) => ({ table: int(x && x.table, 15), seat: int(x && x.seat, 8), kind: x && x.kind === 'child' ? 'child' : 'adult', price: int(x && x.price, 100000) }))
+    .map((x) => ({ table: int(x && x.table, 15), seat: int(x && x.seat, 8), price: int(x && x.price, 100000) }))
     .filter((x) => x.table >= 1 && x.seat >= 1);
-  const total = seats.length ? seats.reduce((a, x) => a + x.price, 0) : 0;
+  const kids = (Array.isArray(body.kids) ? body.kids : [])
+    .slice(0, 10)
+    .map((x) => ({ age: int(x && x.age, 18), price: int(x && x.price, 100000) }))
+    .filter((x) => x.age >= 1);
+  const total = seats.reduce((a, x) => a + x.price, 0) + kids.reduce((a, x) => a + x.price, 0);
   return {
     lead: {
       name,
@@ -55,6 +59,7 @@ function validate(body) {
       zander: int(hot.zander, 99),
       comment: clean(body.comment, 400),
       seats,
+      kids,
       total,
       event: clean(body.event, 120) || 'Главная новогодняя ночь 2027',
     },
@@ -71,12 +76,19 @@ function leadLines(l) {
     ['Расположение стола', l.table],
     ['Горячее', `телятина ${l.veal}, судак ${l.zander}`],
   ];
+  const rub = (n) => `${new Intl.NumberFormat('ru-RU').format(n).replace(/\s/g, ' ')} ₽`;
   if (l.seats && l.seats.length) {
     const byTable = new Map();
-    for (const x of l.seats) byTable.set(x.table, [...(byTable.get(x.table) || []), `${x.seat}${x.kind === 'child' ? ' (дет.)' : ''}`]);
-    rows.push(['Выбор на схеме', [...byTable].map(([t, a]) => `стол ${t}: ${a.join(', ')}`).join(' · ')]);
-    rows.push(['Сумма', `${new Intl.NumberFormat('ru-RU').format(l.total).replace(/s/g, ' ')} ₽`]);
+    for (const x of l.seats) byTable.set(x.table, [...(byTable.get(x.table) || []), x.seat]);
+    rows.push(['Места на схеме', [...byTable].map(([t, a]) => `стол ${t}: ${a.join(', ')}`).join(' · ') + ` — ${rub(l.seats.reduce((a, x) => a + x.price, 0))}`]);
   }
+  if (l.kids && l.kids.length) {
+    const ages = l.kids.map((k) => k.age).sort((a, b) => a - b);
+    const word = (a) => (a >= 5 && a <= 20 ? 'лет' : a % 10 === 1 ? 'год' : a % 10 >= 2 && a % 10 <= 4 ? 'года' : 'лет');
+    const list = ages.length === 1 ? `${ages[0]} ${word(ages[0])}` : `${ages.slice(0, -1).join(', ')} и ${ages[ages.length - 1]} лет`;
+    rows.push(['Дети', `${l.kids.length} (${list}) — ${rub(l.kids.reduce((a, k) => a + k.price, 0))}`]);
+  }
+  if ((l.seats && l.seats.length) || (l.kids && l.kids.length)) rows.push(['Итого', rub(l.total)]);
   if (l.comment) rows.push(['Комментарий', l.comment]);
   return rows;
 }

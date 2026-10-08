@@ -90,6 +90,19 @@
   .cap--held { border-color: #f4d24e; background: repeating-linear-gradient(45deg, #f4d24e 0 2px, #2b2a18 2px 4px); }
   .cap--booked { border-color: #4f5a78; background: #394360; }
 
+  /* Детские билеты: отдельный зал, без места за столом */
+  .kids { display: grid; gap: var(--space-3); padding: var(--space-4) var(--space-5); border: 1px solid var(--glass-line); border-radius: 18px; background: color-mix(in oklab, var(--night-800) 45%, transparent); }
+  .kids__title { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: clamp(22px, 2.4vw, 28px); line-height: 1.1; text-transform: uppercase; color: var(--text-strong); }
+  .kids__note { max-width: 60ch; font-size: 14px; line-height: 1.5; color: var(--text); }
+  .kids__row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-5); }
+  .kids__step { width: 168px; }
+  .kids__price { font-size: 14px; color: var(--text-muted); }
+  .kids__price b { font-family: var(--font-display); font-weight: 400; font-size: 22px; color: var(--text-strong); font-variant-numeric: lining-nums; }
+  .kids__ages { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: var(--space-2) var(--space-3); }
+  .kids__ages:empty { display: none; }
+  .kids__age { display: grid; gap: 4px; font-size: 14px; color: var(--text-muted); }
+  .kids__select { min-height: 44px; padding: 8px 12px; border-radius: 12px; font: inherit; font-size: 15px; color: var(--text-strong); }
+
   /* Список столов */
   .tlist { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
   .tlist__row { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); width: 100%; min-height: 56px; padding: 6px 14px 6px 8px; border: 1px solid var(--glass-line); border-radius: 14px; background: rgba(0, 16, 46, 0.5); color: var(--text); font: inherit; text-align: left; cursor: pointer; }
@@ -179,7 +192,9 @@
   .form__choice { display: grid; gap: var(--space-2); padding: var(--space-4); border: 1px solid color-mix(in oklab, var(--ice-200) 45%, transparent); border-radius: 16px; background: color-mix(in oklab, var(--electric-500) 14%, transparent); }
   .form__choice[hidden] { display: none; }
   .form__choice-sel { font-size: 16px; font-weight: 600; line-height: 1.4; color: var(--text-strong); }
-  .form__choice-sum { font-size: 15px; color: var(--text); }
+  .form__choice-kids { font-size: 16px; font-weight: 600; line-height: 1.4; color: var(--text-strong); }
+  .form__choice-kids[hidden], .form__choice-sel[hidden] { display: none; }
+  .form__choice-sum { font-size: 15px; font-weight: 600; color: var(--text); }
   .form__choice-note { font-size: 14px; color: var(--text-muted); }
   .form__choice-edit { display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; font-weight: 600; color: var(--text-strong); text-underline-offset: 4px; }
   .field--step.is-locked { opacity: 0.6; }

@@ -309,10 +309,12 @@ async function run(browser, [width, height, desktop = false]) {
   await ctx.close();
 }
 
-/** Сценарий схемы зала: выбор мест, итог, перенос в форму. */
+/** Сценарии схемы зала: только места; места + дети; только дети (детские билеты без мест). */
 async function seatingScenario(page, name, dir, desktop) {
   page.setDefaultTimeout(8000);
   const bad = (m) => fail(name, `схема зала: ${m}`);
+  const digits = (str) => String(str).replace(/\D/g, '');
+
   // якорь: после перехода по «Забронировать» заголовок блока не под шапкой
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.waitForTimeout(300);
@@ -320,9 +322,7 @@ async function seatingScenario(page, name, dir, desktop) {
   await page.waitForTimeout(2200);
   const anchorTop = await page.evaluate(() => document.querySelector('#seats-title').getBoundingClientRect().top);
   if (anchorTop < 64) bad(`после перехода к #seats заголовок под шапкой (top ${Math.round(anchorTop)}px)`);
-  await page.evaluate(() => window.scrollTo(0, 0));
-  await page.locator('#seats').scrollIntoViewIfNeeded();
-  await page.waitForTimeout(500);
+
   const geo = await page.evaluate(() => {
     const map = document.querySelector('#seats [data-map]').getBoundingClientRect();
     const hit = document.querySelector('.tbl__hit[data-hit="7"]').getBoundingClientRect();
@@ -332,16 +332,26 @@ async function seatingScenario(page, name, dir, desktop) {
   if (geo.mapW > geo.vw + 1) bad('схема шире экрана');
   if (!desktop && (geo.hitW < 44 || geo.hitH < 44)) bad(`зона стола ${Math.round(geo.hitW)}×${Math.round(geo.hitH)} < 44px`);
 
-  const total = () => page.locator('#seats-panel [data-total] b').innerText().catch(() => '');
-  const center = async (sel) => {
-    await page.evaluate((q) => document.querySelector(q).scrollIntoView({ block: 'center' }), sel);
-    await page.waitForTimeout(250);
-    const b = await page.locator(sel).first().boundingBox(); return { x: b.x + b.width / 2, y: b.y + b.height / 2 }; };
+  const panelText = (sel) => page.locator(`#seats-panel ${sel}`).innerText().catch(() => '');
+  const formState = () => page.evaluate(() => ({
+    choice: !document.querySelector('[data-choice]').hidden,
+    sel: document.querySelector('[data-choice-sel]').textContent,
+    kidsLine: document.querySelector('[data-choice-kids]').textContent,
+    sum: document.querySelector('[data-choice-sum]').textContent,
+    adults: document.querySelector('input[name="adults"]').value,
+    kids: document.querySelector('input[name="kids4"]').value,
+    locked: document.querySelector('[data-step="adults"]').classList.contains('is-locked'),
+    tableHidden: document.querySelector('[data-tablepos]').hidden,
+  }));
+
+  // ---- 1. только места ----
   const hit7 = page.locator('.tbl__hit[data-hit="7"]');
   await hit7.scrollIntoViewIfNeeded();
   await page.waitForTimeout(900); // плавный скролл страницы должен успокоиться
+  let seatCount;
   if (desktop) {
     await hit7.click();
+    seatCount = 8;
   } else {
     await hit7.tap();
     await page.waitForSelector('#table-card[open]', { timeout: 3000 }).catch(() => bad('тап по столу не открыл карточку'));
@@ -352,24 +362,40 @@ async function seatingScenario(page, name, dir, desktop) {
     await page.screenshot({ path: `${dir}/seats-card.png` });
     await page.locator('#table-card [data-cardclose]').tap();
     await page.waitForTimeout(300);
+    seatCount = 2;
   }
   await page.waitForTimeout(400);
-  const sum = await page.locator('#seats-panel [data-sum]').innerText().catch(() => '');
-  const expect = desktop ? 'Стол 7: места 1, 2, 3, 4, 5, 6, 7, 8' : 'Стол 7: места 2, 3';
-  if (sum.trim() !== expect) bad(`итог «${sum.trim()}», ожидалось «${expect}»`);
-  const t1 = await total();
-  if (!t1.includes(desktop ? '120' : '30')) bad(`сумма «${t1}»`);
+  const sum1 = (await panelText('[data-sum]')).trim();
+  const expectSeats = desktop ? 'Стол 7: места 1, 2, 3, 4, 5, 6, 7, 8 — 120 000' : 'Стол 7: места 2, 3 — 30 000';
+  if (digits(sum1) !== digits(expectSeats) || !sum1.startsWith(expectSeats.split(' — ')[0])) bad(`только места: итог «${sum1}», ожидалось «${expectSeats} ₽»`);
+  if (sum1.includes('Детские')) bad('только места: в итоге появились детские билеты');
+  const seatsMoney = seatCount * 15000;
+  if (digits(await panelText('[data-total] b')) !== String(seatsMoney)) bad(`только места: сумма «${await panelText('[data-total] b')}», ожидалось ${seatsMoney}`);
   const panelBox = await page.locator('#seats-panel').boundingBox();
   if (!panelBox) bad('панель итога не видна');
   else if (!desktop) {
     const vh = page.viewportSize().height;
     if (panelBox.y + panelBox.height < vh - 2 || panelBox.y < vh * 0.4) bad('панель итога не закреплена снизу');
   }
+  if (await page.locator('#seats-panel [data-kind]').count()) bad('остался переключатель «Взрослый / Ребёнок» у мест');
+
+  // ---- 2. места + дети ----
+  const kidsStep = page.locator('[data-kstep="1"]');
+  await kidsStep.scrollIntoViewIfNeeded();
+  await kidsStep.click();
+  await page.locator('#kid-age-0').selectOption('6');
+  await page.waitForTimeout(300);
+  const sum2 = (await panelText('[data-sum]')).trim();
+  if (!sum2.includes('Детские билеты: 1 (6 лет) — 7 000')) bad(`места + дети: итог «${sum2}»`);
+  if (digits(await panelText('[data-total] b')) !== String(seatsMoney + 7000)) bad(`места + дети: сумма «${await panelText('[data-total] b')}», ожидалось ${seatsMoney + 7000}`);
+  await page.locator('[data-kstep="1"]').click();
+  await page.locator('#kid-age-1').selectOption('9');
+  const sum2b = (await panelText('[data-sum]')).trim();
+  if (!sum2b.includes('Детские билеты: 2 (6 и 9 лет) — 14 000')) bad(`два ребёнка: итог «${sum2b}»`);
+  await page.locator('[data-kstep="-1"]').click();
+  await page.waitForTimeout(200);
+  await page.locator('#seats .kids').screenshot({ path: `${dir}/seats-kids.png` });
   if (!desktop) await page.locator('#seats-panel [data-toggle]').tap();
-  else await page.waitForTimeout(100);
-  await page.locator('#seats-panel .prow').first().locator('[data-kind="child"]').click();
-  const t2 = await total();
-  if (t1 === t2) bad('переключатель «Ребёнок» не меняет сумму');
   await page.screenshot({ path: `${dir}/seats-selected.png` });
 
   // зум кнопками
@@ -380,21 +406,36 @@ async function seatingScenario(page, name, dir, desktop) {
   // перенос в форму
   await page.locator('#seats-panel .btn').click();
   await page.waitForTimeout(1200);
-  const form = await page.evaluate(() => ({
-    choice: !document.querySelector('[data-choice]').hidden,
-    sel: document.querySelector('[data-choice-sel]').textContent,
-    adults: document.querySelector('input[name="adults"]').value,
-    kids: document.querySelector('input[name="kids4"]').value,
-    locked: document.querySelector('[data-step="adults"]').classList.contains('is-locked'),
-    tableHidden: document.querySelector('[data-tablepos]').hidden,
-    estimate: !!document.querySelector('[data-estimate]'),
-  }));
-  if (!form.choice || !form.sel.includes('Стол 7')) bad('блок «Ваш выбор» в форме не заполнился');
-  if (!form.locked || !form.tableHidden) bad('поля «Взрослые/Расположение стола» не подставлены автоматически');
-  if (!desktop && (form.adults !== '1' || form.kids !== '1')) bad(`в форму ушло взрослых ${form.adults}, детей ${form.kids}, ожидалось 1 и 1`);
+  const f2 = await formState();
+  if (!f2.choice || !f2.sel.includes('Стол 7')) bad('блок «Ваш выбор» не показал места');
+  if (!f2.kidsLine.includes('Детские билеты: 1 (6 лет)')) bad(`блок «Ваш выбор» не показал детей: «${f2.kidsLine}»`);
+  if (digits(f2.sum) !== String(seatsMoney + 7000)) bad(`в «Ваш выбор» итог «${f2.sum}»`);
+  if (!f2.locked || !f2.tableHidden) bad('поля «Взрослые/Расположение стола» не подставлены автоматически');
+  if (f2.adults !== String(seatCount) || f2.kids !== '1') bad(`в форму ушло взрослых ${f2.adults}, детей ${f2.kids}, ожидалось ${seatCount} и 1`);
   await page.locator('#booking-form').scrollIntoViewIfNeeded();
   await page.waitForTimeout(300);
   await page.locator('#booking').screenshot({ path: `${dir}/booking-with-choice.png` });
+
+  // ---- 3. только дети (места сняты, билет остаётся) ----
+  await page.locator('#seats-title').scrollIntoViewIfNeeded();
+  await page.waitForTimeout(900);
+  const seatRows = () => page.locator('#seats-panel .prow[data-key] [data-del]');
+  for (let guard = 0; guard < 12 && (await seatRows().count()) > 0; guard++) {
+    await seatRows().first().click();
+    await page.waitForTimeout(80);
+  }
+  await page.waitForTimeout(300);
+  const emptyState = await page.evaluate(() => document.querySelector('#seats-panel').dataset.empty);
+  if (emptyState !== 'false') bad('только дети: панель считает выбор пустым');
+  if (digits(await panelText('[data-total] b')) !== '7000') bad(`только дети: сумма «${await panelText('[data-total] b')}», ожидалось 7 000`);
+  const goBtn = page.locator('#seats-panel .btn');
+  if (!(await goBtn.isVisible())) bad('только дети: кнопка «Забронировать» не видна');
+  await goBtn.click();
+  await page.waitForTimeout(1200);
+  const f3 = await formState();
+  if (!f3.choice || f3.sel !== '' && f3.sel !== null && f3.sel.trim() !== '') bad(`только дети: в «Ваш выбор» остались места «${f3.sel}»`);
+  if (f3.adults !== '0' || f3.kids !== '1') bad(`только дети: взрослых ${f3.adults}, детей ${f3.kids}, ожидалось 0 и 1`);
+  if (digits(f3.sum) !== '7000') bad(`только дети: итог «${f3.sum}»`);
   const hs = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
   if (hs) bad('после выбора появился горизонтальный скролл');
 }
