@@ -22,7 +22,7 @@
   /* Схема: на телефоне вертикальная, высота не больше экрана без шапки и 120px; на десктопе горизонтальная на всю ширину */
   .seats__map { position: relative; width: min(100%, calc((100svh - var(--header-h) - 120px) * var(--ratio, 0.4))); margin-inline: auto; overflow: hidden; border-radius: 24px; border: 1px solid var(--glass-line); background: color-mix(in oklab, var(--night-950) 78%, transparent); box-shadow: 0 24px 60px -28px rgba(0, 0, 0, 0.7); touch-action: pan-x pan-y; }
   .hall-host { display: block; }
-  .hall { display: block; width: 100%; height: auto; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+  .hallmap { display: block; width: 100%; height: auto; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
 
   /* Зал: тонкая двойная линия, окна, танцпол, сцена, вход */
   .hall__wall { fill: none; stroke: rgba(171, 195, 228, 0.55); stroke-width: 1.7; }

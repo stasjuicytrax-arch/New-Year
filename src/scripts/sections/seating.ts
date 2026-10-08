@@ -177,7 +177,7 @@ function svgMarkup(L: Layout): string {
   const rimGrad = H ? 'x1="0" y1="0" x2="0" y2="1"' : 'x1="1" y1="0" x2="0" y2="0"';
   const coneGrad = H ? 'x1="0" y1="0" x2="0" y2="1"' : 'x1="1" y1="0" x2="0" y2="0"';
   const d = L.dance;
-  return `<svg class="hall" viewBox="0 0 ${w} ${h}" role="group" aria-label="${t.mapAria}" data-svg data-orient="${L.orient}">
+  return `<svg class="hallmap" viewBox="0 0 ${w} ${h}" role="group" aria-label="${t.mapAria}" data-svg data-orient="${L.orient}">
     <defs>
       <pattern id="seat-hatch" width="4.5" height="4.5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
         <rect width="4.5" height="4.5" fill="#2b2a18"/>
@@ -242,7 +242,7 @@ export function renderSeating(): string {
   const ratio = (layout.viewBox.w / layout.viewBox.h).toFixed(4);
   return `
   <div class="container seats">
-    <header class="seats__head">
+    <header class="seats__head sec-head">
       <h2 id="seats-title" class="chrome" data-split>${t.title}</h2>
       <p class="seats__lead seats__lead--fine">${typo(t.lead)}</p>
       <p class="seats__lead seats__lead--touch">${typo(t.leadTouch)}</p>

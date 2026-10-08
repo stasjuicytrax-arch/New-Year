@@ -12,9 +12,10 @@ import '../styles/sections/layout.css';
 import '../styles/sections/hero.css';
 import '../styles/sections/chapters.css';
 import '../styles/sections/page.css';
+import '../styles/sections/polish.css';
 import '../styles/sections/hall.css';
 import '../styles/sections/seating.css';
-import '../styles/sections/polish.css';
+import '../styles/sections/section-head.css';
 
 import { initHeader } from './header';
 import { initScroll, lockScroll, scrollToTarget, ScrollTrigger } from './scroll';

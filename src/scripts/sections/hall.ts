@@ -40,7 +40,7 @@ export function renderHall(): string {
   ).join('');
   return `
   <div class="container hall">
-    <header class="hall__head">
+    <header class="hall__head sec-head">
       <h2 id="hall-title" class="chrome" data-split>${t.title}</h2>
       <p class="hall__cap">${footer.venueLine}</p>
     </header>

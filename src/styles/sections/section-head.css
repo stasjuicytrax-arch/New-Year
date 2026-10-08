@@ -1,0 +1,46 @@
+@layer sections {
+  /* ---------- Шапка секции: один компонент для всех секций ----------
+     метка + заголовок + подпись → контент. Отступ до контента --sec-gap (40px десктоп, 32px мобиле),
+     между заголовком и подписью --cap-gap (14px). Файл подключается последним: правила здесь главные. */
+  :root { --sec-gap: 32px; --cap-gap: 14px; }
+  @media (min-width: 1024px) { :root { --sec-gap: 40px; } }
+
+  .sec-head { display: grid; justify-items: center; row-gap: var(--cap-gap); margin: 0; padding: 0; text-align: center; }
+  .sec-head > * { margin: 0; }
+
+  /* Что вас ждёт: шапка → первая глава */
+  .program__head { padding-bottom: 0; }
+  .program__head + .chapter { padding-top: var(--sec-gap); }
+
+  /* Зал WHITE HALL */
+  .hall { gap: var(--sec-gap); }
+  .hall__dots { margin-top: calc(20px - var(--sec-gap)); }
+
+  /* Выберите места */
+  .seats { gap: var(--sec-gap); }
+
+  /* Почему стоит выбрать */
+  .why__main { gap: var(--sec-gap); }
+  .why__main h2 { margin-bottom: -0.12em; }
+
+  /* Манифест: заголовок → текст */
+  .manifest__in { gap: var(--sec-gap); }
+
+  /* Финальный блок брони: заголовок → подпись 14px, дальше обычный ритм колонки */
+  .booking__lead > h2 + .booking__text { margin-top: calc(var(--cap-gap) - var(--space-5)); }
+
+  /* Футер: надпись → слоган 14px, слоган → колонки и линия по правилу секции */
+  .footer__scene { gap: var(--cap-gap); }
+  .footer__cols { margin-top: calc(var(--sec-gap) - var(--cap-gap)); }
+  .footer__rule { margin-top: calc(var(--sec-gap) - var(--cap-gap)); }
+  .footer__legal { margin-top: calc(var(--space-5) - var(--cap-gap)); }
+
+  /* Десктоп: схема и галерея помещаются в экран вместе с увеличенной шапкой */
+  @media (min-width: 1024px) {
+    :root { --seats-chrome: 306px; }
+    .hall__grid { height: clamp(320px, calc(100svh - 258px), 680px); }
+  }
+  @media (min-width: 1024px) and (max-width: 1299.98px) {
+    :root { --seats-chrome: 336px; }
+  }
+}

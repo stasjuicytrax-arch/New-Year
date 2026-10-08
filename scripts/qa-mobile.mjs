@@ -111,7 +111,7 @@ async function inPage(desktop) {
   for (const el of desktop ? [] : document.querySelectorAll('a[href], button, input, select, textarea, summary, [role=button]')) {
     if (!visible(el) || el.closest('.skip-link')) continue;
     // Стулья на схеме мельче 44px по определению; запасные способы выбора (карточка стола, список) проверяются в сценарии выбора мест
-    if (el.closest('svg.hall') && !el.matches('.tbl__hit')) continue;
+    if (el.closest('svg.hallmap') && !el.matches('.tbl__hit')) continue;
     if (el.matches('a') && el.closest('p, li, .check') && !el.classList.contains('btn')) continue; // инлайн-ссылка в тексте
     const b = rect(el);
     if (b.width < 43.5 || b.height < 43.5) out.push(`тач-цель ${Math.round(b.width)}×${Math.round(b.height)} < 44: ${label(el)} «${(el.textContent || '').trim().slice(0, 24)}»`);
@@ -306,10 +306,46 @@ async function run(browser, [width, height, desktop = false]) {
     await page.waitForTimeout(700);
     await el?.screenshot({ path: `${dir}/${id}.png` }).catch(() => undefined);
   }
+  await headSpacingScenario(page, name, desktop).catch((e) => fail(name, `отступы шапок, сценарий упал: ${String(e.message).split(String.fromCharCode(10))[0]}`));
   await hallScenario(page, name, dir, desktop).catch((e) => fail(name, `галерея зала, сценарий упал: ${String(e.message).split(String.fromCharCode(10)).slice(0, 4).join(' | ')}`));
   await view3dScenario(page, name, dir, desktop).catch((e) => fail(name, `3D-вид, сценарий упал: ${String(e.message).split(String.fromCharCode(10)).slice(0, 4).join(' | ')}`));
   await seatingScenario(page, name, dir, desktop).catch((e) => fail(name, `схема зала, сценарий упал: ${String(e.message).split(String.fromCharCode(10)).slice(0, 12).join(' | ')}`));
   await ctx.close();
+}
+
+/** Единый компонент шапки секции: шапка → контент 40px (десктоп) / 32px (мобила), заголовок → подпись 14px. */
+async function headSpacingScenario(page, name, desktop) {
+  const gapWant = desktop ? 40 : 32;
+  const checks = [
+    // [секция, метка, нижний элемент шапки, верхний элемент контента, нужный отступ]
+    ['#program', 'Что вас ждёт: шапка → глава 01', '#program .program__lead', '#ch-01 .ch__no', gapWant],
+    ['#program', 'Что вас ждёт: заголовок → подпись', '#program h2', '#program .program__lead', 14],
+    ['#hall', 'Зал: подпись → фото', '#hall .hall__cap', '#hall .hall__rail', gapWant],
+    ['#hall', 'Зал: заголовок → подпись', '#hall-title', '#hall .hall__cap', 14],
+    ['#seats', 'Выберите места: шапка → схема', '#seats .seats__head', '#seats .seats__mapcol', gapWant],
+    ['#seats', 'Выберите места: заголовок → подпись', '#seats-title', '#seats .seats__lead:not([style*="none"])', 14],
+    ['#why', 'Почему: заголовок → список', '#why-title', '#why .why__list', gapWant],
+    ['#manifest', 'Манифест: заголовок → текст', '#manifest-title', '#manifest .manifest__text', gapWant],
+    ['#booking', 'Бронь: заголовок → подпись', '#booking-title', '#booking .booking__text', 14],
+    ['#site-footer', 'Футер: надпись → слоган', '#site-footer .footer__farewell', '#site-footer .footer__slogan', 14],
+    ['#site-footer', 'Футер: слоган → колонки', '#site-footer .footer__slogan', '#site-footer .footer__cols', gapWant],
+  ];
+  for (const [section, label, a, b, want] of checks) {
+    await page.evaluate((q) => document.querySelector(q).scrollIntoView({ block: 'start' }), section);
+    await page.waitForTimeout(1500);
+    const r = await page.evaluate(([qa, qb]) => {
+      const visible = (q) => [...document.querySelectorAll(q)].find((e) => e.getBoundingClientRect().height > 0);
+      const ea = visible(qa);
+      const eb = visible(qb);
+      if (!ea || !eb) return null;
+      const cs = (e) => getComputedStyle(e);
+      return eb.getBoundingClientRect().top + parseFloat(cs(eb).paddingTop) - (ea.getBoundingClientRect().bottom - parseFloat(cs(ea).paddingBottom));
+    }, [a, b]);
+    if (r === null) { fail(name, `отступы шапок: нет элементов для «${label}»`); continue; }
+    // заголовок → подпись допускается 12–16px, шапка → контент ±3px
+    const okGap = want === 14 ? r >= 11.5 && r <= 16.5 : Math.abs(r - want) <= 3;
+    if (!okGap) fail(name, `отступы шапок: «${label}» ${r.toFixed(1)}px, нужно ${want}px`);
+  }
 }
 
 /** Галерея «Зал WHITE HALL»: заголовок и подпись, бенто на десктопе / лента на телефоне, лайтбокс. */
@@ -516,7 +552,7 @@ async function seatingScenario(page, name, dir, desktop) {
   const fit = await page.evaluate(() => {
     const vh = window.innerHeight;
     const vw = window.innerWidth;
-    const svg = document.querySelector('#seats svg.hall');
+    const svg = document.querySelector('#seats svg.hallmap');
     const sr = svg.getBoundingClientRect();
     const panel = document.querySelector('#seats-panel');
     const panelShown = panel && getComputedStyle(panel).display !== 'none';
@@ -563,7 +599,7 @@ async function seatingScenario(page, name, dir, desktop) {
   const door = await page.evaluate(() => {
     const g = document.querySelector('#seats .hall__door .hall__gap').getBoundingClientRect();
     const t = document.querySelector('#seats .tbl[data-table="11"] .tbl__body').getBoundingClientRect();
-    const h = document.querySelector('#seats svg.hall').dataset.orient === 'h';
+    const h = document.querySelector('#seats svg.hallmap').dataset.orient === 'h';
     return { h, dGap: h ? Math.abs((g.left + g.right) / 2 - (t.left + t.right) / 2) : Math.abs((g.top + g.bottom) / 2 - (t.top + t.bottom) / 2), side: h ? g.bottom < t.top : g.left > t.right };
   });
   if (door.dGap > 2) bad(`вход не на уровне стола 11 (смещение ${door.dGap.toFixed(1)}px)`);

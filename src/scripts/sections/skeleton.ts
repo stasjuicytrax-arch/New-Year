@@ -38,7 +38,7 @@ export function renderSkeleton(): void {
     </div>`;
 
   $('#program').innerHTML = `
-    <div class="container program__head">
+    <div class="container program__head sec-head">
       <h2 id="program-title" class="chrome" data-split>${program.title}</h2>
       <p class="program__lead" data-fade>${program.lead}</p>
     </div>
