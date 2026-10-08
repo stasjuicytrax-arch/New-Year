@@ -108,9 +108,9 @@ function ch06(c: Chapter): string {
     'right ch--kids',
     `${titled(head(c), c)}
     <div class="ch__media ch__media--fan" data-fan>
-      <div class="ch__polaroid ch__polaroid--1">${picture({ name: 'kids-1', alt: 'Аниматор в костюме принцессы на детском празднике', sizes: sz, cls: 'ch__img' })}</div>
-      <div class="ch__polaroid ch__polaroid--2">${picture({ name: 'kids-2', alt: 'Детская анимация с воздушными шарами', sizes: sz, cls: 'ch__img' })}</div>
-      <div class="ch__polaroid ch__polaroid--3">${picture({ name: 'kids-3', alt: 'Аниматор пускает мыльные пузыри', sizes: sz, cls: 'ch__img' })}</div>
+      <div class="ch__polaroid ch__polaroid--1">${picture({ name: 'kids-4', alt: 'Дед Мороз и Снегурочка на сцене перед детьми', sizes: sz, cls: 'ch__img' })}</div>
+      <div class="ch__polaroid ch__polaroid--2">${picture({ name: 'kids-2', alt: 'Аниматор в фиолетово-жёлтом костюме на детском празднике', sizes: sz, cls: 'ch__img' })}</div>
+      <div class="ch__polaroid ch__polaroid--3">${picture({ name: 'kids-5', alt: 'Дети ловят мыльные пузыри вместе с аниматорами', sizes: sz, cls: 'ch__img' })}</div>
     </div>`,
   );
 }

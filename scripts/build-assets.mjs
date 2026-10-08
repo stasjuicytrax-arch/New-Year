@@ -44,9 +44,9 @@ const IMAGES = [
     widths: [640, 960, 1440, 2048],
     grade: 'cold',
   },
-  { name: 'kids-1', src: 'Для блока на детскую анимацию/hd_6878aff74ab59_1.jpg', widths: [640, 960, 1440, 2144] },
   { name: 'kids-2', src: 'Для блока на детскую анимацию/a-min.jpg', widths: [640, 960, 1440, 2048] },
-  { name: 'kids-3', src: 'Для блока на детскую анимацию/XXL_height.jpeg', widths: [600, 1024] },
+  { name: 'kids-4', src: 'Vintermagi med Ded Moroz og Snegurochka.png', widths: [640, 960, 1254] },
+  { name: 'kids-5', src: 'Magisk boblefest i vintereventyrland.png', widths: [640, 960, 1254] },
   { name: 'dj-seven', src: 'Наш диджей DJ Seven/IMG_5835.PNG', widths: [640, 900, 1254] },
 ];
 
