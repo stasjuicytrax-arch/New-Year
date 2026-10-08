@@ -66,7 +66,7 @@ document.addEventListener('click', (e) => {
   const target = document.querySelector<HTMLElement>(id);
   if (!target) return;
   e.preventDefault();
-  scrollToTarget(target);
+  scrollToTarget(target, -(parseFloat(getComputedStyle(target).scrollMarginTop) || 0));
   history.replaceState(null, '', id);
 });
 

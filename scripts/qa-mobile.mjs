@@ -313,6 +313,13 @@ async function run(browser, [width, height, desktop = false]) {
 async function seatingScenario(page, name, dir, desktop) {
   page.setDefaultTimeout(8000);
   const bad = (m) => fail(name, `схема зала: ${m}`);
+  // якорь: после перехода по «Забронировать» заголовок блока не под шапкой
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(300);
+  await page.locator('#hero a[href="#seats"]').click();
+  await page.waitForTimeout(2200);
+  const anchorTop = await page.evaluate(() => document.querySelector('#seats-title').getBoundingClientRect().top);
+  if (anchorTop < 64) bad(`после перехода к #seats заголовок под шапкой (top ${Math.round(anchorTop)}px)`);
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.locator('#seats').scrollIntoViewIfNeeded();
   await page.waitForTimeout(500);

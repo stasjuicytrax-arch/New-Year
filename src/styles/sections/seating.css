@@ -1,4 +1,8 @@
 @layer sections {
+  /* Якоря не прячут заголовок под шапкой: высота шапки + 24px */
+  :root { --header-h: 64px; }
+  #seats, #booking, .tlist { scroll-margin-top: calc(var(--header-h) + 24px); }
+
   /* ---------- Блок «Выберите места» (#seats) ---------- */
   .seats { display: grid; gap: var(--space-6); }
   .seats__head { display: grid; justify-items: center; gap: var(--space-3); text-align: center; }
@@ -15,53 +19,79 @@
   .seats__side { display: grid; gap: var(--space-6); min-width: 0; }
 
   /* Схема */
-  .seats__map { position: relative; width: min(100%, 560px); margin-inline: auto; overflow: hidden; border-radius: var(--glass-radius); border: 1px solid var(--glass-line); background: color-mix(in oklab, var(--night-900) 70%, transparent); touch-action: pan-x pan-y; }
+  .seats__map { position: relative; width: min(100%, 560px); margin-inline: auto; overflow: hidden; border-radius: 24px; border: 1px solid var(--glass-line); background: color-mix(in oklab, var(--night-950) 78%, transparent); box-shadow: 0 24px 60px -28px rgba(0, 0, 0, 0.7); touch-action: pan-x pan-y; }
   .hall { display: block; width: 100%; height: auto; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
-  .hall__wall { fill: color-mix(in oklab, var(--night-800) 40%, transparent); stroke: var(--line); stroke-width: 1.6; }
-  .hall__stage { fill: color-mix(in oklab, var(--electric-500) 14%, transparent); stroke: var(--ice-200); stroke-width: 1.4; }
-  .hall__stage-t { font-family: var(--font-ui); font-size: 22px; font-weight: 600; letter-spacing: 0.22em; text-anchor: middle; dominant-baseline: central; fill: var(--ice-200); pointer-events: none; }
-  .tbl__body { fill: var(--night-800); stroke: color-mix(in oklab, var(--zc) 55%, transparent); stroke-width: 1.5; transition: fill var(--dur-1) var(--ease-out), stroke var(--dur-1) var(--ease-out); }
-  .tbl__no { font-family: var(--font-display); font-size: 22px; text-anchor: middle; dominant-baseline: central; fill: var(--text-strong); pointer-events: none; font-variant-numeric: lining-nums; }
+
+  /* Зал: тонкая двойная линия, окна, танцпол, сцена, вход */
+  .hall__wall { fill: none; stroke: rgba(171, 195, 228, 0.55); stroke-width: 1.7; }
+  .hall__wall--in { stroke: rgba(171, 195, 228, 0.2); stroke-width: 1; }
+  .hall__win line { stroke: var(--ice-200); stroke-width: 2.2; stroke-linecap: round; opacity: 0.6; }
+  .hall__dance { stroke: rgba(171, 195, 228, 0.2); stroke-width: 1; stroke-dasharray: 3 6; }
+  .hall__stage { stroke-width: 1.5; }
+  .hall__stage-edge { fill: none; stroke-width: 3; stroke-linecap: round; opacity: 0.95; }
+  .hall__stage-t { font-family: var(--font-ui); font-size: 24px; font-weight: 600; letter-spacing: 0.24em; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+  .hall__gap { fill: var(--night-900); }
+  .hall__arrow { fill: none; stroke: var(--ice-200); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; opacity: 0.85; }
+  .hall__door-t { font-family: var(--font-ui); font-size: 15px; font-weight: 600; letter-spacing: 0.22em; text-anchor: middle; fill: var(--ice-200); opacity: 0.85; }
+
+  /* Стол: стеклянный диск, ободок цвета зоны; зоны 1–2 и 3–5 подсвечены, 6–15 без сияния */
+  .tbl { transition: transform 0.5s var(--ease-out); transform-box: fill-box; transform-origin: center; }
+  .tbl__body { fill: color-mix(in oklab, var(--zc) 13%, rgba(8, 24, 64, 0.62)); stroke: color-mix(in oklab, var(--zc) 85%, transparent); stroke-width: 1.6; filter: drop-shadow(0 3px 8px color-mix(in oklab, var(--zc) 40%, transparent)); transition: fill var(--dur-2) var(--ease-out), stroke-width var(--dur-2) var(--ease-out); }
+  .tbl[data-zone="3"] .tbl__body { filter: none; }
+  .tbl__rim { fill: none; stroke: rgba(255, 255, 255, 0.13); stroke-width: 1; pointer-events: none; }
+  .tbl__no { font-family: var(--font-display); font-size: 21px; text-anchor: middle; dominant-baseline: central; fill: var(--text-strong); pointer-events: none; font-variant-numeric: lining-nums; }
   .tbl__hit { fill: rgba(0, 0, 0, 0.001); cursor: pointer; outline: none; }
   .tbl__hit:focus-visible { stroke: var(--neon-400); stroke-width: 2; stroke-dasharray: 5 4; }
   .tbl.is-full .tbl__hit { cursor: default; }
-  .tbl.is-all .tbl__body { fill: color-mix(in oklab, var(--zc) 28%, var(--night-800)); stroke: var(--zc); stroke-width: 2.4; }
-  @media (hover: hover) { .tbl:hover .tbl__body { fill: color-mix(in oklab, var(--zc) 14%, var(--night-800)); } }
+  .tbl.is-all .tbl__body { fill: color-mix(in oklab, var(--zc) 30%, rgba(8, 24, 64, 0.7)); stroke: var(--zc); stroke-width: 2.4; }
+  @media (hover: hover) and (pointer: fine) {
+    .tbl:hover { transform: scale(1.06); }
+    .tbl:hover .tbl__body { fill: color-mix(in oklab, var(--zc) 22%, rgba(8, 24, 64, 0.7)); }
+  }
 
+  /* Стул: капсула по касательной к столу */
   .seat { cursor: pointer; outline: none; }
   .seat__hit { fill: rgba(0, 0, 0, 0.001); }
-  .seat__dot { fill: var(--night-900); stroke: var(--zc); stroke-width: 2; transition: fill var(--dur-1) var(--ease-out); }
-  @media (hover: hover) { .seat:not(.is-booked):not(.is-held):hover .seat__dot { fill: color-mix(in oklab, var(--zc) 35%, var(--night-900)); } }
-  .seat.is-sel .seat__dot { fill: var(--zc); filter: drop-shadow(0 0 5px var(--zc)); }
-  .seat.is-held .seat__dot { stroke: #f4d24e; }
+  .seat__cap { fill: rgba(0, 16, 46, 0.88); stroke: var(--zc); stroke-width: 1.9; transition: fill var(--dur-1) var(--ease-out), filter var(--dur-1) var(--ease-out); }
+  .seat__check { fill: none; stroke: var(--night-950); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; opacity: 0; transition: opacity var(--dur-1) var(--ease-out); pointer-events: none; }
+  @media (hover: hover) { .seat:not(.is-booked):not(.is-held):hover .seat__cap { fill: color-mix(in oklab, var(--zc) 40%, rgba(0, 16, 46, 0.88)); } }
+  .seat.is-sel .seat__cap { fill: var(--zc); filter: drop-shadow(0 2px 5px color-mix(in oklab, var(--zc) 80%, transparent)); }
+  .seat.is-sel .seat__check { opacity: 1; }
+  .seat.is-held .seat__cap { stroke: #f4d24e; }
   .seat.is-booked { cursor: not-allowed; }
-  .seat.is-booked .seat__dot { fill: #46506b; stroke: #5f6a88; }
-  .seat:focus-visible .seat__dot { stroke: #fff; stroke-width: 3.2; }
+  .seat.is-booked .seat__cap { fill: #394360; stroke: #4f5a78; opacity: 0.8; }
+  .seat:focus-visible .seat__cap { stroke: #fff; stroke-width: 2.6; }
+
+  /* Подсказка над столом (мышь, клавиатурный фокус) */
+  .seats__tip { position: absolute; z-index: 3; padding: 8px 12px; border: 1px solid var(--glass-line); border-radius: 12px; background: rgba(4, 14, 42, 0.95); color: var(--text-strong); font-family: var(--font-ui); font-size: 14px; font-weight: 600; line-height: 1.35; white-space: nowrap; pointer-events: none; box-shadow: 0 12px 28px -10px rgba(0, 0, 0, 0.7); }
+  .seats__tip[hidden] { display: none; }
+  @media (pointer: coarse) { .seats__tip { display: none; } }
 
   /* Масштаб */
-  .seats__zoom { position: absolute; top: 10px; right: 10px; display: grid; gap: 8px; }
-  .zbtn { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--glass-line); border-radius: 12px; background: rgba(0, 16, 46, 0.78); color: var(--text-strong); font-family: var(--font-ui); font-size: 22px; font-weight: 500; line-height: 1; cursor: pointer; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+  .seats__zoom { position: absolute; top: 12px; right: 12px; display: grid; gap: 8px; }
+  .zbtn { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--glass-line); border-radius: 14px; background: rgba(0, 16, 46, 0.82); color: var(--text-strong); font-family: var(--font-ui); font-size: 22px; font-weight: 500; line-height: 1; cursor: pointer; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
   .zbtn--reset { font-size: 14px; font-weight: 600; }
   .zbtn[hidden] { display: none; }
   .zbtn:focus-visible { box-shadow: var(--focus-ring); }
 
-  /* Легенда */
-  .seats__zones, .seats__states { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
-  .zone { display: grid; grid-template-columns: 14px minmax(0, auto) minmax(0, 1fr) auto; align-items: center; column-gap: 10px; font-size: 14px; color: var(--text); }
-  .zone__dot { width: 14px; height: 14px; border-radius: 50%; background: var(--zc); box-shadow: 0 0 10px color-mix(in oklab, var(--zc) 55%, transparent); }
-  .zone__name { font-weight: 600; color: var(--text-strong); }
-  .zone__tables { color: var(--text-muted); }
-  .zone__price { font-family: var(--font-ui); font-weight: 600; color: var(--text-strong); white-space: nowrap; }
-  .zone--child { display: block; padding-top: var(--space-2); color: var(--text-muted); }
-  .seats__states { grid-template-columns: repeat(2, minmax(0, 1fr)); font-size: 14px; color: var(--text-muted); }
-  .seats__states li { display: flex; align-items: center; gap: 10px; }
-  .st { flex: none; width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--ice-200); }
-  .st--sel { background: var(--ice-200); box-shadow: 0 0 8px var(--ice-200); }
-  .st--held { border-color: #f4d24e; background: repeating-linear-gradient(45deg, #f4d24e 0 2px, #2b2a18 2px 4px); }
-  .st--booked { border-color: #5f6a88; background: #46506b; }
+  /* Легенда: чипы зон в одну строку (на телефоне в две), ниже статусы мест */
+  .seats__zones, .seats__states { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .seats__zones { flex-wrap: nowrap; }
+  .chip { display: inline-flex; flex: 1 1 0; min-width: 0; align-items: center; justify-content: center; gap: 8px; min-height: 52px; padding: 8px 10px; border: 1px solid color-mix(in oklab, var(--zc) 38%, var(--glass-line)); border-radius: 18px; background: color-mix(in oklab, var(--zc) 9%, rgba(0, 16, 46, 0.5)); font-size: 14px; line-height: 1.25; white-space: nowrap; }
+  .chip__dot { width: 10px; height: 10px; border-radius: 50%; background: var(--zc); box-shadow: 0 0 10px color-mix(in oklab, var(--zc) 60%, transparent); }
+  .chip__name { font-weight: 600; color: var(--text-strong); }
+  .chip__price { font-family: var(--font-ui); font-weight: 500; color: var(--text); }
+  .chip__txt { display: grid; gap: 1px; justify-items: start; }
+  .seats__child { font-size: 14px; color: var(--text-muted); }
+  .seats__states { gap: 8px 18px; font-size: 14px; color: var(--text-muted); }
+  .seats__states li { display: inline-flex; align-items: center; gap: 8px; }
+  .cap { flex: none; width: 18px; height: 10px; border-radius: 6px; border: 1.5px solid var(--ice-200); }
+  .cap--sel { background: var(--ice-200); box-shadow: 0 2px 6px rgba(171, 195, 228, 0.6); }
+  .cap--held { border-color: #f4d24e; background: repeating-linear-gradient(45deg, #f4d24e 0 2px, #2b2a18 2px 4px); }
+  .cap--booked { border-color: #4f5a78; background: #394360; }
 
   /* Список столов */
-  .tlist { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); scroll-margin-top: 100px; }
+  .tlist { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
   .tlist__row { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); width: 100%; min-height: 56px; padding: 6px 14px 6px 8px; border: 1px solid var(--glass-line); border-radius: 14px; background: rgba(0, 16, 46, 0.5); color: var(--text); font: inherit; text-align: left; cursor: pointer; }
   .tlist__row:focus-visible { box-shadow: var(--focus-ring); }
   @media (hover: hover) { .tlist__row:hover { border-color: color-mix(in oklab, var(--zc) 60%, transparent); } }
@@ -94,24 +124,27 @@
   .panel__note { font-size: 14px; line-height: 1.45; color: var(--text-muted); }
   .panel__clear { justify-self: start; min-height: 44px; padding-inline: 4px; border: 0; background: none; color: var(--text-muted); font: inherit; font-size: 14px; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
 
-  /* Карточка стола (телефон) */
-  .tcard { width: min(94vw, 420px); padding: clamp(20px, 4vw, 32px); margin: auto; color: var(--text-strong); border: 1px solid var(--glass-line); background: rgba(6, 18, 52, 0.9); }
+  /* Карточка стола (телефон): стулья-капсулы, как на схеме */
+  .tcard { width: min(94vw, 420px); padding: clamp(20px, 4vw, 32px); margin: auto; color: var(--text-strong); border: 1px solid var(--glass-line); background: rgba(6, 18, 52, 0.92); }
   .tcard::backdrop { background: rgba(0, 2, 8, 0.66); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
   .tcard[open] { display: block; }
-  .tcard__in { display: grid; gap: var(--space-3); justify-items: center; text-align: center; }
+  .tcard__in { display: grid; gap: var(--space-2); justify-items: center; text-align: center; }
   .tcard__title { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 34px; line-height: 1; text-transform: uppercase; }
   .tcard__meta { font-size: 14px; color: var(--text-muted); }
-  .tcard__ring { position: relative; width: min(100%, 300px); aspect-ratio: 1; margin: var(--space-3) 0; }
-  .tcard__table { position: absolute; inset: 30%; display: grid; place-items: center; border: 2px solid color-mix(in oklab, var(--zc) 60%, transparent); border-radius: 50%; background: var(--night-800); font-family: var(--font-display); font-size: 40px; color: var(--text-strong); font-variant-numeric: lining-nums; }
-  .cseat { position: absolute; display: grid; place-items: center; width: 48px; height: 48px; padding: 0; transform: translate(-50%, -50%); border: 2px solid var(--zc); border-radius: 50%; background: var(--night-900); color: var(--text-strong); font: inherit; font-size: 16px; font-weight: 600; cursor: pointer; }
-  .cseat.is-sel { background: var(--zc); color: var(--night-950); box-shadow: 0 0 14px var(--zc); }
+  .tcard__live { font-size: 14px; color: var(--text); }
+  .tcard__live b { color: var(--text-strong); font-weight: 600; }
+  .tcard__ring { position: relative; width: min(100%, 300px); aspect-ratio: 1; margin: var(--space-4) 0; }
+  .tcard__table { position: absolute; inset: 28%; display: grid; place-items: center; border: 1.6px solid color-mix(in oklab, var(--zc) 85%, transparent); border-radius: 50%; background: color-mix(in oklab, var(--zc) 13%, rgba(8, 24, 64, 0.7)); box-shadow: 0 6px 20px color-mix(in oklab, var(--zc) 35%, transparent); font-family: var(--font-display); font-size: 40px; color: var(--text-strong); font-variant-numeric: lining-nums; }
+  .cseat { position: absolute; display: grid; place-items: center; width: 66px; height: 42px; padding: 0; transform: translate(-50%, -50%) rotate(var(--rot, 0deg)); border: 2px solid var(--zc); border-radius: 21px; background: rgba(0, 16, 46, 0.9); color: var(--text-strong); font: inherit; cursor: pointer; transition: background var(--dur-1) var(--ease-out), box-shadow var(--dur-1) var(--ease-out); }
+  .cseat__n { display: block; transform: rotate(calc(var(--rot, 0deg) * -1)); font-size: 16px; font-weight: 600; line-height: 1; }
+  .cseat.is-sel { background: var(--zc); color: var(--night-950); box-shadow: 0 5px 14px color-mix(in oklab, var(--zc) 55%, transparent); }
   .cseat.is-held { border-color: #f4d24e; background: repeating-linear-gradient(45deg, #f4d24e 0 3px, #2b2a18 3px 7px); color: #fff; }
-  .cseat.is-booked { border-color: #5f6a88; background: #46506b; color: #aab3c9; cursor: not-allowed; }
+  .cseat.is-booked { border-color: #4f5a78; background: #394360; color: #aab3c9; cursor: not-allowed; }
   .cseat:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
   .tcard__actions { display: grid; gap: var(--space-3); width: 100%; }
   .tcard__actions .btn-wrap, .tcard__actions .btn { width: 100%; }
 
-  /* Телефон: панель закреплена снизу, только пока схема в кадре и есть выбор */
+  /* Телефон: панель закреплена снизу, пока схема в кадре, есть выбор и форма не видна */
   @media (max-width: 1023.98px) {
     .seats__panel.glass { position: fixed; left: 0; right: 0; bottom: 0; z-index: calc(var(--z-header) - 1); gap: var(--space-3); padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); border-radius: 18px 18px 0 0; border-bottom: 0; background: #040e2a; box-shadow: 0 -14px 40px rgba(0, 0, 0, 0.5); }
     .seats__panel[data-empty="true"], .seats__panel:not([data-inview="true"]), .seats__panel[data-formview="true"] { display: none; }
@@ -132,17 +165,16 @@
   @media (min-width: 1024px) {
     .seats__grid { grid-template-columns: minmax(0, 520px) minmax(0, 1fr); gap: var(--space-8); }
     .seats__map { width: 100%; }
-    .seats__side { position: sticky; top: 100px; align-self: start; }
+    .seats__side { position: sticky; top: calc(var(--header-h) + 24px); align-self: start; }
     .seats__panel.glass { position: static; }
     .tlist { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .tbl__body, .seat__dot { transition: none; }
+    .tbl, .tbl__body, .seat__cap, .seat__check, .cseat { transition: none; }
+    .tbl:hover { transform: none; }
   }
-}
 
-@layer sections {
   /* Блок «Ваш выбор» в форме брони */
   .form__choice { display: grid; gap: var(--space-2); padding: var(--space-4); border: 1px solid color-mix(in oklab, var(--ice-200) 45%, transparent); border-radius: 16px; background: color-mix(in oklab, var(--electric-500) 14%, transparent); }
   .form__choice[hidden] { display: none; }

@@ -1,6 +1,8 @@
 import { prices, seating as t, typo } from '../../content/content';
 import {
   CHILD_PRICE,
+  DANCE,
+  DOOR,
   GEOM,
   HALL,
   SEATING_STATUS_URL,
@@ -8,6 +10,7 @@ import {
   STAGE,
   TABLES,
   VIEWBOX,
+  WINDOWS,
   ZONES,
   seatKey,
   seatPos,
@@ -80,14 +83,18 @@ function tableMarkup(tb: HallTable): string {
   const z = zoneById(tb.zone);
   const chairs = Array.from({ length: SEATS_PER_TABLE }, (_, i) => {
     const s = i + 1;
-    const { x, y } = seatPos(tb, s);
+    const { x, y, rot } = seatPos(tb, s);
+    const fx = x.toFixed(1);
+    const fy = y.toFixed(1);
     return `<g class="seat" role="button" tabindex="0" data-t="${tb.n}" data-s="${s}" aria-pressed="false" aria-label="${seatLabel(tb.n, s)}">
-      <circle class="seat__hit" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${GEOM.seatHit}"/>
-      <circle class="seat__dot" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${GEOM.seat}"/>
+      <circle class="seat__hit" cx="${fx}" cy="${fy}" r="${GEOM.seatHit}"/>
+      <rect class="seat__cap" x="${(x - GEOM.seatW / 2).toFixed(1)}" y="${(y - GEOM.seatD / 2).toFixed(1)}" width="${GEOM.seatW}" height="${GEOM.seatD}" rx="${GEOM.seatD / 2}" transform="rotate(${rot} ${fx} ${fy})"/>
+      <path class="seat__check" d="M${(x - 2.6).toFixed(1)} ${(y + 0.1).toFixed(1)} l1.7 1.8 l3.5 -3.6"/>
     </g>`;
   }).join('');
-  return `<g class="tbl" data-table="${tb.n}" style="--zc:${z.color}">
+  return `<g class="tbl" data-table="${tb.n}" data-zone="${tb.zone}" style="--zc:${z.color}">
     <circle class="tbl__body" cx="${tb.x}" cy="${tb.y}" r="${GEOM.table}"/>
+    <circle class="tbl__rim" cx="${tb.x}" cy="${tb.y}" r="${GEOM.table - 5}"/>
     <circle class="tbl__hit" cx="${tb.x}" cy="${tb.y}" r="${GEOM.tableHit}" role="button" tabindex="0" data-hit="${tb.n}" aria-label="Стол ${tb.n}"/>
     <text class="tbl__no" x="${tb.x}" y="${tb.y}" aria-hidden="true">${tb.n}</text>
     ${chairs}
@@ -95,19 +102,62 @@ function tableMarkup(tb: HallTable): string {
 }
 
 function svgMarkup(): string {
-  const stageCx = STAGE.x + STAGE.w / 2;
-  const stageCy = STAGE.y + STAGE.h / 2;
-  return `<svg class="hall" viewBox="0 0 ${VIEWBOX.w} ${VIEWBOX.h}" role="group" aria-label="${t.mapAria}" data-svg>
+  const { w, h } = VIEWBOX;
+  const f = (n: number): string => n.toFixed(1);
+  // Сцена: передний край — дуга, выпуклая в зал (влево); прожекторы светят в танцпол
+  const sx = STAGE.x;
+  const sy = STAGE.y;
+  const sr = STAGE.x + STAGE.w;
+  const sb = STAGE.y + STAGE.h;
+  const mid = sy + STAGE.h / 2;
+  const stagePath = `M${f(sr)} ${f(sy)} L${f(sx + 26)} ${f(sy)} Q${f(sx - 30)} ${f(mid)} ${f(sx + 26)} ${f(sb)} L${f(sr)} ${f(sb)} Z`;
+  const apexX = sx - 14;
+  const cones = [0.24, 0.5, 0.76]
+    .map((k) => {
+      const ay = sy + STAGE.h * k;
+      return `<polygon points="${f(apexX)},${f(ay - 5)} ${f(apexX)},${f(ay + 5)} ${f(DANCE.x - 20)},${f(ay + 78)} ${f(DANCE.x - 20)},${f(ay - 78)}" fill="url(#g-cone)"/>`;
+    })
+    .join('');
+  const tbl = (n: number): HallTable => TABLES.find((t) => t.n === n)!;
+  const goldY = (tbl(1).y + tbl(2).y) / 2;
+  const blue = [3, 4, 5].map((n) => `<circle cx="${tbl(n).x}" cy="${tbl(n).y}" r="104" fill="url(#g-blue)"/>`).join('');
+  const windows = WINDOWS.map((y) => `<g class="hall__win"><line x1="${HALL.x - 4}" y1="${y - 38}" x2="${HALL.x - 4}" y2="${y + 38}"/><line x1="${HALL.x + 4}" y1="${y - 38}" x2="${HALL.x + 4}" y2="${y + 38}"/></g>`).join('');
+  const hb = HALL.y + HALL.h;
+  return `<svg class="hall" viewBox="0 0 ${w} ${h}" role="group" aria-label="${t.mapAria}" data-svg>
     <defs>
       <pattern id="seat-hatch" width="4.5" height="4.5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
         <rect width="4.5" height="4.5" fill="#2b2a18"/>
         <line x1="0" y1="0" x2="0" y2="4.5" stroke="#f4d24e" stroke-width="2.2"/>
       </pattern>
+      <pattern id="p-floor" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="#abc3e4" stroke-opacity="0.11" stroke-width="1"/></pattern>
+      <radialGradient id="g-hall" cx="50%" cy="46%" r="68%"><stop offset="0" stop-color="#1c3b86" stop-opacity="0.5"/><stop offset="0.7" stop-color="#0a1f55" stop-opacity="0.42"/><stop offset="1" stop-color="#030a22" stop-opacity="0.85"/></radialGradient>
+      <radialGradient id="g-gold" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#e6c27a" stop-opacity="0.26"/><stop offset="1" stop-color="#e6c27a" stop-opacity="0"/></radialGradient>
+      <radialGradient id="g-blue" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#6cb1ff" stop-opacity="0.2"/><stop offset="1" stop-color="#6cb1ff" stop-opacity="0"/></radialGradient>
+      <linearGradient id="g-stage" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5b8bff" stop-opacity="0.42"/><stop offset="0.55" stop-color="#1f3f9a" stop-opacity="0.3"/><stop offset="1" stop-color="#0b1f58" stop-opacity="0.5"/></linearGradient>
+      <linearGradient id="g-chrome" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="0.45" stop-color="#d9e2ef"/><stop offset="1" stop-color="#8c9ac0"/></linearGradient>
+      <linearGradient id="g-rim" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#abc3e4" stop-opacity="0.25"/><stop offset="1" stop-color="#ffffff" stop-opacity="0.95"/></linearGradient>
+      <linearGradient id="g-cone" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#cfe0ff" stop-opacity="0.2"/><stop offset="1" stop-color="#cfe0ff" stop-opacity="0"/></linearGradient>
+      <radialGradient id="g-vig" cx="50%" cy="50%" r="72%"><stop offset="0.62" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.5"/></radialGradient>
+      <clipPath id="c-dance"><rect x="${f(DANCE.x)}" y="${f(DANCE.y)}" width="${f(DANCE.w)}" height="${f(DANCE.h)}" rx="18"/></clipPath>
     </defs>
     <g class="hall__view" data-view>
-      <rect class="hall__wall" x="${HALL.x.toFixed(1)}" y="${HALL.y.toFixed(1)}" width="${HALL.w.toFixed(1)}" height="${HALL.h.toFixed(1)}" rx="6"/>
-      <rect class="hall__stage" x="${STAGE.x.toFixed(1)}" y="${STAGE.y.toFixed(1)}" width="${STAGE.w.toFixed(1)}" height="${STAGE.h.toFixed(1)}" rx="4"/>
-      <text class="hall__stage-t" x="${stageCx.toFixed(1)}" y="${stageCy.toFixed(1)}" aria-hidden="true">${t.stage}</text>
+      <rect class="hall__floor" x="${f(HALL.x)}" y="${f(HALL.y)}" width="${f(HALL.w)}" height="${f(HALL.h)}" rx="26" fill="url(#g-hall)"/>
+      <rect x="${f(HALL.x)}" y="${f(HALL.y)}" width="${f(HALL.w)}" height="${f(HALL.h)}" rx="26" fill="url(#g-vig)" pointer-events="none"/>
+      <ellipse cx="${tbl(1).x}" cy="${f(goldY)}" rx="118" ry="${f(Math.abs(tbl(2).y - tbl(1).y) / 2 + 118)}" fill="url(#g-gold)"/>
+      ${blue}
+      <rect class="hall__wall" x="${f(HALL.x)}" y="${f(HALL.y)}" width="${f(HALL.w)}" height="${f(HALL.h)}" rx="26"/>
+      <rect class="hall__wall hall__wall--in" x="${f(HALL.x + 8)}" y="${f(HALL.y + 8)}" width="${f(HALL.w - 16)}" height="${f(HALL.h - 16)}" rx="19"/>
+      ${windows}
+      <rect class="hall__dance" x="${f(DANCE.x)}" y="${f(DANCE.y)}" width="${f(DANCE.w)}" height="${f(DANCE.h)}" rx="18" fill="url(#p-floor)"/>
+      <g clip-path="url(#c-dance)">${cones}</g>
+      <path class="hall__stage" d="${stagePath}" fill="url(#g-stage)" stroke="url(#g-rim)"/>
+      <path class="hall__stage-edge" d="M${f(sx + 26)} ${f(sy)} Q${f(sx - 30)} ${f(mid)} ${f(sx + 26)} ${f(sb)}" stroke="url(#g-chrome)"/>
+      <text class="hall__stage-t" x="${f(sx + STAGE.w / 2 + 8)}" y="${f(mid)}" fill="url(#g-chrome)" aria-hidden="true">${t.stage}</text>
+      <g class="hall__door" aria-hidden="true">
+        <rect x="${DOOR.x - 1}" y="${f(hb - 3)}" width="${DOOR.w + 2}" height="6" rx="3" class="hall__gap"/>
+        <path d="M${DOOR.x + DOOR.w / 2 - 6} ${f(hb + 17)} l6 -7 l6 7" class="hall__arrow"/>
+        <text x="${DOOR.x + DOOR.w / 2}" y="${f(hb + 36)}" class="hall__door-t">${t.entrance}</text>
+      </g>
       ${TABLES.map(tableMarkup).join('')}
     </g>
   </svg>`;
@@ -116,15 +166,15 @@ function svgMarkup(): string {
 const legendMarkup = (): string => `
   <ul class="seats__zones">
     ${ZONES.map(
-      (z) => `<li class="zone" style="--zc:${z.color}"><i class="zone__dot" aria-hidden="true"></i><span class="zone__name">${z.name}</span><span class="zone__tables">${z.tables}</span><b class="zone__price">${rub(z.price)}</b></li>`,
+      (z) => `<li class="chip" style="--zc:${z.color}" title="${z.tables}"><i class="chip__dot" aria-hidden="true"></i><span class="chip__txt"><span class="chip__name">${z.name}</span><b class="chip__price">${rub(z.price)}</b></span></li>`,
     ).join('')}
-    <li class="zone zone--child"><span>${t.childLine}</span></li>
   </ul>
+  <p class="seats__child">${t.childLine}</p>
   <ul class="seats__states" aria-label="Обозначения мест">
-    <li><i class="st st--free" aria-hidden="true"></i>${t.legend.free}</li>
-    <li><i class="st st--sel" aria-hidden="true"></i>${t.legend.selected}</li>
-    <li><i class="st st--held" aria-hidden="true"></i>${t.legend.held}</li>
-    <li><i class="st st--booked" aria-hidden="true"></i>${t.legend.booked}</li>
+    <li><i class="cap cap--free" aria-hidden="true"></i>${t.legend.free}</li>
+    <li><i class="cap cap--sel" aria-hidden="true"></i>${t.legend.selected}</li>
+    <li><i class="cap cap--held" aria-hidden="true"></i>${t.legend.held}</li>
+    <li><i class="cap cap--booked" aria-hidden="true"></i>${t.legend.booked}</li>
   </ul>`;
 
 const listMarkup = (): string =>
@@ -150,6 +200,7 @@ export function renderSeating(): string {
       <div class="seats__mapcol">
         <div class="seats__map" data-map>
           ${svgMarkup()}
+          <div class="seats__tip" data-tip role="tooltip" hidden></div>
           <div class="seats__zoom" role="group" aria-label="Масштаб схемы">
             <button type="button" class="zbtn" data-zoom="in" aria-label="${t.zoomIn}">+</button>
             <button type="button" class="zbtn" data-zoom="out" aria-label="${t.zoomOut}">−</button>
@@ -230,7 +281,7 @@ function paint(): void {
     el.classList.toggle('is-sel', !!p);
     el.classList.toggle('is-held', st === 'held');
     el.classList.toggle('is-booked', st === 'booked');
-    const dot = el.querySelector<SVGCircleElement>('.seat__dot')!;
+    const dot = el.querySelector<SVGRectElement>('.seat__cap')!;
     if (st === 'held' && !p) dot.style.fill = 'url(#seat-hatch)';
     else dot.style.removeProperty('fill');
     el.setAttribute('aria-pressed', String(!!p));
@@ -298,21 +349,24 @@ function paintCard(): void {
   const tb = tableByN(cardTable);
   const z = zoneById(tb.zone);
   const free = freeSeats(tb.n);
-  const all = free.length > 0 && free.every((s) => picks.has(seatKey(tb.n, s)));
+  const chosen = free.filter((s) => picks.has(seatKey(tb.n, s))).length;
+  const all = free.length > 0 && chosen === free.length;
   const chairs = Array.from({ length: SEATS_PER_TABLE }, (_, i) => {
     const s = i + 1;
     const key = seatKey(tb.n, s);
     const st = statusOf(key);
     const p = picks.get(key);
+    const { rot } = seatPos(tb, s);
     const a = ((-90 + 22.5 + i * 45) * Math.PI) / 180;
     const cls = ['cseat', p ? 'is-sel' : '', st === 'held' ? 'is-held' : '', st === 'booked' ? 'is-booked' : ''].join(' ');
-    return `<button type="button" class="${cls}" data-cs="${s}" style="left:${(50 + Math.cos(a) * 39).toFixed(2)}%;top:${(50 + Math.sin(a) * 39).toFixed(2)}%" aria-pressed="${!!p}" aria-label="${seatLabel(tb.n, s)}"${st === 'free' ? '' : ' disabled'}>${s}</button>`;
+    return `<button type="button" class="${cls}" data-cs="${s}" style="left:${(50 + Math.cos(a) * 40).toFixed(2)}%;top:${(50 + Math.sin(a) * 40).toFixed(2)}%;--rot:${rot}deg" aria-pressed="${!!p}" aria-label="${seatLabel(tb.n, s)}"${st === 'free' ? '' : ' disabled'}><span class="cseat__n">${s}</span></button>`;
   }).join('');
   card.innerHTML = `
     <div class="tcard__in" style="--zc:${z.color}">
       <p class="label label--dot">${z.name}</p>
       <h3 class="tcard__title" id="tcard-title">Стол ${tb.n}</h3>
-      <p class="tcard__meta">${rub(z.price)} за место · свободно ${free.length} из ${SEATS_PER_TABLE}</p>
+      <p class="tcard__meta">${rub(z.price)} за место</p>
+      <p class="tcard__live" aria-live="polite"><b>свободно ${free.length} из ${SEATS_PER_TABLE}</b>${chosen ? ` · выбрано ${chosen}` : ''}</p>
       <div class="tcard__ring"><span class="tcard__table" aria-hidden="true">${tb.n}</span>${chairs}</div>
       <div class="tcard__actions">
         <span class="btn-wrap"><button type="button" class="btn btn--secondary" data-cardall${free.length === 0 ? ' disabled' : ''}><span>${all ? t.releaseTable : t.allTable}</span></button></span>
@@ -533,6 +587,36 @@ export function initSeating(): void {
   // ...и прячется, когда в кадре форма брони (она показывает тот же выбор)
   const booking = document.querySelector('#booking');
   if (booking) new IntersectionObserver(([entry]) => { panel.dataset.formview = String(entry.isIntersecting); }, { threshold: 0 }).observe(booking);
+
+  // Подсказка над столом: мышь и клавиатурный фокус
+  const tip = el.querySelector<HTMLElement>('[data-tip]')!;
+  const showTip = (n: number): void => {
+    const tb = tableByN(n);
+    const z = zoneById(tb.zone);
+    const free = freeSeats(n).length;
+    tip.textContent = `Стол ${n} · ${z.name} · ${rub(z.price)} · ${free === 0 ? 'мест нет' : `свободно ${free} из ${SEATS_PER_TABLE}`}`;
+    tip.hidden = false;
+    const m = map.getBoundingClientRect();
+    const b = svg.querySelector<SVGElement>(`.tbl[data-table="${n}"] .tbl__body`)!.getBoundingClientRect();
+    const tw = tip.offsetWidth;
+    const left = Math.min(Math.max(b.left + b.width / 2 - m.left - tw / 2, 8), m.width - tw - 8);
+    const above = b.top - m.top > 64;
+    tip.style.left = `${left}px`;
+    tip.style.top = `${above ? b.top - m.top - tip.offsetHeight - 22 : b.bottom - m.top + 22}px`;
+  };
+  const hideTip = (): void => { tip.hidden = true; };
+  svg.addEventListener('pointerover', (e) => {
+    if ((e as PointerEvent).pointerType !== 'mouse') return;
+    const g = (e.target as Element).closest<SVGGElement>('.tbl');
+    if (g) showTip(Number(g.dataset.table));
+    else hideTip();
+  });
+  svg.addEventListener('pointerleave', hideTip);
+  svg.addEventListener('focusin', (e) => {
+    const g = (e.target as Element).closest<SVGGElement>('.tbl');
+    if (g) showTip(Number(g.dataset.table));
+  });
+  svg.addEventListener('focusout', hideTip);
 
   paint();
 
