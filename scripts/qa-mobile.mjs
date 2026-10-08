@@ -109,6 +109,8 @@ async function inPage(desktop) {
   }
   for (const el of desktop ? [] : document.querySelectorAll('a[href], button, input, select, textarea, summary, [role=button]')) {
     if (!visible(el) || el.closest('.skip-link')) continue;
+    // Стулья на схеме мельче 44px по определению; запасные способы выбора (карточка стола, список) проверяются в сценарии выбора мест
+    if (el.closest('svg.hall') && !el.matches('.tbl__hit')) continue;
     if (el.matches('a') && el.closest('p, li, .check') && !el.classList.contains('btn')) continue; // инлайн-ссылка в тексте
     const b = rect(el);
     if (b.width < 43.5 || b.height < 43.5) out.push(`тач-цель ${Math.round(b.width)}×${Math.round(b.height)} < 44: ${label(el)} «${(el.textContent || '').trim().slice(0, 24)}»`);
@@ -303,7 +305,91 @@ async function run(browser, [width, height, desktop = false]) {
     await page.waitForTimeout(700);
     await el?.screenshot({ path: `${dir}/${id}.png` }).catch(() => undefined);
   }
+  await seatingScenario(page, name, dir, desktop).catch((e) => fail(name, `схема зала, сценарий упал: ${String(e.message).split(String.fromCharCode(10))[0]}`));
   await ctx.close();
+}
+
+/** Сценарий схемы зала: выбор мест, итог, перенос в форму. */
+async function seatingScenario(page, name, dir, desktop) {
+  page.setDefaultTimeout(8000);
+  const bad = (m) => fail(name, `схема зала: ${m}`);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.locator('#seats').scrollIntoViewIfNeeded();
+  await page.waitForTimeout(500);
+  const geo = await page.evaluate(() => {
+    const map = document.querySelector('#seats [data-map]').getBoundingClientRect();
+    const hit = document.querySelector('.tbl__hit[data-hit="7"]').getBoundingClientRect();
+    return { mapW: map.width, vw: window.innerWidth, hitW: hit.width, hitH: hit.height, tables: document.querySelectorAll('.tbl').length, seats: document.querySelectorAll('.seat').length };
+  });
+  if (geo.tables !== 15 || geo.seats !== 120) bad(`столов ${geo.tables}, мест ${geo.seats}, нужно 15 и 120`);
+  if (geo.mapW > geo.vw + 1) bad('схема шире экрана');
+  if (!desktop && (geo.hitW < 44 || geo.hitH < 44)) bad(`зона стола ${Math.round(geo.hitW)}×${Math.round(geo.hitH)} < 44px`);
+
+  const total = () => page.locator('#seats-panel [data-total] b').innerText().catch(() => '');
+  const center = async (sel) => {
+    await page.evaluate((q) => document.querySelector(q).scrollIntoView({ block: 'center' }), sel);
+    await page.waitForTimeout(250);
+    const b = await page.locator(sel).first().boundingBox(); return { x: b.x + b.width / 2, y: b.y + b.height / 2 }; };
+  const hit7 = page.locator('.tbl__hit[data-hit="7"]');
+  await hit7.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(900); // плавный скролл страницы должен успокоиться
+  if (desktop) {
+    await hit7.click();
+  } else {
+    await hit7.tap();
+    await page.waitForSelector('#table-card[open]', { timeout: 3000 }).catch(() => bad('тап по столу не открыл карточку'));
+    const seatBtn = await page.evaluate(() => [...document.querySelectorAll('#table-card .cseat')].map((b) => Math.round(Math.min(b.getBoundingClientRect().width, b.getBoundingClientRect().height))));
+    if (seatBtn.length !== 8 || seatBtn.some((w) => w < 44)) bad('в карточке стола нет 8 мест по 44px');
+    await page.locator('#table-card [data-cs="2"]').tap();
+    await page.locator('#table-card [data-cs="3"]').tap();
+    await page.screenshot({ path: `${dir}/seats-card.png` });
+    await page.locator('#table-card [data-cardclose]').tap();
+    await page.waitForTimeout(300);
+  }
+  await page.waitForTimeout(400);
+  const sum = await page.locator('#seats-panel [data-sum]').innerText().catch(() => '');
+  const expect = desktop ? 'Стол 7: места 1, 2, 3, 4, 5, 6, 7, 8' : 'Стол 7: места 2, 3';
+  if (sum.trim() !== expect) bad(`итог «${sum.trim()}», ожидалось «${expect}»`);
+  const t1 = await total();
+  if (!t1.includes(desktop ? '120' : '30')) bad(`сумма «${t1}»`);
+  const panelBox = await page.locator('#seats-panel').boundingBox();
+  if (!panelBox) bad('панель итога не видна');
+  else if (!desktop) {
+    const vh = page.viewportSize().height;
+    if (panelBox.y + panelBox.height < vh - 2 || panelBox.y < vh * 0.4) bad('панель итога не закреплена снизу');
+  }
+  if (!desktop) await page.locator('#seats-panel [data-toggle]').tap();
+  else await page.waitForTimeout(100);
+  await page.locator('#seats-panel .prow').first().locator('[data-kind="child"]').click();
+  const t2 = await total();
+  if (t1 === t2) bad('переключатель «Ребёнок» не меняет сумму');
+  await page.screenshot({ path: `${dir}/seats-selected.png` });
+
+  // зум кнопками
+  await page.locator('[data-zoom="in"]').click();
+  if (!(await page.evaluate(() => document.querySelector('[data-map]').classList.contains('is-zoomed')))) bad('кнопка + не приблизила схему');
+  await page.locator('[data-zoom="reset"]').click();
+
+  // перенос в форму
+  await page.locator('#seats-panel .btn').click();
+  await page.waitForTimeout(1200);
+  const form = await page.evaluate(() => ({
+    choice: !document.querySelector('[data-choice]').hidden,
+    sel: document.querySelector('[data-choice-sel]').textContent,
+    adults: document.querySelector('input[name="adults"]').value,
+    kids: document.querySelector('input[name="kids4"]').value,
+    locked: document.querySelector('[data-step="adults"]').classList.contains('is-locked'),
+    tableHidden: document.querySelector('[data-tablepos]').hidden,
+    estimate: !!document.querySelector('[data-estimate]'),
+  }));
+  if (!form.choice || !form.sel.includes('Стол 7')) bad('блок «Ваш выбор» в форме не заполнился');
+  if (!form.locked || !form.tableHidden) bad('поля «Взрослые/Расположение стола» не подставлены автоматически');
+  if (!desktop && (form.adults !== '1' || form.kids !== '1')) bad(`в форму ушло взрослых ${form.adults}, детей ${form.kids}, ожидалось 1 и 1`);
+  await page.locator('#booking-form').scrollIntoViewIfNeeded();
+  await page.waitForTimeout(300);
+  await page.locator('#booking').screenshot({ path: `${dir}/booking-with-choice.png` });
+  const hs = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+  if (hs) bad('после выбора появился горизонтальный скролл');
 }
 
 await rm('qa', { recursive: true, force: true });

@@ -12,11 +12,13 @@ import '../styles/sections/layout.css';
 import '../styles/sections/hero.css';
 import '../styles/sections/chapters.css';
 import '../styles/sections/page.css';
+import '../styles/sections/seating.css';
 import '../styles/sections/polish.css';
 
 import { initHeader } from './header';
 import { initScroll, lockScroll, scrollToTarget, ScrollTrigger } from './scroll';
 import { initBooking } from './sections/booking';
+import { initSeating } from './sections/seating';
 import { mountHero } from './sections/hero';
 import { initReveals } from './sections/reveal';
 import { runPreloader } from './sections/preloader';
@@ -25,6 +27,7 @@ import { renderSkeleton } from './sections/skeleton';
 const html = document.documentElement;
 
 renderSkeleton();
+initSeating();
 initBooking();
 const hero = mountHero();
 initHeader();

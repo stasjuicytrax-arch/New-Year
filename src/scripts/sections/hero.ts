@@ -68,7 +68,7 @@ function markup(): string {
         </div>
         <div class="hero__cta" data-in>
           <span class="btn-wrap" data-magnetic>
-            <a class="btn btn--primary" href="#booking" data-goal="book_click"><span>${hero.cta}</span></a>
+            <a class="btn btn--primary" href="#seats" data-goal="book_click"><span>${hero.cta}</span></a>
           </span>
         </div>
       </div>

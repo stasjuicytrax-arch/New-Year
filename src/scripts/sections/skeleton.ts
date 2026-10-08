@@ -1,6 +1,7 @@
 import { event, footer, hero as heroContent, intro, manifest, marquee, nav, phones, program, typo, why } from '../../content/content';
 import { renderBooking } from './booking';
 import { renderChapters } from './chapters';
+import { renderSeating } from './seating';
 
 const $ = <T extends HTMLElement>(sel: string): T => {
   const el = document.querySelector<T>(sel);
@@ -20,7 +21,7 @@ export function renderSkeleton(): void {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/></svg>
         <span class="site-header__phone-text">${phone.label}</span>
       </a>
-      <a class="btn btn--secondary btn--sm site-header__cta" href="#booking" data-goal="book_click"><span>${nav.cta}</span></a>
+      <a class="btn btn--secondary btn--sm site-header__cta" href="#seats" data-goal="book_click"><span>${nav.cta}</span></a>
     </div>`;
 
   const run = `<div class="marquee__track">${Array.from({ length: 8 }, () => `<span class="chrome">${marquee}</span>`).join('')}</div>`;
@@ -31,7 +32,7 @@ export function renderSkeleton(): void {
     <div class="container intro">
       <p class="lead intro__lead" data-words>${typo(intro.lead)}</p>
       <div class="intro__cta" data-fade>
-        <span class="btn-wrap"><a class="btn btn--secondary" href="#booking" data-goal="book_click"><span>${intro.cta}</span></a></span>
+        <span class="btn-wrap"><a class="btn btn--secondary" href="#seats" data-goal="book_click"><span>${intro.cta}</span></a></span>
       </div>
     </div>`;
 
@@ -53,7 +54,7 @@ export function renderSkeleton(): void {
       <aside class="why__ticket glass" aria-label="Дата и бронь">
         <p class="why__date chrome">${dateT.value}</p>
         <p class="label">${timeT.label} ${timeT.value}</p>
-        <span class="btn-wrap"><a class="btn btn--primary" href="#booking" data-goal="book_click"><span>${heroContent.cta}</span></a></span>
+        <span class="btn-wrap"><a class="btn btn--primary" href="#seats" data-goal="book_click"><span>${heroContent.cta}</span></a></span>
       </aside>
     </div>`;
 
@@ -65,6 +66,7 @@ export function renderSkeleton(): void {
       <p class="manifest__text">${hl}</p>
     </div>`;
 
+  $('#seats').innerHTML = renderSeating();
   $('#booking').innerHTML = renderBooking();
 
   $('#site-footer').innerHTML = `
@@ -84,7 +86,7 @@ export function renderSkeleton(): void {
         </div>
         <div class="footer__col">
           <p class="label label--dot">${footer.colBooking}</p>
-          <span class="btn-wrap"><a class="btn btn--primary" href="#booking" data-goal="book_click"><span>${heroContent.cta}</span></a></span>
+          <span class="btn-wrap"><a class="btn btn--primary" href="#seats" data-goal="book_click"><span>${heroContent.cta}</span></a></span>
         </div>
       </div>
       <hr class="footer__rule">

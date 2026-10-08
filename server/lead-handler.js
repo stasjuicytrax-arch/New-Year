@@ -37,6 +37,12 @@ function validate(body) {
   if (digits.length !== 11) return { error: 'Укажите телефон целиком' };
 
   const hot = body.hot && typeof body.hot === 'object' ? body.hot : {};
+  // Места со схемы зала: [{ table, seat, kind: 'adult' | 'child', price }]
+  const seats = (Array.isArray(body.seats) ? body.seats : [])
+    .slice(0, 40)
+    .map((x) => ({ table: int(x && x.table, 15), seat: int(x && x.seat, 8), kind: x && x.kind === 'child' ? 'child' : 'adult', price: int(x && x.price, 100000) }))
+    .filter((x) => x.table >= 1 && x.seat >= 1);
+  const total = seats.length ? seats.reduce((a, x) => a + x.price, 0) : 0;
   return {
     lead: {
       name,
@@ -48,6 +54,8 @@ function validate(body) {
       veal: int(hot.veal, 99),
       zander: int(hot.zander, 99),
       comment: clean(body.comment, 400),
+      seats,
+      total,
       event: clean(body.event, 120) || 'Главная новогодняя ночь 2027',
     },
   };
@@ -63,6 +71,12 @@ function leadLines(l) {
     ['Расположение стола', l.table],
     ['Горячее', `телятина ${l.veal}, судак ${l.zander}`],
   ];
+  if (l.seats && l.seats.length) {
+    const byTable = new Map();
+    for (const x of l.seats) byTable.set(x.table, [...(byTable.get(x.table) || []), `${x.seat}${x.kind === 'child' ? ' (дет.)' : ''}`]);
+    rows.push(['Выбор на схеме', [...byTable].map(([t, a]) => `стол ${t}: ${a.join(', ')}`).join(' · ')]);
+    rows.push(['Сумма', `${new Intl.NumberFormat('ru-RU').format(l.total).replace(/s/g, ' ')} ₽`]);
+  }
   if (l.comment) rows.push(['Комментарий', l.comment]);
   return rows;
 }
@@ -105,8 +119,13 @@ function sendTelegram(l) {
         timeout: 8000,
       },
       (res) => {
-        res.resume();
-        resolve({ ok: res.statusCode === 200, reason: `HTTP ${res.statusCode}` });
+        let raw = '';
+        res.on('data', (c) => { raw += c; });
+        res.on('end', () => {
+          let desc = '';
+          try { desc = JSON.parse(raw).description || ''; } catch { /* не JSON */ }
+          resolve({ ok: res.statusCode === 200, reason: `HTTP ${res.statusCode}${desc ? `: ${desc}` : ''}` });
+        });
       },
     );
     req.on('timeout', () => req.destroy(new Error('timeout')));
@@ -154,6 +173,7 @@ function sendMail(l) {
     ];
     let i = 0;
     let buf = '';
+    let lastText = '';
     let done = false;
     const finish = (r) => {
       if (!done) {
@@ -169,8 +189,9 @@ function sendMail(l) {
       const last = lines[lines.length - 2];
       if (!last || last[3] === '-') return; // ответ ещё не закончен (многострочный)
       buf = '';
+      lastText = last;
       const code = last.slice(0, 3);
-      if (code !== steps[i][1]) return finish({ ok: false, reason: `SMTP ${code} на шаге ${i}` });
+      if (code !== steps[i][1]) return finish({ ok: false, reason: `SMTP, ответ сервера: ${last} (шаг ${i})` });
       i += 1;
       if (i >= steps.length) return finish({ ok: true, reason: 'sent' });
       socket.write(`${steps[i][0]}\r\n`);
@@ -199,4 +220,4 @@ async function handleLead(body, meta) {
   return { status: 200, body: { ok: true } };
 }
 
-module.exports = { handleLead, validate, telegramText };
+module.exports = { handleLead, validate, telegramText, sendTelegram, sendMail };
