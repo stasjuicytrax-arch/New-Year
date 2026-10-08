@@ -221,7 +221,7 @@
     .seats__mapcol { width: min(100%, 1400px, calc((100svh - var(--header-h) - var(--seats-chrome)) * var(--ratio, 2.5))); margin-inline: auto; }
     .seats__map { width: 100%; }
     .seats__3d { width: min(100%, calc((100svh - var(--header-h) - var(--seats-chrome) - 24px) * var(--r3d, 0.91))); }
-    .seats__zoom { top: auto; bottom: 12px; }
+    .seats__zoom { top: auto; right: auto; left: 12px; bottom: 12px; }
     .seats__legend { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 24px; }
     .seats__zones { flex: 0 0 auto; }
     .chip { flex: 0 0 auto; min-height: 36px; padding: 6px 14px; border-radius: 999px; }

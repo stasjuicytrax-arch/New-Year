@@ -307,9 +307,9 @@ async function run(browser, [width, height, desktop = false]) {
     await el?.screenshot({ path: `${dir}/${id}.png` }).catch(() => undefined);
   }
   await headSpacingScenario(page, name, desktop).catch((e) => fail(name, `отступы шапок, сценарий упал: ${String(e.message).split(String.fromCharCode(10))[0]}`));
-  await hallScenario(page, name, dir, desktop).catch((e) => fail(name, `галерея зала, сценарий упал: ${String(e.message).split(String.fromCharCode(10)).slice(0, 4).join(' | ')}`));
-  await view3dScenario(page, name, dir, desktop).catch((e) => fail(name, `3D-вид, сценарий упал: ${String(e.message).split(String.fromCharCode(10)).slice(0, 4).join(' | ')}`));
-  await seatingScenario(page, name, dir, desktop).catch((e) => fail(name, `схема зала, сценарий упал: ${String(e.message).split(String.fromCharCode(10)).slice(0, 12).join(' | ')}`));
+  await hallScenario(page, name, dir, desktop).catch((e) => fail(name, `галерея зала, сценарий упал: ${String(e.message).split(String.fromCharCode(10)).slice(0, 30).join(' | ')}`));
+  await view3dScenario(page, name, dir, desktop).catch((e) => fail(name, `3D-вид, сценарий упал: ${String(e.message).split(String.fromCharCode(10)).slice(0, 30).join(' | ')}`));
+  await seatingScenario(page, name, dir, desktop).catch((e) => fail(name, `схема зала, сценарий упал: ${String(e.message).split(String.fromCharCode(10)).slice(0, 30).join(' | ')}`));
   await ctx.close();
 }
 
@@ -465,10 +465,10 @@ async function view3dScenario(page, name, dir, desktop) {
     tabs: [...document.querySelectorAll('[data-view-btn]')].map((b) => { const r = b.getBoundingClientRect(); return Math.round(Math.min(r.width, r.height)); }),
     hots: document.querySelectorAll('[data-hot]').length,
   }));
-  const wantDefault = desktop ? 'schema:false,3d:true' : 'schema:true,3d:false';
+  const wantDefault = 'schema:true,3d:false'; // по умолчанию схема и на мобиле, и на десктопе
   if (st.pressed !== wantDefault) bad(`по умолчанию ${st.pressed}, нужно ${wantDefault}`);
   if (st.tabs.some((x) => x < 44)) bad('кнопки переключателя меньше 44px');
-  if (st.hots !== 13) bad(`зон столов ${st.hots}, на визуализации 13`);
+  if (st.hots !== 14) bad(`зон столов ${st.hots}, на визуализации 14 (стола 8 в 3D нет)`);
 
   await page.locator('[data-view-btn="3d"]').click().catch(() => page.locator('[data-view-btn="3d"]').tap());
   await page.waitForTimeout(600);

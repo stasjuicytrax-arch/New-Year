@@ -651,7 +651,7 @@ export function initSeating(): void {
   const map = el.querySelector<HTMLElement>('[data-map]')!;
   const view = initView(map);
 
-  // Переключатель «Схема | 3D-вид»: по умолчанию схема на телефоне и 3D-вид на десктопе; выбор общий (одно состояние)
+  // Переключатель «Схема | 3D-вид»: по умолчанию схема везде, 3D-вид по переключателю; выбор общий (одно состояние)
   const mapcol = el.querySelector<HTMLElement>('[data-mapcol]')!;
   const box3d = el.querySelector<HTMLElement>('[data-3d]')!;
   const setView = (v: 'schema' | '3d'): void => {
@@ -663,7 +663,7 @@ export function initSeating(): void {
     el.querySelector<HTMLElement>('.seats__lead--fine')!.dataset.view = v;
   };
   el.querySelectorAll<HTMLButtonElement>('[data-view-btn]').forEach((b) => b.addEventListener('click', () => setView(b.dataset.viewBtn as 'schema' | '3d')));
-  setView(window.matchMedia('(min-width: 1024px)').matches ? '3d' : 'schema');
+  setView('schema');
 
   // 3D: клик по зоне стола открывает ту же карточку с местами, наведение показывает подсказку
   const hall3d = el.querySelector<HTMLElement>('[data-hall3d]')!;
