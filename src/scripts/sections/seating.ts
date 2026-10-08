@@ -4,6 +4,7 @@ import {
   DANCE,
   DOOR,
   GEOM,
+  HALL,
   KIDS_MAX,
   KID_AGE,
   SEATING_STATUS_URL,
@@ -152,23 +153,21 @@ function svgMarkup(L: Layout): string {
   const gold = `<ellipse cx="${f((t1.x + t2.x) / 2)}" cy="${f((t1.y + t2.y) / 2)}" rx="${f(Math.abs(t2.x - t1.x) / 2 + 118)}" ry="${f(Math.abs(t2.y - t1.y) / 2 + 118)}" fill="url(#g-gold)"/>`;
   const blue = [3, 4, 5].map((n) => `<circle cx="${f(tbl(n).x)}" cy="${f(tbl(n).y)}" r="104" fill="url(#g-blue)"/>`).join('');
   const hl = L.hall;
-  const hr = hl.x + hl.w;
   const hb = hl.y + hl.h;
   const windows = WINDOWS.map((wy) =>
     H
       ? `<g class="hall__win"><line x1="${wy - 38}" y1="${f(hb - 4)}" x2="${wy + 38}" y2="${f(hb - 4)}"/><line x1="${wy - 38}" y1="${f(hb + 4)}" x2="${wy + 38}" y2="${f(hb + 4)}"/></g>`
       : `<g class="hall__win"><line x1="${f(hl.x - 4)}" y1="${wy - 38}" x2="${f(hl.x - 4)}" y2="${wy + 38}"/><line x1="${f(hl.x + 4)}" y1="${wy - 38}" x2="${f(hl.x + 4)}" y2="${wy + 38}"/></g>`,
   ).join('');
-  // Вход: проём в нижней стене у правого угла (вертикально) / в правой стене (горизонтально)
-  const dcx = DOOR.x + DOOR.w / 2;
-  const dY = L.pt(dcx, DOOR.y)[1];
+  // Вход: на правой стене исходника на уровне стола 11; в горизонтальной раскладке это верхняя стена, точно над столом 11
+  const [dx, dy] = L.pt(HALL.x + HALL.w, DOOR.y);
   const door = H
-    ? `<rect x="${f(hr - 3)}" y="${f(dY - (DOOR.w + 2) / 2)}" width="6" height="${DOOR.w + 2}" rx="3" class="hall__gap"/>
-        <path d="M${f(hr + 38)} ${f(dY - 24)} l-8 6 l8 6" class="hall__arrow"/>
-        <text x="${f(hr + 34)}" y="${f(dY + 14)}" class="hall__door-t">${t.entrance}</text>`
-    : `<rect x="${DOOR.x - 1}" y="${f(hb - 3)}" width="${DOOR.w + 2}" height="6" rx="3" class="hall__gap"/>
-        <path d="M${dcx - 6} ${f(hb + 19)} l6 -7 l6 7" class="hall__arrow"/>
-        <text x="${dcx}" y="${f(hb + 40)}" class="hall__door-t">${t.entrance}</text>`;
+    ? `<rect x="${f(dx - (DOOR.w + 2) / 2)}" y="${f(dy - 3)}" width="${DOOR.w + 2}" height="6" rx="3" class="hall__gap"/>
+        <path d="M${f(dx - 6)} ${f(dy - 19)} l6 8 l6 -8" class="hall__arrow"/>
+        <text x="${f(dx)}" y="${f(dy - 28)}" class="hall__door-t">${t.entrance}</text>`
+    : `<rect x="${f(dx - 3)}" y="${f(dy - (DOOR.w + 2) / 2)}" width="6" height="${DOOR.w + 2}" rx="3" class="hall__gap"/>
+        <path d="M${f(dx + 22)} ${f(dy - 16)} l-8 6 l8 6" class="hall__arrow"/>
+        <text x="${f(dx + 40)}" y="${f(dy + 14)}" class="hall__door-t">${t.entrance}</text>`;
   const [tx, ty] = L.pt(sx + STAGE.w / 2 + 8, mid);
   const stageGrad = H ? 'x1="0" y1="1" x2="0" y2="0"' : 'x1="0" y1="0" x2="1" y2="0"';
   const rimGrad = H ? 'x1="0" y1="0" x2="0" y2="1"' : 'x1="1" y1="0" x2="0" y2="0"';
@@ -216,7 +215,6 @@ const legendMarkup = (): string => `
       (z) => `<li class="chip" style="--zc:${z.color}" title="${z.tables}"><i class="chip__dot" aria-hidden="true"></i><span class="chip__txt"><span class="chip__name">${z.name}</span><b class="chip__price">${rub(z.price)}</b></span></li>`,
     ).join('')}
   </ul>
-  <p class="seats__child">${t.childLine}</p>
   <ul class="seats__states" aria-label="Обозначения мест">
     <li><i class="cap cap--free" aria-hidden="true"></i>${t.legend.free}</li>
     <li><i class="cap cap--sel" aria-hidden="true"></i>${t.legend.selected}</li>
@@ -244,10 +242,9 @@ export function renderSeating(): string {
       <h2 id="seats-title" class="chrome" data-split>${t.title}</h2>
       <p class="seats__lead seats__lead--fine">${typo(t.lead)}</p>
       <p class="seats__lead seats__lead--touch">${typo(t.leadTouch)}</p>
-      <a class="seats__skip" href="#seats-list">${t.skip}</a>
     </header>
-    <div class="seats__mapcol">
-      <div class="seats__map" data-map style="--ratio:${ratio}">
+    <div class="seats__mapcol" style="--ratio:${ratio}">
+      <div class="seats__map" data-map>
         <div class="hall-host" data-host>${svgMarkup(layout)}</div>
         <div class="seats__tip" data-tip role="tooltip" hidden></div>
         <div class="seats__zoom" role="group" aria-label="Масштаб схемы">
@@ -258,15 +255,19 @@ export function renderSeating(): string {
       </div>
       <div class="seats__legend">${legendMarkup()}</div>
       <section class="kids" aria-labelledby="kids-title">
-        <h3 class="kids__title" id="kids-title">${t.kidsTitle}</h3>
-        <p class="kids__note">${typo(t.kidsNote)}</p>
         <div class="kids__row">
-          <div class="stepper kids__step" role="group" aria-label="${t.kidsStepper}">
-            <button type="button" class="stepper__btn" data-kstep="-1" aria-label="Меньше: ${t.kidsStepper}">−</button>
-            <output class="stepper__val" data-kcount aria-live="polite">0</output>
-            <button type="button" class="stepper__btn" data-kstep="1" aria-label="Больше: ${t.kidsStepper}">+</button>
+          <div class="kids__txt">
+            <h3 class="kids__title" id="kids-title">${t.kidsTitle}</h3>
+            <p class="kids__note">${t.kidsNote}</p>
           </div>
-          <p class="kids__price"><b>${rub(CHILD_PRICE)}</b> ${t.kidsPerChild}</p>
+          <div class="kids__buy">
+            <p class="kids__price"><b>${rub(CHILD_PRICE)}</b> ${t.kidsPerChild}</p>
+            <div class="stepper kids__step" role="group" aria-label="${t.kidsStepper}">
+              <button type="button" class="stepper__btn" data-kstep="-1" aria-label="Меньше: ${t.kidsStepper}">−</button>
+              <output class="stepper__val" data-kcount aria-live="polite">0</output>
+              <button type="button" class="stepper__btn" data-kstep="1" aria-label="Больше: ${t.kidsStepper}">+</button>
+            </div>
+          </div>
         </div>
         <ul class="kids__ages" data-ages></ul>
       </section>
@@ -289,7 +290,6 @@ export function renderSeating(): string {
       </div>
       <p class="panel__empty" data-emptytext>${t.empty}</p>
     </aside>
-    ${listMarkup('', ' id="seats-list"')}
   </div>
   <dialog class="tcard tdlg glass" id="tables-dialog" aria-labelledby="tdlg-title">
     <div class="tcard__in">
@@ -353,7 +353,7 @@ function paintKids(): void {
     const opts = Array.from({ length: KID_AGE.max - KID_AGE.min + 1 }, (_, i) => KID_AGE.min + i);
     ul.innerHTML = kids
       .map(
-        (_, i) => `<li class="kids__age"><label for="kid-age-${i}">Ребёнок ${i + 1}, возраст</label><select id="kid-age-${i}" class="input kids__select" data-age="${i}" aria-label="${t.kidsAge} ${i + 1}">${opts.map((a) => `<option value="${a}">${a} ${ageWord(a)}</option>`).join('')}</select></li>`,
+        (_, i) => `<li class="kids__age"><label for="kid-age-${i}">Ребёнок ${i + 1}</label><select id="kid-age-${i}" class="input kids__select" data-age="${i}" aria-label="${t.kidsAge} ${i + 1}">${opts.map((a) => `<option value="${a}">${a} ${ageWord(a)}</option>`).join('')}</select></li>`,
       )
       .join('');
   }
@@ -627,7 +627,7 @@ export function initSeating(): void {
     layout = layoutFor(wide.matches ? 'h' : 'v');
     host.innerHTML = svgMarkup(layout);
     svg = host.querySelector<SVGSVGElement>('svg')!;
-    map.style.setProperty('--ratio', (layout.viewBox.w / layout.viewBox.h).toFixed(4));
+    el.querySelector<HTMLElement>('.seats__mapcol')!.style.setProperty('--ratio', (layout.viewBox.w / layout.viewBox.h).toFixed(4));
     view.reset();
     paint();
   });

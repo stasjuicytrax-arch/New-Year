@@ -340,13 +340,19 @@ async function seatingScenario(page, name, dir, desktop) {
     const panelTop = panelShown ? panel.getBoundingClientRect().top : vh;
     const legend = document.querySelector('#seats .seats__legend').getBoundingClientRect();
     const title = document.querySelector('#seats-title').getBoundingClientRect();
+    const mq = document.querySelector('#marquee-b').getBoundingClientRect();
+    const kidsR = document.querySelector('#seats .kids').getBoundingClientRect();
+    const mapR = document.querySelector('#seats [data-map]').getBoundingClientRect();
     const items = [...document.querySelectorAll('#seats .tbl__body'), document.querySelector('#seats .hall__stage')].map((e) => e.getBoundingClientRect());
     const out = items.filter((r) => r.left < -0.5 || r.right > vw + 0.5 || r.top < 63.5 || r.bottom > panelTop + 0.5).length;
-    return { orient: svg.dataset.orient, w: sr.width, h: sr.height, top: sr.top, bottom: sr.bottom, panelTop, panelShown, legendBottom: legend.bottom, titleTop: title.top, out, count: items.length, vh };
+    return { orient: svg.dataset.orient, w: sr.width, h: sr.height, top: sr.top, bottom: sr.bottom, panelTop, panelShown, legendBottom: legend.bottom, titleTop: title.top, gapMarquee: title.top - mq.bottom, kidsH: kidsR.height, kidsW: kidsR.width, mapW: mapR.width, out, count: items.length, vh };
   });
   if (fit.count !== 16) bad(`в кадре ${fit.count} объектов вместо 15 столов и сцены`);
   if (fit.out) bad(`схема не помещается в экран: за пределами кадра ${fit.out} из ${fit.count} (вьюпорт ${fit.vh}px, схема ${Math.round(fit.top)}–${Math.round(fit.bottom)}, панель ${Math.round(fit.panelTop)})`);
+  if (fit.gapMarquee < (desktop ? 72 : 48) - 1) bad(`между бегущей строкой и заголовком «Выберите места» ${Math.round(fit.gapMarquee)}px, нужно не меньше ${desktop ? 72 : 48}`);
   if (desktop) {
+    if (Math.abs(fit.kidsW - fit.mapW) > 2) bad(`блок детских билетов (${Math.round(fit.kidsW)}px) не на всю ширину схемы (${Math.round(fit.mapW)}px)`);
+    if (fit.kidsH > 96) bad(`блок детских билетов высотой ${Math.round(fit.kidsH)}px, нужно около 72`);
     if (fit.orient !== 'h' || fit.w <= fit.h) bad(`на десктопе схема должна быть горизонтальной (orient ${fit.orient}, ${Math.round(fit.w)}×${Math.round(fit.h)})`);
     if (fit.titleTop < 63) bad(`заголовок блока под шапкой (top ${Math.round(fit.titleTop)}px)`);
     if (!fit.panelShown) bad('на десктопе панель итога не закреплена внизу');
@@ -357,20 +363,28 @@ async function seatingScenario(page, name, dir, desktop) {
   }
   await page.screenshot({ path: `${dir}/seats-fit.png` });
 
-  // список столов: на десктопе компактный диалог по ссылке «Список столов», на телефоне список под схемой
-  if (desktop) {
-    await page.locator('[data-openlist]').click();
-    await page.waitForSelector('#tables-dialog[open]', { timeout: 3000 }).catch(() => bad('«Список столов» не открыл диалог'));
-    const rows = await page.locator('#tables-dialog .tlist__row').count();
-    if (rows !== 15) bad(`в диалоге списка ${rows} столов, нужно 15`);
-    if (await page.locator('#seats-list').isVisible()) bad('на десктопе остался большой список из 15 карточек под схемой');
-    await page.screenshot({ path: `${dir}/seats-list-dialog.png` });
-    await page.keyboard.press('Escape');
-    await page.waitForTimeout(250);
-  } else {
-    const rows = await page.locator('#seats-list .tlist__row').count();
-    if (rows !== 15 || !(await page.locator('#seats-list').isVisible())) bad('на телефоне нет списка столов под схемой');
-  }
+  // список столов: только ссылка «Список столов» под схемой и компактный диалог поверх (большого списка из 15 карточек нет ни на десктопе, ни на телефоне)
+  if (await page.locator('#seats-list').count()) bad('остался большой список из 15 карточек под схемой');
+  const listBtn = page.locator('[data-openlist]');
+  await listBtn.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(900);
+  await (desktop ? listBtn.click() : listBtn.tap());
+  await page.waitForSelector('#tables-dialog[open]', { timeout: 3000 }).catch(() => bad('«Список столов» не открыл диалог'));
+  const rows = await page.locator('#tables-dialog .tlist__row').count();
+  if (rows !== 15) bad(`в диалоге списка ${rows} столов, нужно 15`);
+  await page.screenshot({ path: `${dir}/seats-list-dialog.png` });
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(250);
+
+  // вход: на правой стене исходника точно на уровне стола 11 (на десктопе, где зал повёрнут, — на верхней стене над столом 11)
+  const door = await page.evaluate(() => {
+    const g = document.querySelector('#seats .hall__door .hall__gap').getBoundingClientRect();
+    const t = document.querySelector('#seats .tbl[data-table="11"] .tbl__body').getBoundingClientRect();
+    const h = document.querySelector('#seats svg.hall').dataset.orient === 'h';
+    return { h, dGap: h ? Math.abs((g.left + g.right) / 2 - (t.left + t.right) / 2) : Math.abs((g.top + g.bottom) / 2 - (t.top + t.bottom) / 2), side: h ? g.bottom < t.top : g.left > t.right };
+  });
+  if (door.dGap > 2) bad(`вход не на уровне стола 11 (смещение ${door.dGap.toFixed(1)}px)`);
+  if (!door.side) bad(door.h ? 'вход должен быть на верхней стене над столом 11' : 'вход должен быть на правой стене справа от стола 11');
 
   const geo = await page.evaluate(() => {
     const map = document.querySelector('#seats [data-map]').getBoundingClientRect();

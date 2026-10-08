@@ -1,9 +1,11 @@
 @layer sections {
   /* Якоря не прячут заголовок под шапкой: высота шапки + 24px */
-  :root { --header-h: 64px; --seats-chrome: 272px; }
+  :root { --header-h: 64px; --seats-chrome: 272px; --seats-pad: 56px; }
+  @media (min-width: 1024px) { :root { --seats-pad: 80px; } }
   /* Lenis и браузер складывают scroll-margin элемента и scroll-padding страницы: общий отступ обнуляем, каждой секции даём свой */
   html { scroll-padding-top: 0; }
   main > section[id], .ch[id], .tlist { scroll-margin-top: calc(var(--header-h) + 24px); }
+  #seats { padding-top: var(--seats-pad); scroll-margin-top: calc(var(--header-h) + 24px - var(--seats-pad)); }
 
   /* ---------- Блок «Выберите места» (#seats) ---------- */
   .seats { display: grid; gap: var(--space-6); }
@@ -15,7 +17,6 @@
     .seats__lead--fine { display: none; }
     .seats__lead--touch { display: block; }
   }
-  .seats__skip { display: inline-flex; align-items: center; min-height: 44px; padding-inline: 8px; font-family: var(--font-ui); font-size: 14px; font-weight: 600; color: var(--text-muted); text-underline-offset: 4px; }
   .seats__mapcol { display: grid; gap: var(--space-5); min-width: 0; }
 
   /* Схема: на телефоне вертикальная, высота не больше экрана без шапки и 120px; на десктопе горизонтальная на всю ширину */
@@ -84,28 +85,31 @@
   .chip__name { font-weight: 600; color: var(--text-strong); }
   .chip__price { font-family: var(--font-ui); font-weight: 500; color: var(--text); }
   .chip__txt { display: grid; gap: 1px; justify-items: start; }
-  .seats__child { font-size: 14px; color: var(--text-muted); }
   .seats__states { gap: 8px 18px; font-size: 14px; color: var(--text-muted); }
   .seats__states li { display: inline-flex; align-items: center; gap: 8px; }
   .cap { flex: none; width: 18px; height: 10px; border-radius: 6px; border: 1.5px solid var(--ice-200); }
   .cap--sel { background: var(--ice-200); box-shadow: 0 2px 6px rgba(171, 195, 228, 0.6); }
   .cap--held { border-color: #f4d24e; background: repeating-linear-gradient(45deg, #f4d24e 0 2px, #2b2a18 2px 4px); }
   .cap--booked { border-color: #4f5a78; background: #394360; }
-  .seats__listbtn { display: none; align-items: center; min-height: 36px; padding: 0 4px; border: 0; background: none; color: var(--text-strong); font: inherit; font-size: 14px; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
+  .seats__listbtn { display: inline-flex; align-items: center; justify-self: center; min-height: 44px; padding: 0 8px; border: 0; background: none; color: var(--text-strong); font: inherit; font-size: 14px; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
   .seats__listbtn:focus-visible { box-shadow: var(--focus-ring); border-radius: 6px; }
 
-  /* Детские билеты: отдельный зал, без места за столом */
-  .kids { display: grid; gap: var(--space-3); padding: var(--space-4) var(--space-5); border: 1px solid var(--glass-line); border-radius: 18px; background: color-mix(in oklab, var(--night-800) 45%, transparent); }
-  .kids__title { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: clamp(22px, 2.4vw, 28px); line-height: 1.1; text-transform: uppercase; color: var(--text-strong); }
-  .kids__note { max-width: 60ch; font-size: 14px; line-height: 1.5; color: var(--text); }
-  .kids__row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-5); }
-  .kids__step { width: 168px; }
-  .kids__price { font-size: 14px; color: var(--text-muted); }
-  .kids__price b { font-family: var(--font-display); font-weight: 400; font-size: 22px; color: var(--text-strong); font-variant-numeric: lining-nums; }
-  .kids__ages { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: var(--space-2) var(--space-3); }
+  /* Детские билеты: компактная строка на всю ширину схемы; возрасты — под строкой, только когда дети есть */
+  .kids { display: grid; gap: var(--space-3); padding: 10px 18px; border: 1px solid var(--glass-line); border-radius: 18px; background: color-mix(in oklab, var(--night-800) 45%, transparent); }
+  .kids__row { display: flex; flex-direction: column; gap: var(--space-3); }
+  .kids__txt { display: grid; gap: 2px; min-width: 0; }
+  .kids__title { margin: 0; font-family: var(--font-ui); font-weight: 600; font-size: 16px; line-height: 1.3; letter-spacing: 0; text-transform: none; color: var(--text-strong); }
+  .kids__note { font-size: 14px; line-height: 1.4; color: var(--text-muted); }
+  .kids__buy { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
+  .kids__price { font-size: 14px; color: var(--text-muted); white-space: nowrap; }
+  .kids__price b { font-family: var(--font-ui); font-weight: 600; font-size: 16px; color: var(--text-strong); font-variant-numeric: lining-nums; }
+  .kids__step { width: 136px; min-height: 46px; flex: none; }
+  .kids__step .stepper__btn { width: 44px; height: 44px; }
+  .kids__step .stepper__val { font-size: 22px; }
+  .kids__ages { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-3); }
   .kids__ages:empty { display: none; }
-  .kids__age { display: grid; gap: 4px; font-size: 14px; color: var(--text-muted); }
-  .kids__select { min-height: 44px; padding: 8px 12px; border-radius: 12px; font: inherit; font-size: 15px; color: var(--text-strong); }
+  .kids__age { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-muted); white-space: nowrap; }
+  .kids__select { min-height: 44px; min-width: 112px; padding: 8px 12px; border-radius: 12px; font: inherit; font-size: 15px; color: var(--text-strong); }
 
   /* Список столов */
   .tlist { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
@@ -176,22 +180,23 @@
 
   /* Десктоп: схема горизонтальная на всю ширину контейнера (до 1400px), весь экран = заголовок + схема + легенда + панель */
   @media (min-width: 1024px) {
-    #seats { padding-block: 12px 130px; }
+    #seats { padding-bottom: 130px; }
     .seats { gap: 14px; }
     .seats__head { gap: 6px; }
     .seats__head h2 { font-size: clamp(26px, 2.4vw, 38px); }
     .seats__lead { font-size: 15px; line-height: 1.4; max-width: none; }
-    .seats__skip { display: none; }
     .seats__mapcol { gap: 12px; }
-    .seats__map { width: min(100%, 1400px, calc((100svh - var(--header-h) - var(--seats-chrome)) * var(--ratio, 2.5))); }
+    .seats__mapcol { width: min(100%, 1400px, calc((100svh - var(--header-h) - var(--seats-chrome)) * var(--ratio, 2.5))); margin-inline: auto; }
+    .seats__map { width: 100%; }
     .seats__zoom { top: auto; bottom: 12px; }
     .seats__legend { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 24px; }
     .seats__zones { flex: 0 0 auto; }
     .chip { flex: 0 0 auto; min-height: 36px; padding: 6px 14px; border-radius: 999px; }
     .chip__txt { display: flex; gap: 8px; align-items: baseline; }
-    .seats__listbtn { display: inline-flex; }
-    .kids { justify-self: center; width: min(100%, 900px); }
-    #seats-list { display: none; }
+    .seats__listbtn { min-height: 36px; }
+    .kids { padding: 10px 20px; }
+    .kids__row { flex-direction: row; align-items: center; justify-content: space-between; gap: var(--space-6); min-height: 52px; }
+    .kids__buy { gap: var(--space-5); }
     .tdlg { width: min(94vw, 760px); }
     .tlist--dlg { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 

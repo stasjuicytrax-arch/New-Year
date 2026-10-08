@@ -83,7 +83,8 @@ export const TABLES: readonly HallTable[] = GRID.map(([n, c, r]) => ({ n, zone: 
 const hallRight = COL(2) + WALL_GAP;
 const hallBottom = ROW(7) + WALL_GAP;
 export const HALL = { x: MARGIN, y: MARGIN, w: hallRight - MARGIN, h: hallBottom - MARGIN };
-export const VIEWBOX = { w: hallRight + MARGIN, h: hallBottom + 60 };
+/** Справа (в горизонтальной раскладке сверху) запас под подпись входа. */
+export const VIEWBOX = { w: hallRight + 66, h: hallBottom + MARGIN };
 
 /** Сцена у правой стены, передний край (дуга) смотрит в зал. */
 const stageX = COL(1) + 70;
@@ -94,8 +95,8 @@ export const STAGE = { x: stageX, y: stageY, w: hallRight - 16 - stageX, h: PITC
 const danceX = COL(0) + 62;
 export const DANCE = { x: danceX, y: ROW(3) + 78, w: STAGE.x - 16 - danceX, h: ROW(5) + 92 - (ROW(3) + 78) };
 
-/** Вход: проём в нижней стене у правого угла (по исходнику рядом с лестницей). */
-export const DOOR = { x: COL(2) + 20, w: 56, y: hallBottom };
+/** Вход: на правой стене исходника, на уровне стола 11 (справа от него, где стена и лестница). В горизонтальной раскладке это верхняя стена, точно над столом 11. */
+export const DOOR = { w: 56, y: ROW(2) };
 
 /** Окна на левой стене (отметки): центры по высоте. */
 export const WINDOWS = [ROW(0.9), ROW(2.5), ROW(4.5), ROW(6.1)].map((y) => Math.round(y));
