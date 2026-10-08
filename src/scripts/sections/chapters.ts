@@ -119,7 +119,8 @@ function ch07(c: Chapter): string {
   return shell(
     c,
     'center ch--bokeh',
-    `<div class="ch__bokeh" aria-hidden="true">${Array.from({ length: 9 }, (_, i) => `<i style="--i:${i}"></i>`).join('')}</div>${titled(head(c), c)}`,
+    `<div class="ch__bokeh" aria-hidden="true">${Array.from({ length: 9 }, (_, i) => `<i style="--i:${i}"></i>`).join('')}</div>${titled(head(c), c)}
+    <div class="ch__media ch__media--decor">${mask(picture({ name: 'decor-1', alt: 'Цветочная композиция и бокалы на праздничном столе', sizes: '(min-width: 1024px) 760px, 92vw', cls: 'ch__img' }), 'ch__mask--wide')}</div>`,
   );
 }
 

@@ -199,6 +199,151 @@
       }
     ]
   },
+  "hall-1": {
+    "src": "2560x1703",
+    "variants": [
+      {
+        "w": 640,
+        "width": 640,
+        "height": 426
+      },
+      {
+        "w": 960,
+        "width": 960,
+        "height": 639
+      },
+      {
+        "w": 1440,
+        "width": 1440,
+        "height": 958
+      },
+      {
+        "w": 2048,
+        "width": 2048,
+        "height": 1362
+      }
+    ]
+  },
+  "hall-2": {
+    "src": "2560x1491",
+    "variants": [
+      {
+        "w": 640,
+        "width": 640,
+        "height": 373
+      },
+      {
+        "w": 960,
+        "width": 960,
+        "height": 559
+      },
+      {
+        "w": 1440,
+        "width": 1440,
+        "height": 839
+      },
+      {
+        "w": 2048,
+        "width": 2048,
+        "height": 1193
+      }
+    ]
+  },
+  "hall-3": {
+    "src": "2560x1703",
+    "variants": [
+      {
+        "w": 640,
+        "width": 640,
+        "height": 426
+      },
+      {
+        "w": 960,
+        "width": 960,
+        "height": 639
+      },
+      {
+        "w": 1440,
+        "width": 1440,
+        "height": 958
+      },
+      {
+        "w": 2048,
+        "width": 2048,
+        "height": 1362
+      }
+    ]
+  },
+  "hall-4": {
+    "src": "2560x1703",
+    "variants": [
+      {
+        "w": 640,
+        "width": 640,
+        "height": 426
+      },
+      {
+        "w": 960,
+        "width": 960,
+        "height": 639
+      },
+      {
+        "w": 1440,
+        "width": 1440,
+        "height": 958
+      },
+      {
+        "w": 2048,
+        "width": 2048,
+        "height": 1362
+      }
+    ]
+  },
+  "hall-5": {
+    "src": "2560x1703",
+    "variants": [
+      {
+        "w": 640,
+        "width": 640,
+        "height": 426
+      },
+      {
+        "w": 960,
+        "width": 960,
+        "height": 639
+      },
+      {
+        "w": 1440,
+        "width": 1440,
+        "height": 958
+      },
+      {
+        "w": 2048,
+        "width": 2048,
+        "height": 1362
+      }
+    ]
+  },
+  "decor-1": {
+    "src": "2560x1703",
+    "variants": [
+      {
+        "w": 640,
+        "width": 640,
+        "height": 426
+      },
+      {
+        "w": 960,
+        "width": 960,
+        "height": 639
+      },
+      {
+        "w": 1440,
+        "width": 1440,
+        "height": 958
+      }
+    ]
+  },
   "dj-seven": {
     "src": "1254x1254",
     "variants": [

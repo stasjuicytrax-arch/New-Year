@@ -306,8 +306,114 @@ async function run(browser, [width, height, desktop = false]) {
     await page.waitForTimeout(700);
     await el?.screenshot({ path: `${dir}/${id}.png` }).catch(() => undefined);
   }
+  await hallScenario(page, name, dir, desktop).catch((e) => fail(name, `галерея зала, сценарий упал: ${String(e.message).split(String.fromCharCode(10)).slice(0, 4).join(' | ')}`));
   await seatingScenario(page, name, dir, desktop).catch((e) => fail(name, `схема зала, сценарий упал: ${String(e.message).split(String.fromCharCode(10)).slice(0, 12).join(' | ')}`));
   await ctx.close();
+}
+
+/** Галерея «Зал WHITE HALL»: заголовок и подпись, бенто на десктопе / лента на телефоне, лайтбокс. */
+async function hallScenario(page, name, dir, desktop) {
+  page.setDefaultTimeout(8000);
+  const bad = (m) => fail(name, `галерея зала: ${m}`);
+  await page.evaluate(() => document.querySelector('#hall').scrollIntoView({ block: 'start' }));
+  await page.waitForTimeout(1800);
+
+  const g = await page.evaluate(() => {
+    const vh = window.innerHeight;
+    const vw = window.innerWidth;
+    const items = [...document.querySelectorAll('#hall .hall__item')];
+    const r = items.map((e) => e.getBoundingClientRect());
+    const rail = document.querySelector('#hall [data-rail]');
+    const grid = document.querySelector('#hall .hall__grid').getBoundingClientRect();
+    const title = document.querySelector('#hall-title');
+    return {
+      vh, vw,
+      title: title.textContent.trim(), titleTop: title.getBoundingClientRect().top, titleFont: getComputedStyle(title).fontFamily,
+      cap: document.querySelector('#hall .hall__cap').textContent.replace(/\s+/g, ' ').trim(),
+      n: items.length,
+      rects: r.map((b) => ({ l: b.left, t: b.top, w: b.width, h: b.height, r: b.right, b: b.bottom })),
+      radius: items.map((e) => getComputedStyle(e).borderRadius),
+      grid: { top: grid.top, bottom: grid.bottom, w: grid.width },
+      railScroll: rail.scrollWidth, railClient: rail.clientWidth, snap: getComputedStyle(rail).scrollSnapType,
+      dots: [...document.querySelectorAll('#hall .hall__dots span')].map((d) => d.classList.contains('is-on')),
+      dotsShown: getComputedStyle(document.querySelector('#hall .hall__dots')).display !== 'none',
+      prevBottom: document.querySelector('#hall').previousElementSibling.getBoundingClientRect().bottom,
+    };
+  });
+  if (g.n !== 5) bad(`в галерее ${g.n} фото, нужно 5`);
+  if (g.title !== 'ЗАЛ WHITE HALL') bad(`заголовок «${g.title}»`);
+  if (!/prata/i.test(g.titleFont)) bad(`заголовок не Prata: ${g.titleFont}`);
+  if (g.cap !== 'Банкетный зал WHITE HALL · Пермь, ул. Монастырская, 2а') bad(`подпись «${g.cap}»`);
+  if (g.titleTop < 63) bad(`заголовок под шапкой (top ${Math.round(g.titleTop)}px)`);
+  if (g.radius.some((x) => x !== '20px')) bad(`радиус фото ${g.radius.join(',')}, нужно 20px`);
+  if (desktop) {
+    const [big, ...small] = g.rects;
+    const gap = small[2].t - small[0].b;
+    if (g.grid.bottom > g.vh + 0.5 || g.grid.top < 63) bad(`бенто не помещается в экран: ${Math.round(g.grid.top)}–${Math.round(g.grid.bottom)} при высоте ${g.vh}`);
+    if (g.grid.w > 1401) bad(`сетка шире 1400px: ${Math.round(g.grid.w)}`);
+    if (Math.abs(big.h - (small[0].h + small[2].h + gap)) > 3 || gap < 12) bad('большое фото не занимает 2 ряда');
+    if (!(big.r <= small[0].l + 1 && Math.abs(small[0].t - small[1].t) < 2 && Math.abs(small[2].t - small[3].t) < 2 && small[1].l > small[0].l)) bad('4 малых фото не лежат 2×2 справа от большого');
+    if (g.dotsShown) bad('на десктопе показаны точки ленты');
+  } else {
+    if (g.railScroll <= g.railClient + 4) bad('лента не прокручивается по горизонтали');
+    if (!/x/.test(g.snap) || !/mandatory/.test(g.snap)) bad(`нет scroll-snap: ${g.snap}`);
+    const second = g.rects[1];
+    if (!(second.l < g.vw - 8 && second.l > g.vw * 0.6)) bad(`край следующего фото не виден (left ${Math.round(second.l)} из ${g.vw})`);
+    if (g.dots.length !== 5 || !g.dots[0]) bad('точки-индикатор: нет 5 точек или первая не активна');
+    await page.locator('#hall [data-rail]').evaluate((el) => el.scrollTo({ left: el.querySelectorAll('.hall__item')[1].offsetLeft - parseFloat(getComputedStyle(el).paddingLeft), behavior: 'instant' }));
+    await page.waitForTimeout(500);
+    const dots2 = await page.evaluate(() => [...document.querySelectorAll('#hall .hall__dots span')].map((d) => d.classList.contains('is-on')));
+    if (!dots2[1]) bad('точка-индикатор не переключилась после прокрутки ленты');
+    await page.locator('#hall [data-rail]').evaluate((el) => el.scrollTo({ left: 0, behavior: 'instant' }));
+    await page.waitForTimeout(300);
+  }
+  await page.screenshot({ path: `${dir}/hall-fit.png` });
+
+  // лайтбокс: открытие, стрелки, клавиши, свайпы, Esc, крестик
+  const first = page.locator('#hall .hall__item--1');
+  await (desktop ? first.click() : first.tap());
+  await page.waitForSelector('#hall-lightbox[open]', { timeout: 3000 }).catch(() => bad('клик по фото не открыл лайтбокс'));
+  await page.waitForTimeout(500);
+  const lb = () => page.evaluate(() => {
+    const img = document.querySelector('#hall-lightbox .lightbox__img');
+    const r = img ? img.getBoundingClientRect() : { width: 0, height: 0 };
+    return { count: document.querySelector('#hall-lightbox [data-lb-count]').textContent, w: Math.round(r.width), h: Math.round(r.height), open: document.querySelector('#hall-lightbox').open, vw: innerWidth, vh: innerHeight };
+  });
+  const a = await lb();
+  if (a.count !== '1 / 5') bad(`счётчик лайтбокса «${a.count}»`);
+  if (a.w < a.vw - 2 || a.h < a.vh - 2) bad(`фото в лайтбоксе не на весь экран: ${a.w}×${a.h} из ${a.vw}×${a.vh}`);
+  const btns = await page.evaluate(() => ['[data-lb-close]', '[data-lb-prev]', '[data-lb-next]'].map((q) => { const b = document.querySelector('#hall-lightbox ' + q).getBoundingClientRect(); return Math.min(b.width, b.height); }));
+  if (btns.some((x) => x < 44)) bad('кнопки лайтбокса меньше 44px');
+  await page.screenshot({ path: `${dir}/hall-lightbox.png` });
+  await page.locator('#hall-lightbox [data-lb-next]').click();
+  if ((await lb()).count !== '2 / 5') bad('кнопка «следующее» не листает');
+  await page.keyboard.press('ArrowRight');
+  if ((await lb()).count !== '3 / 5') bad('стрелка вправо не листает');
+  await page.keyboard.press('ArrowLeft');
+  if ((await lb()).count !== '2 / 5') bad('стрелка влево не листает');
+  const swipe = (dx, dy) => page.evaluate(([dx, dy]) => {
+    const st = document.querySelector('#hall-lightbox [data-stage]');
+    const mk = (type, x, y) => st.dispatchEvent(new PointerEvent(type, { bubbles: true, pointerId: 7, clientX: x, clientY: y }));
+    mk('pointerdown', 200, 300); mk('pointerup', 200 + dx, 300 + dy);
+  }, [dx, dy]);
+  await swipe(-120, 0);
+  if ((await lb()).count !== '3 / 5') bad('свайп влево не листает вперёд');
+  await swipe(120, 0);
+  if ((await lb()).count !== '2 / 5') bad('свайп вправо не листает назад');
+  await swipe(0, 160);
+  await page.waitForTimeout(250);
+  if ((await lb()).open) bad('свайп вниз не закрыл лайтбокс');
+  await (desktop ? first.click() : first.tap());
+  await page.waitForSelector('#hall-lightbox[open]', { timeout: 3000 }).catch(() => bad('лайтбокс не открылся повторно'));
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(250);
+  if ((await lb()).open) bad('Esc не закрыл лайтбокс');
+  await (desktop ? first.click() : first.tap());
+  await page.waitForSelector('#hall-lightbox[open]', { timeout: 3000 }).catch(() => undefined);
+  await page.locator('#hall-lightbox [data-lb-close]').click();
+  await page.waitForTimeout(250);
+  if ((await lb()).open) bad('крестик не закрыл лайтбокс');
+  if (await page.evaluate(() => getComputedStyle(document.documentElement).overflow === 'hidden')) bad('после закрытия лайтбокса страница осталась заблокированной');
 }
 
 /** Сценарии схемы зала: только места; места + дети; только дети (детские билеты без мест). */
@@ -340,7 +446,7 @@ async function seatingScenario(page, name, dir, desktop) {
     const panelTop = panelShown ? panel.getBoundingClientRect().top : vh;
     const legend = document.querySelector('#seats .seats__legend').getBoundingClientRect();
     const title = document.querySelector('#seats-title').getBoundingClientRect();
-    const mq = document.querySelector('#marquee-b').getBoundingClientRect();
+    const mq = document.querySelector('#seats').previousElementSibling.getBoundingClientRect();
     const kidsR = document.querySelector('#seats .kids').getBoundingClientRect();
     const mapR = document.querySelector('#seats [data-map]').getBoundingClientRect();
     const items = [...document.querySelectorAll('#seats .tbl__body'), document.querySelector('#seats .hall__stage')].map((e) => e.getBoundingClientRect());

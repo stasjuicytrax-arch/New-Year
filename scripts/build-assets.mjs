@@ -47,6 +47,13 @@ const IMAGES = [
   { name: 'kids-2', src: 'Для блока на детскую анимацию/a-min.jpg', widths: [640, 960, 1440, 2048] },
   { name: 'kids-4', src: 'Vintermagi med Ded Moroz og Snegurochka.png', widths: [640, 960, 1254] },
   { name: 'kids-5', src: 'Magisk boblefest i vintereventyrland.png', widths: [640, 960, 1254] },
+  // Зал WHITE HALL (галерея и глава 07). Отбор: без дублей одного кадра в разной подсветке, без фото персонала и мягких кадров.
+  { name: 'hall-1', src: 'White hall/356Uk-FgOGbVJB0qiFe09diQONweuZCHMy044Gil4GKVCPJ8MNkUZi56bpi2zuqRYyFRpgn0d1yGTw.jpg', widths: [640, 960, 1440, 2048] },
+  { name: 'hall-2', src: 'White hall/6XDtd0Fg20RwpMv0i3np_xTxn8g6btJVjMbZv2kKIdDCllHewcTuuWrfJ31DITqqenivrGQiXc8.jpg', widths: [640, 960, 1440, 2048] },
+  { name: 'hall-3', src: 'White hall/RzTJOJxLGbxsb1lxf9vCqrwQWzueFcf8-YDFUTUB1BFVnqzyGcybYkMdXrDbsN3wF_0IP8o77-U.jpg', widths: [640, 960, 1440, 2048] },
+  { name: 'hall-4', src: 'White hall/GHGQM__9Neep4CPrZKH_nKD1k-fFxkKZ8wJuOqzrvYRHJhJJPEvaFlyL_KzYxuzDAIQL6UskA_w.jpg', widths: [640, 960, 1440, 2048] },
+  { name: 'hall-5', src: 'White hall/P5rxh2fgogyXTK8InPSjKOVEMKPe2TC14S2MNCAew7x8rrixBD8HGwEtxaC7N2j2hoafzA.jpg', widths: [640, 960, 1440, 2048] },
+  { name: 'decor-1', src: 'White hall/z_JA89Q4BNS7HTaKZ13D5LJHkLyyIqrJRW_zmeutA_kBpY062-koX45-Y0Ye89APiraJ1w.jpg', widths: [640, 960, 1440] },
   { name: 'dj-seven', src: 'Наш диджей DJ Seven/IMG_5835.PNG', widths: [640, 900, 1254] },
 ];
 

@@ -199,6 +199,17 @@ export const bookingBlock = {
   tablePositions: ['Центр', 'Подальше от сцены', 'Не важно'],
 } as const;
 
+/** Галерея зала: заголовок и подпись; снимки и подписи к ним (alt) в src/scripts/sections/hall.ts. */
+export const hall = {
+  title: 'ЗАЛ WHITE HALL',
+  lightbox: 'Фотографии зала',
+  open: 'Открыть фото',
+  of: 'из',
+  close: 'Закрыть',
+  prev: 'Предыдущее фото',
+  next: 'Следующее фото',
+} as const;
+
 /** Схема зала и выбор мест (docs/CONTENT.md §6а). Цены по зонам и раскладка столов лежат в src/data/seating.ts. */
 export const seating = {
   title: 'Выберите места',

@@ -1,6 +1,7 @@
 import { event, footer, hero as heroContent, intro, manifest, marquee, nav, phones, program, typo, why } from '../../content/content';
 import { renderBooking } from './booking';
 import { renderChapters } from './chapters';
+import { renderHall } from './hall';
 import { renderSeating } from './seating';
 
 const $ = <T extends HTMLElement>(sel: string): T => {
@@ -66,6 +67,7 @@ export function renderSkeleton(): void {
       <p class="manifest__text">${hl}</p>
     </div>`;
 
+  $('#hall').innerHTML = renderHall();
   $('#seats').innerHTML = renderSeating();
   $('#booking').innerHTML = renderBooking();
 
