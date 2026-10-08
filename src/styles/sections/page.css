@@ -124,7 +124,6 @@
 
   .hp { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
   .form__submit { display: grid; gap: var(--space-3); justify-items: start; }
-  .form__estimate { font-family: var(--font-display); font-weight: 400; font-size: clamp(26px, 3vw, 38px); line-height: 1.05; color: var(--text-strong); font-variant-numeric: lining-nums; }
   .form__note { font-size: 14px; color: var(--text-muted); }
   .form__status { font-size: 14px; line-height: 1.5; color: var(--text-strong); }
   .form__status:empty { display: none; }
@@ -200,6 +199,4 @@
     .why__date { font-size: clamp(30px, 2.6vw, 44px); white-space: nowrap; }
   }
   .why__n { font-family: var(--font-ui); font-weight: 500; font-variant-numeric: lining-nums tabular-nums; }
-  .form__estimate { font-size: clamp(26px, 3vw, 38px); text-transform: uppercase; }
-  .form__estimate-label { display: block; margin-bottom: 4px; font-family: var(--font-ui); font-weight: 500; font-size: 14px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); }
 }

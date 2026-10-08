@@ -31,7 +31,6 @@ export function renderSkeleton(): void {
     <div class="container intro">
       <p class="lead intro__lead" data-words>${typo(intro.lead)}</p>
       <div class="intro__cta" data-fade>
-        <p class="intro__note">${typo(intro.note)}</p>
         <span class="btn-wrap"><a class="btn btn--secondary" href="#booking" data-goal="book_click"><span>${intro.cta}</span></a></span>
       </div>
     </div>`;

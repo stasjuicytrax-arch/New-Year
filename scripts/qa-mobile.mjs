@@ -123,7 +123,7 @@ async function inPage(desktop) {
     const phone = header.querySelector('.site-header__phone');
     if (brand && rect(brand).right > rect(header.querySelector('.site-header__actions')).left + 1) out.push('бренд в шапке налезает на кнопки');
     if (!phone || phone.getAttribute('href') !== 'tel:+79082708971') out.push('в шапке нет телефона +7 908 270-89-71');
-    if (brand && brand.textContent.trim() !== 'НОВОГОДНЯЯ НОЧЬ 2027') out.push(`бренд в шапке: «${brand.textContent.trim()}»`);
+    if (brand && brand.textContent.trim() !== 'WHITE HALL · 31.12') out.push(`бренд в шапке: «${brand.textContent.trim()}»`);
   }
 
   // 6. заголовки: без переносов слов, без выхода за экран

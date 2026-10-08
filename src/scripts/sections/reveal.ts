@@ -65,13 +65,17 @@ export function initReveals(): void {
   // Счётчики: номера глав, цены, граммовка меню
   $$('[data-count]').forEach((el) => {
     const end = Number(el.dataset.count);
+    const final = el.textContent ?? '';
     const proxy = { v: 0 };
-    el.textContent = fmtCount(el, 0);
+    // В HTML уже финальное значение: если триггер не сработает, цифры всё равно верные. Анимация стартует с 0 только при входе в кадр.
     gsap.to(proxy, {
       v: end,
       duration: el.dataset.pad ? 0.7 : 1.2,
       ease: 'power2.out',
+      immediateRender: false,
+      onStart: () => { el.textContent = fmtCount(el, 0); },
       onUpdate: () => { el.textContent = fmtCount(el, proxy.v); },
+      onComplete: () => { el.textContent = final; },
       scrollTrigger: once(el, 'top 90%'),
     });
   });

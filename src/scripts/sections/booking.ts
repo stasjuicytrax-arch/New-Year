@@ -108,8 +108,6 @@ export function renderBooking(): string {
 
         <div class="form__submit">
           <span class="btn-wrap"><button class="btn btn--primary" type="submit" data-goal="form_submit"><span>${bookingBlock.submit}</span></button></span>
-          <p class="form__estimate" data-estimate aria-live="polite"></p>
-          <p class="form__note">${bookingBlock.estimateNote}</p>
           <p class="form__status" data-status role="status"></p>
         </div>
       </div>
@@ -147,12 +145,6 @@ export function initBooking(): void {
     el.querySelector<HTMLButtonElement>('[data-dir="1"]')!.disabled = val >= max;
   };
 
-  const estimate = form.querySelector<HTMLElement>('[data-estimate]')!;
-  const renderEstimate = (): void => {
-    const total = get('adults') * prices.adult + get('kids4') * prices.child;
-    estimate.innerHTML = `<span class="form__estimate-label">${bookingBlock.estimatePrefix}</span>от ${fmt(total)} ${prices.currency}`;
-  };
-
   /** Горячее: телятина + судак всегда равны числу взрослых (перекладываем порцию между блюдами). */
   const hot = (changed: 'veal' | 'zander' | 'adults', dir = 0): void => {
     const adults = get('adults');
@@ -183,7 +175,6 @@ export function initBooking(): void {
         // шаг в одну сторону забирает порцию у другого блюда
         hot(name, dir);
       }
-      renderEstimate();
     });
     set(name, get(name));
   });
@@ -191,7 +182,6 @@ export function initBooking(): void {
   steps.get('veal')!.dataset.max = '20';
   steps.get('zander')!.dataset.max = '20';
   hot('adults');
-  renderEstimate();
 
   // маска телефона +7 (999) 999-99-99
   const phone = form.elements.namedItem('phone') as HTMLInputElement;
@@ -240,7 +230,6 @@ export function initBooking(): void {
       table: String(fd.get('table')),
       hot: { veal: get('veal'), zander: get('zander') },
       comment: String(fd.get('comment') ?? '').trim(),
-      estimate: get('adults') * prices.adult + get('kids4') * prices.child,
       event: event.name,
     };
     if (!booking.endpoint) {

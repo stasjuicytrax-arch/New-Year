@@ -12,7 +12,7 @@ const head = (c: Chapter, extra = ''): string => `
   <header class="ch__head">
     <p class="ch__no"><span class="ch__digits chrome" data-count="${Number(c.n)}" data-pad="2">${c.n}</span><span class="label label--dot">${program.chapterLabel} ${c.n}</span></p>
     <h3 class="ch__title" data-split>${typo(c.title)}</h3>
-    <p class="ch__text" data-fade>${typo(c.text)}</p>
+    <p class="ch__text" data-fade>${typo(c.text ?? '')}</p>
     ${extra}
   </header>`;
 
@@ -68,7 +68,7 @@ function ch03(c: Chapter): string {
     'left',
     `${titled(head(c), c)}
     <div class="ch__media ch__media--duo">
-      ${mask(picture({ name: 'ded-moroz', alt: 'Дважды лучший Дед Мороз России', sizes: '(min-width: 1024px) 24vw, 60vw', cls: 'ch__img ch__img--ded' }), 'ch__frame ch__frame--a')}
+      ${mask(picture({ name: 'ded-moroz', alt: 'Дед Мороз на сцене', sizes: '(min-width: 1024px) 24vw, 60vw', cls: 'ch__img ch__img--ded' }), 'ch__frame ch__frame--a')}
       ${mask(picture({ name: 'snegurochka', alt: 'Снегурочка на сцене', sizes: '(min-width: 1024px) 24vw, 60vw', cls: 'ch__img' }), 'ch__frame ch__frame--b')}
     </div>`,
   );
@@ -106,7 +106,7 @@ function ch06(c: Chapter): string {
   return shell(
     c,
     'right ch--kids',
-    `${titled(head(c, `<p class="ch__tag" data-fade><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2z"/></svg>${typo(c.extra ?? '')}</p>`), c)}
+    `${titled(head(c), c)}
     <div class="ch__media ch__media--fan" data-fan>
       <div class="ch__polaroid ch__polaroid--1">${picture({ name: 'kids-1', alt: 'Аниматор в костюме принцессы на детском празднике', sizes: sz, cls: 'ch__img' })}</div>
       <div class="ch__polaroid ch__polaroid--2">${picture({ name: 'kids-2', alt: 'Детская анимация с воздушными шарами', sizes: sz, cls: 'ch__img' })}</div>

@@ -22,9 +22,8 @@
   .ch__mask picture { display: block; width: 100%; height: 100%; }
   .ch__img { display: block; width: 100%; height: 100%; object-fit: cover; }
 
-  /* Mobile: фото/слово сначала, текст под ним (DOM: head первым, поэтому поднимаем медиа) */
-  .ch__media, .ch__word, .ch__finder, .ch__strip { order: -1; }
-  .ch--full .ch__media { order: -2; }
+  /* Порядок везде как в DOM: номер → метка → заголовок → текст → фото. Слово-образ (04, 09) остаётся вывеской над номером. */
+  .ch__word { order: -1; }
 
   /* ---------- 01: балет ---------- */
   .ch__mask--wide { aspect-ratio: 3 / 2; }
@@ -278,7 +277,7 @@
 
   /* ---------- Desktop: чередование схем ---------- */
   @media (min-width: 1024px) {
-    .ch__media, .ch__word, .ch__finder, .ch__strip, .menu, .ch--full .ch__media { order: 0; }
+    .ch__word { order: 0; }
     .ch--right > .container,
     .ch--left > .container,
     .ch--menu > .container { grid-template-columns: repeat(12, minmax(0, 1fr)); align-items: center; }
@@ -328,8 +327,6 @@
   .ch__polaroid .ch__img { border-radius: 10px; }
 
   /* 06: обычная строка-метка вместо «пилюли» */
-  .ch__tag { display: flex; align-items: center; gap: 10px; max-width: 34ch; font-family: var(--font-ui); font-size: 14px; font-weight: 500; line-height: 1.4; letter-spacing: 0.04em; color: var(--text); }
-  .ch__tag svg { flex: none; width: 16px; height: 16px; fill: var(--amber-400); }
 
   /* 05: фотоплёнка */
   .film { width: 100vw; margin-inline: calc(50% - 50vw); overflow: hidden; padding-block: var(--space-5); }
