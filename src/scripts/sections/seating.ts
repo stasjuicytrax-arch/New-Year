@@ -1,10 +1,14 @@
 import { prices, seating as t, typo } from '../../content/content';
+import meta3d from '../../assets/img/hall3d-meta.json';
+import { picture } from '../media';
 import {
   CHILD_PRICE,
   DANCE,
   DOOR,
   GEOM,
   HALL,
+  HALL3D,
+  HALL3D_R,
   KIDS_MAX,
   KID_AGE,
   SEATING_STATUS_URL,
@@ -242,8 +246,12 @@ export function renderSeating(): string {
       <h2 id="seats-title" class="chrome" data-split>${t.title}</h2>
       <p class="seats__lead seats__lead--fine">${typo(t.lead)}</p>
       <p class="seats__lead seats__lead--touch">${typo(t.leadTouch)}</p>
+      <div class="seats__switch" role="group" aria-label="${t.viewAria}">
+        <button type="button" class="seats__tab" data-view-btn="schema" aria-pressed="false">${t.viewSchema}</button>
+        <button type="button" class="seats__tab" data-view-btn="3d" aria-pressed="false">${t.view3d}</button>
+      </div>
     </header>
-    <div class="seats__mapcol" style="--ratio:${ratio}">
+    <div class="seats__mapcol" style="--ratio:${ratio}" data-view="schema" data-mapcol>
       <div class="seats__map" data-map>
         <div class="hall-host" data-host>${svgMarkup(layout)}</div>
         <div class="seats__tip" data-tip role="tooltip" hidden></div>
@@ -253,6 +261,16 @@ export function renderSeating(): string {
           <button type="button" class="zbtn zbtn--reset" data-zoom="reset" aria-label="${t.zoomReset}" hidden>1×</button>
         </div>
       </div>
+      <figure class="seats__3d" data-3d hidden style="--r3d:${meta3d.ratio}">
+        <div class="hall3d" data-hall3d>
+          <div class="hall3d__plane" data-plane role="group" aria-label="${t.mapAria3d}">
+            ${picture({ name: 'hall3d', variants: meta3d.variants.map((v) => ({ w: v.w, h: v.height })), fallback: 'webp', alt: '', sizes: '(min-width: 1024px) 560px, 100vw', cls: 'hall3d__img', eager: true })}
+            ${HALL3D.map((h) => `<button type="button" class="hot" data-hot="${h.n}" style="left:${h.x * 100}%;top:${h.y * 100}%;width:${HALL3D_R * 200}%;--zc:${zoneById(tableByN(h.n).zone).color}" aria-label="Стол ${h.n}"><span class="hot__n" aria-hidden="true">${h.n}</span><span class="hot__sel" aria-hidden="true"></span></button>`).join('')}
+          </div>
+          <div class="seats__tip" data-tip3d role="tooltip" hidden></div>
+        </div>
+        <figcaption class="seats__cap3d">${t.caption3d}</figcaption>
+      </figure>
       <div class="seats__legend">${legendMarkup()}</div>
       <section class="kids" aria-labelledby="kids-title">
         <div class="kids__row">
@@ -401,6 +419,18 @@ function paint(): void {
     root.querySelectorAll<HTMLElement>(`[data-free="${tb.n}"]`).forEach((row) => { row.textContent = txt; });
   }
 
+  for (const b of root.querySelectorAll<HTMLButtonElement>('[data-hot]')) {
+    const n = Number(b.dataset.hot);
+    const free = freeSeats(n);
+    const sel = free.filter((x) => picks.has(seatKey(n, x))).length;
+    const z = zoneById(tableByN(n).zone);
+    b.classList.toggle('is-full', free.length === 0);
+    b.classList.toggle('has-sel', sel > 0);
+    b.dataset.sel = String(sel);
+    b.setAttribute('aria-label', free.length === 0 ? `Стол ${n}, мест нет` : `Стол ${n}, ${rub(z.price)} за место, свободно ${free.length} из ${SEATS_PER_TABLE}${sel ? `, выбрано ${sel}` : ''}`);
+    const badge = b.querySelector<HTMLElement>('.hot__sel');
+    if (badge) badge.textContent = sel ? String(sel) : '';
+  }
   paintKids();
   paintPanel();
   if (card.open) paintCard();
@@ -620,6 +650,79 @@ export function initSeating(): void {
   card = el.querySelector<HTMLDialogElement>('#table-card')!;
   const map = el.querySelector<HTMLElement>('[data-map]')!;
   const view = initView(map);
+
+  // Переключатель «Схема | 3D-вид»: по умолчанию схема на телефоне и 3D-вид на десктопе; выбор общий (одно состояние)
+  const mapcol = el.querySelector<HTMLElement>('[data-mapcol]')!;
+  const box3d = el.querySelector<HTMLElement>('[data-3d]')!;
+  const setView = (v: 'schema' | '3d'): void => {
+    mapcol.dataset.view = v;
+    box3d.hidden = v !== '3d';
+    map.hidden = v !== 'schema';
+    el.querySelectorAll<HTMLButtonElement>('[data-view-btn]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.viewBtn === v)));
+    if (v === '3d') view.reset();
+    el.querySelector<HTMLElement>('.seats__lead--fine')!.dataset.view = v;
+  };
+  el.querySelectorAll<HTMLButtonElement>('[data-view-btn]').forEach((b) => b.addEventListener('click', () => setView(b.dataset.viewBtn as 'schema' | '3d')));
+  setView(window.matchMedia('(min-width: 1024px)').matches ? '3d' : 'schema');
+
+  // 3D: клик по зоне стола открывает ту же карточку с местами, наведение показывает подсказку
+  const hall3d = el.querySelector<HTMLElement>('[data-hall3d]')!;
+  const tip3d = el.querySelector<HTMLElement>('[data-tip3d]')!;
+  const showTip3d = (btn: HTMLElement): void => {
+    const n = Number(btn.dataset.hot);
+    const z = zoneById(tableByN(n).zone);
+    const free = freeSeats(n).length;
+    tip3d.textContent = `Стол ${n} · ${rub(z.price)} · ${free === 0 ? 'мест нет' : `свободно ${free} из ${SEATS_PER_TABLE}`}`;
+    tip3d.hidden = false;
+    const hb = hall3d.getBoundingClientRect();
+    const b = btn.getBoundingClientRect();
+    tip3d.style.maxWidth = `${Math.max(120, hb.width - 16)}px`;
+    const tw = tip3d.offsetWidth;
+    tip3d.style.left = `${Math.max(8, Math.min(b.left + b.width / 2 - hb.left - tw / 2, hb.width - tw - 8))}px`;
+    const above = b.top - hb.top > 56;
+    tip3d.style.top = `${above ? b.top - hb.top - tip3d.offsetHeight - 8 : b.bottom - hb.top + 8}px`;
+  };
+  const hideTip3d = (): void => { tip3d.hidden = true; };
+  hall3d.addEventListener('click', (e) => {
+    const b = (e.target as Element).closest<HTMLElement>('[data-hot]');
+    if (b) openCard(Number(b.dataset.hot));
+  });
+  hall3d.addEventListener('pointerover', (e) => {
+    if ((e as PointerEvent).pointerType !== 'mouse') return;
+    const b = (e.target as Element).closest<HTMLElement>('[data-hot]');
+    if (b) showTip3d(b); else hideTip3d();
+  });
+  hall3d.addEventListener('pointerleave', hideTip3d);
+  hall3d.addEventListener('focusin', (e) => { const b = (e.target as Element).closest<HTMLElement>('[data-hot]'); if (b) showTip3d(b); });
+  hall3d.addEventListener('focusout', hideTip3d);
+
+  // Лёгкий наклон ±4°: от мыши на десктопе, от прокрутки на телефоне; при prefers-reduced-motion без движения
+  const plane = hall3d.querySelector<HTMLElement>('[data-plane]')!;
+  const still = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
+  let raf = 0;
+  const tilt = (rx: number, ry: number): void => {
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(() => {
+      plane.style.setProperty('--rx', `${rx.toFixed(2)}deg`);
+      plane.style.setProperty('--ry', `${ry.toFixed(2)}deg`);
+    });
+  };
+  hall3d.addEventListener('pointermove', (e) => {
+    if (still.matches || !fine.matches || (e as PointerEvent).pointerType !== 'mouse') return;
+    const r = hall3d.getBoundingClientRect();
+    const nx = ((e.clientX - r.left) / r.width - 0.5) * 2;
+    const ny = ((e.clientY - r.top) / r.height - 0.5) * 2;
+    tilt(-ny * 4, nx * 4);
+  });
+  hall3d.addEventListener('pointerleave', () => { if (!still.matches && fine.matches) tilt(0, 0); });
+  const onScroll = (): void => {
+    if (still.matches || fine.matches || box3d.hidden) return;
+    const r = hall3d.getBoundingClientRect();
+    const k = Math.max(-1, Math.min(1, ((r.top + r.height / 2) / window.innerHeight - 0.5) * 2));
+    tilt(k * 4, 0);
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
 
   // Десктоп (≥1024px): зал горизонтально, сцена сверху; ниже — вертикально. При смене ширины схема собирается заново.
   const wide = window.matchMedia('(min-width: 1024px)');

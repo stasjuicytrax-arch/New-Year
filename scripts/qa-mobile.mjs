@@ -307,6 +307,7 @@ async function run(browser, [width, height, desktop = false]) {
     await el?.screenshot({ path: `${dir}/${id}.png` }).catch(() => undefined);
   }
   await hallScenario(page, name, dir, desktop).catch((e) => fail(name, `галерея зала, сценарий упал: ${String(e.message).split(String.fromCharCode(10)).slice(0, 4).join(' | ')}`));
+  await view3dScenario(page, name, dir, desktop).catch((e) => fail(name, `3D-вид, сценарий упал: ${String(e.message).split(String.fromCharCode(10)).slice(0, 4).join(' | ')}`));
   await seatingScenario(page, name, dir, desktop).catch((e) => fail(name, `схема зала, сценарий упал: ${String(e.message).split(String.fromCharCode(10)).slice(0, 12).join(' | ')}`));
   await ctx.close();
 }
@@ -414,6 +415,82 @@ async function hallScenario(page, name, dir, desktop) {
   await page.waitForTimeout(250);
   if ((await lb()).open) bad('крестик не закрыл лайтбокс');
   if (await page.evaluate(() => getComputedStyle(document.documentElement).overflow === 'hidden')) bad('после закрытия лайтбокса страница осталась заблокированной');
+}
+
+/** 3D-вид рассадки: переключатель, зоны столов, подсказка, карточка стола, общее состояние выбора, подпись. */
+async function view3dScenario(page, name, dir, desktop) {
+  page.setDefaultTimeout(8000);
+  const bad = (m) => fail(name, `3D-вид: ${m}`);
+  await page.evaluate(() => document.querySelector('#seats').scrollIntoView({ block: 'start' }));
+  await page.waitForTimeout(1500);
+
+  const st = await page.evaluate(() => ({
+    pressed: [...document.querySelectorAll('[data-view-btn]')].map((b) => b.dataset.viewBtn + ':' + b.getAttribute('aria-pressed')).join(','),
+    tabs: [...document.querySelectorAll('[data-view-btn]')].map((b) => { const r = b.getBoundingClientRect(); return Math.round(Math.min(r.width, r.height)); }),
+    hots: document.querySelectorAll('[data-hot]').length,
+  }));
+  const wantDefault = desktop ? 'schema:false,3d:true' : 'schema:true,3d:false';
+  if (st.pressed !== wantDefault) bad(`по умолчанию ${st.pressed}, нужно ${wantDefault}`);
+  if (st.tabs.some((x) => x < 44)) bad('кнопки переключателя меньше 44px');
+  if (st.hots !== 13) bad(`зон столов ${st.hots}, на визуализации 13`);
+
+  await page.locator('[data-view-btn="3d"]').click().catch(() => page.locator('[data-view-btn="3d"]').tap());
+  await page.waitForTimeout(600);
+  await page.evaluate(() => document.querySelector('[data-3d]').scrollIntoView({ block: 'center' }));
+  await page.waitForTimeout(1200);
+  const g = await page.evaluate(() => {
+    const box = document.querySelector('[data-hall3d]').getBoundingClientRect();
+    const img = document.querySelector('.hall3d__img').getBoundingClientRect();
+    const vw = innerWidth, vh = innerHeight;
+    const hots = [...document.querySelectorAll('[data-hot]')].map((h) => { const r = h.getBoundingClientRect(); return { n: h.dataset.hot, cx: r.left + r.width / 2, cy: r.top + r.height / 2, w: r.width }; });
+    const cap = document.querySelector('.seats__cap3d');
+    return { img: { l: img.left, t: img.top, r: img.right, b: img.bottom, w: img.width, h: img.height }, box: { w: box.width }, vw, vh, hots, cap: cap.textContent.trim(), capShown: cap.getBoundingClientRect().height > 0, schemaHidden: getComputedStyle(document.querySelector('[data-map]')).display === 'none', pic: document.querySelector('.hall3d__img').currentSrc };
+  });
+  if (g.cap !== 'Визуализация рассадки. Реальный декор может отличаться') bad(`подпись «${g.cap}»`);
+  if (!g.capShown) bad('подпись под 3D не видна');
+  if (!g.schemaHidden) bad('схема не скрылась в 3D-виде');
+  if (!/hall3d-\d+(-[\w-]+)?\.(avif|webp)/.test(g.pic)) bad(`картинка не из hall3d: ${g.pic}`);
+  if (g.img.r > g.vw + 1 || g.img.l < -1) bad('3D-картинка шире экрана');
+  const off = g.hots.filter((h) => h.cx < g.img.l || h.cx > g.img.r || h.cy < g.img.t || h.cy > g.img.b).length;
+  if (off) bad(`${off} зон столов вне картинки`);
+  if (!desktop && g.hots.some((h) => h.w < 44)) bad('зоны столов меньше 44px');
+  if (!desktop && g.img.w < g.vw * 0.88) bad('3D-вид на телефоне не по ширине экрана');
+  await page.screenshot({ path: `${dir}/seats-3d.png` });
+
+  // подсказка при наведении (десктоп)
+  if (desktop) {
+    const b = await page.locator('[data-hot="4"]').boundingBox();
+    await page.mouse.move(b.x + b.width / 2 - 20, b.y + b.height / 2 - 20);
+    await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2, { steps: 5 });
+    await page.waitForTimeout(500);
+    const tip = await page.evaluate(() => { const t = document.querySelector('[data-tip3d]'); return { hidden: t.hidden, text: t.textContent }; });
+    if (tip.hidden || tip.text.replace(/[\s  ]+/g, ' ') !== 'Стол 4 · 17 000 ₽ · свободно 8 из 8') bad(`подсказка «${tip.text}»`);
+    await page.screenshot({ path: `${dir}/seats-3d-hover.png` });
+    const tiltOn = await page.evaluate(() => document.querySelector('[data-plane]').style.getPropertyValue('--ry'));
+    if (!tiltOn || tiltOn === '0.00deg') bad('наклон от мыши не сработал');
+  }
+
+  // клик по зоне стола: та же карточка с местами; выбор общий для схемы и 3D
+  const hot = page.locator('[data-hot="7"]');
+  await (desktop ? hot.click() : hot.tap());
+  await page.waitForSelector('#table-card[open]', { timeout: 3000 }).catch(async () => bad('клик по столу в 3D не открыл карточку: ' + JSON.stringify(await page.evaluate(() => ({ lb: document.querySelector('#hall-lightbox').open, dlg: document.querySelector('#tables-dialog').open, y: Math.round(scrollY), hot: (() => { const h = document.querySelector('[data-hot="7"]').getBoundingClientRect(); const e = document.elementFromPoint(h.left + h.width / 2, h.top + h.height / 2); return [Math.round(h.left + h.width / 2), Math.round(h.top + h.height / 2), e && (e.className || e.tagName)]; })() })))));
+  const title = await page.locator('#table-card .tcard__title').innerText().catch(() => '');
+  if (title.trim().toLowerCase() !== 'стол 7') bad(`открылась карточка «${title}», ожидался Стол 7`);
+  await page.locator('#table-card [data-cs="1"]').click();
+  await page.locator('#table-card [data-cs="2"]').click();
+  await page.locator('#table-card [data-cardclose]').click();
+  await page.waitForTimeout(300);
+  const badge = await page.locator('[data-hot="7"]').getAttribute('data-sel');
+  if (badge !== '2') bad(`на столе 7 в 3D выбрано ${badge}, ожидалось 2`);
+  await page.locator('[data-view-btn="schema"]').click().catch(() => page.locator('[data-view-btn="schema"]').tap());
+  await page.waitForTimeout(500);
+  const seatsSel = await page.evaluate(() => [...document.querySelectorAll('.seat.is-sel')].map((x) => x.dataset.t + '-' + x.dataset.s).join(','));
+  if (seatsSel !== '7-1,7-2') bad(`на схеме выбрано «${seatsSel}», ожидалось 7-1,7-2 (общее состояние)`);
+  // сброс выбора, чтобы не влиять на остальные сценарии
+  await page.evaluate(() => document.querySelector('#seats-panel [data-clear]')?.click());
+  await page.waitForTimeout(300);
+  await page.evaluate(() => document.querySelector('#seats').scrollIntoView({ block: 'start' }));
+  await page.waitForTimeout(600);
 }
 
 /** Сценарии схемы зала: только места; места + дети; только дети (детские билеты без мест). */
@@ -550,7 +627,8 @@ async function seatingScenario(page, name, dir, desktop) {
 
   // ---- 2. места + дети ----
   const kidsStep = page.locator('[data-kstep="1"]');
-  await kidsStep.scrollIntoViewIfNeeded();
+  await page.evaluate(() => document.querySelector('[data-kstep="1"]').scrollIntoView({ block: 'center' }));
+  await page.waitForTimeout(1200);
   await kidsStep.click();
   await page.locator('#kid-age-0').selectOption('6');
   await page.waitForTimeout(300);
@@ -632,8 +710,8 @@ let browser;
 try {
   await waitForServer();
   browser = await chromium.launch();
-  // по четыре вьюпорта параллельно: весь прогон укладывается в 5 минут
-  for (let i = 0; i < VPS.length; i += 4) await Promise.all(VPS.slice(i, i + 4).map((vp) => run(browser, vp)));
+  // по пять вьюпортов параллельно: весь прогон укладывается в 5 минут
+  for (let i = 0; i < VPS.length; i += 5) await Promise.all(VPS.slice(i, i + 5).map((vp) => run(browser, vp)));
 } finally {
   await browser?.close();
   killServer();
