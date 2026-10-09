@@ -53,7 +53,6 @@ const IMAGES = [
   { name: 'hall-3', src: 'White hall/RzTJOJxLGbxsb1lxf9vCqrwQWzueFcf8-YDFUTUB1BFVnqzyGcybYkMdXrDbsN3wF_0IP8o77-U.jpg', widths: [640, 960, 1440, 2048] },
   { name: 'hall-4', src: 'White hall/GHGQM__9Neep4CPrZKH_nKD1k-fFxkKZ8wJuOqzrvYRHJhJJPEvaFlyL_KzYxuzDAIQL6UskA_w.jpg', widths: [640, 960, 1440, 2048] },
   { name: 'hall-5', src: 'White hall/P5rxh2fgogyXTK8InPSjKOVEMKPe2TC14S2MNCAew7x8rrixBD8HGwEtxaC7N2j2hoafzA.jpg', widths: [640, 960, 1440, 2048] },
-  { name: 'decor-1', src: 'White hall/z_JA89Q4BNS7HTaKZ13D5LJHkLyyIqrJRW_zmeutA_kBpY062-koX45-Y0Ye89APiraJ1w.jpg', widths: [640, 960, 1440] },
   { name: 'dj-seven', src: 'Наш диджей DJ Seven/IMG_5835.PNG', widths: [640, 900, 1254] },
 ];
 

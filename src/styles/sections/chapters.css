@@ -321,9 +321,6 @@
     .ch--split .ch__cutout .ch__img { object-fit: contain; }
   }
 
-  /* 07: фото декора под текстом */
-  .ch__media--decor { position: relative; z-index: 1; width: min(100%, 760px); }
-
   /* Скругления вместо срезов */
   .ch__frame, .ch__mask--wide, .ch__square { border-radius: 18px; }
   .ch__polaroid { clip-path: none; border-radius: 16px; overflow: hidden; background: color-mix(in oklab, var(--night-800) 80%, transparent); box-shadow: 0 0 0 1px color-mix(in oklab, var(--amber-200) 40%, transparent), 0 18px 40px -14px rgb(0 0 0 / 0.6); }

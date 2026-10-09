@@ -324,26 +324,6 @@
       }
     ]
   },
-  "decor-1": {
-    "src": "2560x1703",
-    "variants": [
-      {
-        "w": 640,
-        "width": 640,
-        "height": 426
-      },
-      {
-        "w": 960,
-        "width": 960,
-        "height": 639
-      },
-      {
-        "w": 1440,
-        "width": 1440,
-        "height": 958
-      }
-    ]
-  },
   "dj-seven": {
     "src": "1254x1254",
     "variants": [
