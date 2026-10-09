@@ -15,8 +15,8 @@ const OUT = join(ROOT, 'src', 'assets', 'img');
 
 /** @type {Array<{name:string, src:string, widths:number[], alpha?:boolean, grade?:'cold'|'violet-to-blue', crop?:{left:number,top:number,width:number,height:number}}>} */
 const IMAGES = [
-  // Ведущие: вырезка клиента «Слой 21.png» (RGBA 1861x2698), без апскейла: последняя ширина = исходная
-  { name: 'hosts-cutout', src: 'Слой 21.png', widths: [640, 960, 1440, 1861], alpha: true },
+  // Ведущие: вырезка клиента «Слой 21 копия2.png» (RGBA 1861x2698), без апскейла: последняя ширина = исходная
+  { name: 'hosts-cutout', src: 'Слой 21 копия2.png', widths: [640, 960, 1440, 1861], alpha: true },
   {
     name: 'hosts',
     src: 'Ведущие и организаторы главной новогодней ночи/IMG_1984.JPG',
