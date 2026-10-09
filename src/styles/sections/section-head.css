@@ -27,7 +27,6 @@
   .manifest__in { gap: var(--sec-gap); }
 
   /* Финальный блок брони: заголовок → подпись 14px, дальше обычный ритм колонки */
-  .booking__lead > h2 + .booking__text { margin-top: calc(var(--cap-gap) - var(--space-5)); }
 
   /* Футер: надпись → слоган 14px, слоган → колонки и линия по правилу секции */
   .footer__scene { gap: var(--cap-gap); }

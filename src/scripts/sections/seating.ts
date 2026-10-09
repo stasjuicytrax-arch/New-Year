@@ -303,7 +303,7 @@ export function renderSeating(): string {
         <div class="panel__row">
           <p class="panel__total" data-total></p>
           <button type="button" class="panel__toggle" data-toggle aria-expanded="false" aria-controls="panel-list">${t.compose}</button>
-          <span class="btn-wrap"><a class="btn btn--primary" href="#booking" data-goal="seats_go"><span>${t.go}</span></a></span>
+          <span class="btn-wrap"><button type="button" class="btn btn--primary" data-open-booking data-goal="seats_go"><span>${t.go}</span></button></span>
         </div>
       </div>
       <p class="panel__empty" data-emptytext>${t.empty}</p>
@@ -820,9 +820,6 @@ export function initSeating(): void {
 
   // На телефоне панель закреплена снизу, пока блок схемы в кадре
   new IntersectionObserver(([entry]) => { panel.dataset.inview = String(entry.isIntersecting); }, { threshold: 0 }).observe(el);
-  // ...и прячется, когда в кадре форма брони (она показывает тот же выбор)
-  const booking = document.querySelector('#booking-form');
-  if (booking) new IntersectionObserver(([entry]) => { panel.dataset.formview = String(entry.isIntersecting); }, { threshold: 0 }).observe(booking);
 
   // Подсказка над столом: мышь и клавиатурный фокус
   const tip = el.querySelector<HTMLElement>('[data-tip]')!;

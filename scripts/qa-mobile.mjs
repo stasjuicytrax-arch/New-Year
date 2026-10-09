@@ -223,7 +223,7 @@ async function inPage(desktop) {
   for (const el of document.querySelectorAll('h2')) if (visible(el) && sizeOf(el) > 56.1) out.push(`H2 крупнее 56px: ${Math.round(sizeOf(el))}px («${el.textContent.trim().slice(0, 20)}»)`);
   for (const el of document.querySelectorAll('h3, .ch__title')) if (visible(el) && sizeOf(el) > 36.1) out.push(`H3 крупнее 36px: ${Math.round(sizeOf(el))}px`);
   for (const el of document.querySelectorAll('.ch__digits')) if (visible(el) && sizeOf(el) > 72.1) out.push(`номер главы крупнее 72px: ${Math.round(sizeOf(el))}px`);
-  for (const el of document.querySelectorAll('.intro__lead, .ch__text, .manifest__text, .booking__text, .footer__slogan, .hero__sub, .lead')) {
+  for (const el of document.querySelectorAll('.intro__lead, .ch__text, .manifest__text, .footer__slogan, .hero__sub, .lead')) {
     if (visible(el) && sizeOf(el) > 24.1) out.push(`абзац крупнее lead (24px): ${label(el)} ${Math.round(sizeOf(el))}px`);
   }
 
@@ -299,7 +299,7 @@ async function run(browser, [width, height, desktop = false]) {
   // скриншоты: полная страница + каждая секция
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.waitForTimeout(600);
-  const want = process.env.QA_SHOTS === 'all' ? sections : sections.filter((id) => ['hero', 'ch-10', 'booking', 'site-footer'].includes(id));
+  const want = process.env.QA_SHOTS === 'all' ? sections : sections.filter((id) => ['hero', 'ch-10', 'site-footer'].includes(id));
   for (const id of want) {
     const el = await page.$(`#${id}`);
     await el?.scrollIntoViewIfNeeded();
@@ -326,7 +326,6 @@ async function headSpacingScenario(page, name, desktop) {
     ['#seats', 'Выберите места: заголовок → подпись', '#seats-title', '#seats .seats__lead:not([style*="none"])', 14],
     ['#why', 'Почему: заголовок → список', '#why-title', '#why .why__list', gapWant],
     ['#manifest', 'Манифест: заголовок → текст', '#manifest-title', '#manifest .manifest__text', gapWant],
-    ['#booking', 'Бронь: заголовок → подпись', '#booking-title', '#booking .booking__text', 14],
     ['#site-footer', 'Футер: надпись → слоган', '#site-footer .footer__farewell', '#site-footer .footer__slogan', 14],
     ['#site-footer', 'Футер: слоган → колонки', '#site-footer .footer__slogan', '#site-footer .footer__cols', gapWant],
   ];
@@ -615,16 +614,51 @@ async function seatingScenario(page, name, dir, desktop) {
   if (!desktop && (geo.hitW < 44 || geo.hitH < 44)) bad(`зона стола ${Math.round(geo.hitW)}×${Math.round(geo.hitH)} < 44px`);
 
   const panelText = (sel) => page.locator(`#seats-panel ${sel}`).innerText().catch(() => '');
-  const formState = () => page.evaluate(() => ({
-    choice: !document.querySelector('[data-choice]').hidden,
-    sel: document.querySelector('[data-choice-sel]').textContent,
-    kidsLine: document.querySelector('[data-choice-kids]').textContent,
-    sum: document.querySelector('[data-choice-sum]').textContent,
-    adults: document.querySelector('input[name="adults"]').value,
-    kids: document.querySelector('input[name="kids4"]').value,
-    locked: document.querySelector('[data-step="adults"]').classList.contains('is-locked'),
-    tableHidden: document.querySelector('[data-tablepos]').hidden,
-  }));
+  const formState = () => page.evaluate(() => {
+    const d = document.querySelector('#booking-dialog');
+    const r = d.getBoundingClientRect();
+    return {
+      open: d.open,
+      sel: document.querySelector('[data-choice-sel]').hidden ? '' : document.querySelector('[data-choice-sel]').textContent,
+      kidsLine: document.querySelector('[data-choice-kids]').hidden ? '' : document.querySelector('[data-choice-kids]').textContent,
+      sum: document.querySelector('[data-choice-sum]').textContent,
+      hotHidden: document.querySelector('#booking-dialog [data-hot]').hidden,
+      veal: document.querySelector('input[name="veal"]').value,
+      zander: document.querySelector('input[name="zander"]').value,
+      box: { x: r.x, y: r.y, w: r.width, h: r.height, vw: innerWidth, vh: innerHeight },
+      small: [...d.querySelectorAll('button, input:not([type=hidden]):not(.hp), textarea, .check input')].filter((e) => e.offsetParent && !e.closest('[hidden]')).map((e) => ({ n: e.name || e.className, w: e.getBoundingClientRect().width, h: e.getBoundingClientRect().height })).filter((e) => e.h < 43.5 || e.w < 43.5).map((e) => e.n + ' ' + Math.round(e.w) + 'x' + Math.round(e.h)),
+      hscroll: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+      callLine: d.querySelector('.bk__call').textContent,
+    };
+  });
+  /** Открыть окно заявки из полосы итога, проверить его и сделать снимок */
+  const bookingModal = async (tag, expect) => {
+    await page.locator('#seats-panel [data-open-booking]').click();
+    await page.waitForTimeout(500);
+    const f = await formState();
+    if (!f.open) { bad(tag + ': окно заявки не открылось'); return f; }
+    if (expect.sel && !f.sel.includes(expect.sel)) bad(tag + ': в «Ваш выбор» нет мест «' + f.sel + '»');
+    if (!expect.sel && f.sel) bad(tag + ': в «Ваш выбор» лишние места «' + f.sel + '»');
+    if (expect.kids && !f.kidsLine.includes(expect.kids)) bad(tag + ': в «Ваш выбор» нет детей «' + f.kidsLine + '»');
+    if (!expect.kids && f.kidsLine) bad(tag + ': лишние дети «' + f.kidsLine + '»');
+    if (digits(f.sum) !== String(expect.total)) bad(tag + ': итог в окне «' + f.sum + '», ожидалось ' + expect.total);
+    if (expect.seats) {
+      if (f.hotHidden || Number(f.veal) !== expect.seats || f.zander !== '0') bad(tag + ': горячее ' + f.veal + '/' + f.zander + ', ожидалось ' + expect.seats + '/0');
+    } else if (!f.hotHidden) bad(tag + ': без мест блок «Горячее» должен быть скрыт');
+    if (!f.callLine.includes('+7 908 270-89-71')) bad(tag + ': нет строки «Или позвоните»');
+    if (f.small.length) bad(tag + ': элементы меньше 44px: ' + f.small.join(', '));
+    if (f.hscroll) bad(tag + ': горизонтальный скролл при открытом окне');
+    if (f.box.x < -1 || f.box.x + f.box.w > f.box.vw + 1 || f.box.y < -1 || f.box.y + f.box.h > f.box.vh + 1) bad(tag + ': окно выходит за экран');
+    if (!desktop && f.box.vw < 640 && (Math.abs(f.box.h - f.box.vh) > 2 || Math.abs(f.box.w - f.box.vw) > 2)) bad(tag + ': на телефоне окно не на весь экран');
+    await page.screenshot({ path: dir + '/booking-' + tag.replace(/s+/g, '-') + '.png' });
+    return f;
+  };
+  const closeModal = async () => {
+    await page.locator('#booking-dialog .form__choice-edit').click();
+    await page.waitForTimeout(300);
+    if (await page.evaluate(() => document.querySelector('#booking-dialog').open)) bad('«Изменить выбор» не закрыл окно');
+  };
+
 
   // ---- 1. только места ----
   const hit7 = page.locator('.tbl__hit[data-hit="7"]');
@@ -660,6 +694,9 @@ async function seatingScenario(page, name, dir, desktop) {
     if (panelBox.y + panelBox.height < vh - 2 || panelBox.y < vh * 0.4) bad('панель итога не закреплена снизу');
   }
   if (await page.locator('#seats-panel [data-kind]').count()) bad('остался переключатель «Взрослый / Ребёнок» у мест');
+
+  await bookingModal('только места', { sel: desktop ? 'Стол 7: места 1' : 'Стол 7: места 2, 3', total: seatsMoney, seats: seatCount });
+  await closeModal();
 
   // ---- 2. места + дети ----
   const kidsStep = page.locator('[data-kstep="1"]');
@@ -697,18 +734,20 @@ async function seatingScenario(page, name, dir, desktop) {
   if (!(await page.evaluate(() => document.querySelector('[data-map]').classList.contains('is-zoomed')))) bad('кнопка + не приблизила схему');
   await page.locator('[data-zoom="reset"]').click();
 
-  // перенос в форму
-  await page.locator('#seats-panel .btn').click();
-  await page.waitForTimeout(1200);
-  const f2 = await formState();
-  if (!f2.choice || !f2.sel.includes('Стол 7')) bad('блок «Ваш выбор» не показал места');
-  if (!f2.kidsLine.includes('Детские билеты: 1 (6 лет)')) bad(`блок «Ваш выбор» не показал детей: «${f2.kidsLine}»`);
-  if (digits(f2.sum) !== String(seatsMoney + 7000)) bad(`в «Ваш выбор» итог «${f2.sum}»`);
-  if (!f2.locked || !f2.tableHidden) bad('поля «Взрослые/Расположение стола» не подставлены автоматически');
-  if (f2.adults !== String(seatCount) || f2.kids !== '1') bad(`в форму ушло взрослых ${f2.adults}, детей ${f2.kids}, ожидалось ${seatCount} и 1`);
-  await page.locator('#booking-form').scrollIntoViewIfNeeded();
+  // окно заявки: места + дети с возрастами
+  await bookingModal('места и дети', { sel: 'Стол 7', kids: 'Детские билеты: 1 (6 лет)', total: seatsMoney + 7000, seats: seatCount });
+  // отправка без эндпоинта: валидация, затем окно с телефонами
+  const dlgBtn = page.locator('#booking-dialog button[type="submit"]');
+  await dlgBtn.click();
+  if (!(await page.locator('#booking-dialog [data-err="name"]').innerText())) bad('пустое имя не дало ошибку');
+  await page.locator('#booking-dialog input[name="name"]').fill('Тест');
+  await page.locator('#booking-dialog input[name="phone"]').fill('9082708971');
+  await page.locator('#booking-dialog .check input').check();
+  await dlgBtn.click();
   await page.waitForTimeout(300);
-  await page.locator('#booking').screenshot({ path: `${dir}/booking-with-choice.png` });
+  if (!(await page.locator('#booking-dialog [data-fallback]').isVisible())) bad('без endpoint не показаны телефоны');
+  await page.screenshot({ path: dir + '/booking-fallback.png' });
+  await page.evaluate(() => document.querySelector('#booking-dialog').close());
 
   // ---- 3. только дети (места сняты, билет остаётся) ----
   await page.evaluate(() => document.querySelector('#seats-title').scrollIntoView({ block: 'start' }));
@@ -725,12 +764,9 @@ async function seatingScenario(page, name, dir, desktop) {
   if (digits(await panelText('[data-total] b')) !== '7000') bad(`только дети: сумма «${await panelText('[data-total] b')}», ожидалось 7 000`);
   const goBtn = page.locator('#seats-panel .btn');
   if (!(await goBtn.isVisible())) bad('только дети: кнопка «Забронировать» не видна');
-  await goBtn.click();
-  await page.waitForTimeout(1200);
-  const f3 = await formState();
-  if (!f3.choice || f3.sel !== '' && f3.sel !== null && f3.sel.trim() !== '') bad(`только дети: в «Ваш выбор» остались места «${f3.sel}»`);
-  if (f3.adults !== '0' || f3.kids !== '1') bad(`только дети: взрослых ${f3.adults}, детей ${f3.kids}, ожидалось 0 и 1`);
-  if (digits(f3.sum) !== '7000') bad(`только дети: итог «${f3.sum}»`);
+  await page.waitForTimeout(100);
+  await bookingModal('только дети', { sel: '', kids: 'Детские билеты: 1 (6 лет)', total: 7000, seats: 0 });
+  await closeModal();
   const hs = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
   if (hs) bad('после выбора появился горизонтальный скролл');
 }

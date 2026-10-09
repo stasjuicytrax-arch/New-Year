@@ -138,7 +138,7 @@ export function createBokeh(stage: Stage, { count }: BokehOptions): StageLayer {
     for (const e of entries) e.isIntersecting ? visible.add(e.target) : visible.delete(e.target);
     target = visible.size ? 1 : 0;
   });
-  document.querySelectorAll('#hero, #booking').forEach((el) => io.observe(el));
+  document.querySelectorAll('#hero').forEach((el) => io.observe(el));
 
   return {
     update({ dt, time, scrollY, fade }: Frame) {

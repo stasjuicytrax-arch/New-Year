@@ -157,7 +157,7 @@ function ch10(c: Chapter): string {
             <span class="menu__or">${menu.or}</span>
             <div class="menu__opt"><b>${it.choice[1].name}</b><span>${typo(it.choice[1].text)}</span></div>
           </div>
-          <p class="menu__note"><a href="#booking">${it.note ?? menu.choiceAt}</a></p>`
+          <p class="menu__note"><a href="#seats">${it.note ?? menu.choiceAt}</a></p>`
         : `<p class="menu__desc">${typo(it.text)}</p>`;
       return `<li class="menu__item"><span class="menu__n">${n}</span><div><h4 class="menu__name">${it.name}</h4>${body}</div></li>`;
     })

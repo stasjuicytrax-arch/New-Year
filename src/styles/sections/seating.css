@@ -155,7 +155,7 @@
 
   /* Панель итога: полоса, закреплённая снизу, пока блок в кадре и форма не видна */
   .seats__panel.glass { position: fixed; left: 0; right: 0; bottom: 0; z-index: calc(var(--z-header) - 1); display: grid; gap: var(--space-3); padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); border-radius: 18px 18px 0 0; border-bottom: 0; background: #040e2a; box-shadow: 0 -14px 40px rgba(0, 0, 0, 0.5); }
-  .seats__panel:not([data-inview="true"]), .seats__panel[data-formview="true"] { display: none; }
+  .seats__panel:not([data-inview="true"]) { display: none; }
   .panel__bar { display: grid; gap: var(--space-3); }
   .panel__txt { display: grid; gap: 2px; min-width: 0; }
   .panel__sum { display: -webkit-box; -webkit-line-clamp: 1; line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; font-size: 14px; line-height: 1.45; color: var(--text-strong); }
@@ -205,7 +205,7 @@
   /* Телефон: пустая панель не показывается; запас снизу, чтобы закреплённая панель не закрывала конец блока */
   @media (max-width: 1023.98px) {
     .seats__panel[data-empty="true"] { display: none; }
-    #seats { padding-bottom: calc(var(--pad-dense) + 24px); }
+    #seats { padding-bottom: calc(var(--pad-dense) + 190px); }
   }
 
   /* Десктоп: схема горизонтальная на всю ширину контейнера (до 1400px), весь экран = заголовок + схема + легенда + панель */
@@ -261,7 +261,41 @@
   .form__choice-sum { font-size: 15px; font-weight: 600; color: var(--text); }
   .form__choice-note { font-size: 14px; color: var(--text-muted); }
   .form__choice-edit { display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; font-weight: 600; color: var(--text-strong); text-underline-offset: 4px; }
-  .field--step.is-locked { opacity: 0.6; }
-  .field--step.is-locked .stepper__btn { cursor: not-allowed; }
-  [data-tablepos][hidden] { display: none; }
+}
+
+/* Окно заявки на бронь: стекло по центру на десктопе, шторка на весь экран на телефоне */
+@layer sections {
+  .bk { width: min(94vw, 560px); max-height: min(92dvh, 900px); padding: 0; margin: auto; overflow: hidden; color: var(--text-strong); text-align: left; border: 1px solid var(--glass-line); border-radius: 24px; background: rgba(6, 18, 52, 0.94); }
+  .bk::backdrop { background: rgba(0, 2, 8, 0.66); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+  .bk[open] { display: block; }
+  .bk__in { display: grid; gap: var(--space-5); max-height: inherit; padding: clamp(20px, 4vw, 32px); padding-bottom: calc(clamp(20px, 4vw, 32px) + env(safe-area-inset-bottom)); overflow-y: auto; overscroll-behavior: contain; }
+  .bk__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+  .bk__title { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 6vw, 40px); line-height: 1; text-transform: uppercase; }
+  .bk__x { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border: 1px solid var(--glass-line); border-radius: 12px; background: transparent; color: var(--text); font-size: 24px; line-height: 1; cursor: pointer; }
+  .bk__x:focus-visible, .form__choice-edit:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+  .bk__call { font-size: 14px; line-height: 1.5; color: var(--text-muted); }
+  .bk__call a { display: inline-block; padding-block: 12px; font-weight: 600; color: var(--text-strong); text-underline-offset: 4px; }
+  .bk__done { display: grid; gap: var(--space-4); justify-items: center; padding-block: var(--space-5); text-align: center; }
+  .bk__done[hidden], .bk__form[hidden] { display: none; }
+  .bk .modal__calls { display: flex; flex-direction: column; align-items: stretch; gap: var(--space-3); width: 100%; }
+  .bk .modal__calls .btn-wrap, .bk .modal__calls .btn { width: 100%; }
+  .bk .form__submit .btn-wrap, .bk .form__submit .btn { width: 100%; }
+  .form__choice-edit { padding: 0; border: 0; background: none; font: inherit; font-size: 15px; font-weight: 600; justify-self: start; text-decoration: underline; cursor: pointer; }
+  .field--hot[hidden] { display: none; }
+}
+@media (max-width: 639.98px) {
+  @layer sections {
+    .bk { width: 100%; max-width: none; height: 100dvh; max-height: none; margin: 0; border-radius: 0; border-width: 0; }
+    .bk[open] { display: grid; }
+    .bk__in { max-height: none; height: 100%; align-content: start; }
+  }
+}
+
+/* Закреплённая полоса итога лежит в main: футер ниже main по слоям, чтобы его текст не просвечивал сквозь неё */
+@layer sections {
+  main ~ .site-footer { z-index: 0; }
+}
+
+@layer sections {
+  .field--hot legend { padding: 0; margin-bottom: var(--space-3); }
 }

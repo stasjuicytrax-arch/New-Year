@@ -69,7 +69,7 @@ export function renderSkeleton(): void {
 
   $('#hall').innerHTML = renderHall();
   $('#seats').innerHTML = renderSeating();
-  $('#booking').innerHTML = renderBooking();
+  document.body.insertAdjacentHTML('beforeend', renderBooking());
 
   $('#site-footer').innerHTML = `
     <div class="container footer__scene">

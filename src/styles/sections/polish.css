@@ -8,7 +8,6 @@
   .ticket__value,
   .countdown__num,
   .menu__big,
-  .price-ticket__value,
   .why__date,
   .footer__farewell,
   .modal__title,
@@ -22,10 +21,10 @@
   .split-mask { padding-block: 0.2em; margin-block: -0.2em; }
 
   /* ===== 3. Типографическая шкала ===== */
-  .why__main h2, .manifest__in h2, .booking__lead h2, .program h2 { font-size: var(--fs-h2); }
+  .why__main h2, .manifest__in h2, .program h2 { font-size: var(--fs-h2); }
   .ch__title { font-size: var(--fs-h3); line-height: 1.15; }
   .ch__digits { font-size: var(--fs-num); }
-  .lead, .intro__lead, .ch__text, .manifest__text, .booking__text, .footer__slogan, .intro__note { font-size: var(--fs-lead); line-height: 1.5; max-width: 640px; }
+  .lead, .intro__lead, .ch__text, .manifest__text, .footer__slogan, .intro__note { font-size: var(--fs-lead); line-height: 1.5; max-width: 640px; }
   .intro__lead { text-align: center; margin-inline: auto; }
   .manifest__text { margin-inline: auto; }
   .why__item { font-size: var(--fs-lead); line-height: 1.4; }
@@ -41,7 +40,6 @@
   .pause, .dense { padding-block: clamp(64px, 8vw, 120px); }
   .program { padding-block: var(--pad-pause) 0; }
   .program__head { padding-bottom: clamp(32px, 3vw, 48px); }
-  #booking.scene { min-height: 0; padding-block: var(--pad-pause); }
   .why__main { display: grid; gap: clamp(32px, 3vw, 48px); }
   .why__main h2 { margin-bottom: 0; }
   .ch { padding-block: var(--pad-chapter); }

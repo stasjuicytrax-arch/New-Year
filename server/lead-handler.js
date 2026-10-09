@@ -51,10 +51,6 @@ function validate(body) {
     lead: {
       name,
       phone,
-      adults: int(body.adults, 99),
-      kidsFrom4: int(body.kidsFrom4, 99),
-      kidsUnder4: int(body.kidsUnder4, 99),
-      table: clean(body.table, 40),
       veal: int(hot.veal, 99),
       zander: int(hot.zander, 99),
       comment: clean(body.comment, 400),
@@ -70,11 +66,6 @@ function leadLines(l) {
   const rows = [
     ['Имя', l.name],
     ['Телефон', l.phone],
-    ['Взрослых', l.adults],
-    ['Детей от 4 лет', l.kidsFrom4],
-    ['Детей до 4 лет', l.kidsUnder4],
-    ['Расположение стола', l.table],
-    ['Горячее', `телятина ${l.veal}, судак ${l.zander}`],
   ];
   const rub = (n) => `${new Intl.NumberFormat('ru-RU').format(n).replace(/\s/g, ' ')} ₽`;
   if (l.seats && l.seats.length) {
@@ -82,6 +73,7 @@ function leadLines(l) {
     for (const x of l.seats) byTable.set(x.table, [...(byTable.get(x.table) || []), x.seat]);
     rows.push(['Места на схеме', [...byTable].map(([t, a]) => `стол ${t}: ${a.join(', ')}`).join(' · ') + ` — ${rub(l.seats.reduce((a, x) => a + x.price, 0))}`]);
   }
+  if (l.seats && l.seats.length) rows.push(['Горячее', `телятина ${l.veal}, судак ${l.zander}`]);
   if (l.kids && l.kids.length) {
     const ages = l.kids.map((k) => k.age).sort((a, b) => a - b);
     const word = (a) => (a >= 5 && a <= 20 ? 'лет' : a % 10 === 1 ? 'год' : a % 10 >= 2 && a % 10 <= 4 ? 'года' : 'лет');
