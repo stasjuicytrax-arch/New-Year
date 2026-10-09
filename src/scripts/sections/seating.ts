@@ -249,6 +249,7 @@ export function renderSeating(): string {
       <div class="seats__switch" role="group" aria-label="${t.viewAria}">
         <button type="button" class="seats__tab" data-view-btn="schema" aria-pressed="false">${t.viewSchema}</button>
         <button type="button" class="seats__tab" data-view-btn="3d" aria-pressed="false">${t.view3d}</button>
+        <button type="button" class="seats__tab" data-view-btn="plan" aria-pressed="false">${t.viewPlan}</button>
       </div>
     </header>
     <div class="seats__mapcol" style="--ratio:${ratio}" data-view="schema" data-mapcol>
@@ -261,6 +262,7 @@ export function renderSeating(): string {
           <button type="button" class="zbtn zbtn--reset" data-zoom="reset" aria-label="${t.zoomReset}" hidden>1×</button>
         </div>
       </div>
+      <figure class="seats__plan" data-plan hidden>${picture({ name: 'hall-plan', alt: t.planAlt, sizes: '(min-width: 1024px) 560px, 100vw', cls: 'seats__planimg' })}</figure>
       <figure class="seats__3d" data-3d hidden style="--r3d:${meta3d.ratio}">
         <div class="hall3d" data-hall3d>
           <div class="hall3d__plane" data-plane role="group" aria-label="${t.mapAria3d}">
@@ -703,15 +705,17 @@ export function initSeating(): void {
   // Переключатель «Схема | 3D-вид»: по умолчанию схема везде, 3D-вид по переключателю; выбор общий (одно состояние)
   const mapcol = el.querySelector<HTMLElement>('[data-mapcol]')!;
   const box3d = el.querySelector<HTMLElement>('[data-3d]')!;
-  const setView = (v: 'schema' | '3d'): void => {
+  const boxPlan = el.querySelector<HTMLElement>('[data-plan]')!;
+  const setView = (v: 'schema' | '3d' | 'plan'): void => {
     mapcol.dataset.view = v;
     box3d.hidden = v !== '3d';
+    boxPlan.hidden = v !== 'plan';
     map.hidden = v !== 'schema';
     el.querySelectorAll<HTMLButtonElement>('[data-view-btn]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.viewBtn === v)));
     if (v === '3d') view.reset();
     el.querySelector<HTMLElement>('.seats__lead--fine')!.dataset.view = v;
   };
-  el.querySelectorAll<HTMLButtonElement>('[data-view-btn]').forEach((b) => b.addEventListener('click', () => setView(b.dataset.viewBtn as 'schema' | '3d')));
+  el.querySelectorAll<HTMLButtonElement>('[data-view-btn]').forEach((b) => b.addEventListener('click', () => setView(b.dataset.viewBtn as 'schema' | '3d' | 'plan')));
   setView('schema');
 
   // 3D: клик по зоне стола открывает ту же карточку с местами, наведение показывает подсказку

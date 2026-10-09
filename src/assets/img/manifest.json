@@ -184,6 +184,21 @@
       }
     ]
   },
+  "hall-plan": {
+    "src": "960x1280",
+    "variants": [
+      {
+        "w": 640,
+        "width": 640,
+        "height": 853
+      },
+      {
+        "w": 960,
+        "width": 960,
+        "height": 1280
+      }
+    ]
+  },
   "kids-6": {
     "src": "1664x2080",
     "variants": [

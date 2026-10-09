@@ -75,6 +75,9 @@
   .seats__tab[aria-pressed="true"] { background: var(--chrome-button); color: var(--night-950); }
   .seats__tab:focus-visible { outline: 3px solid var(--neon-400); outline-offset: 2px; }
   [data-view="3d"] > .seats__map { display: none; }
+  .seats__plan { width: min(100%, 560px); margin: 0 auto; overflow: hidden; border-radius: 24px; border: 1px solid var(--glass-line); }
+  .seats__plan[hidden] { display: none; }
+  .seats__planimg { display: block; width: 100%; height: auto; }
   .seats__map[hidden], .seats__3d[hidden] { display: none; }
 
   /* 3D-вид: вырезанная визуализация зала, парит на тёмном фоне; зоны столов кликабельны */

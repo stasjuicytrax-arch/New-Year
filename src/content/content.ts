@@ -217,6 +217,8 @@ export const seating = {
   listBtn: 'Список столов',
   viewSchema: 'Схема',
   view3d: '3D-вид',
+  viewPlan: 'План зала',
+  planAlt: 'План зала WHITE HALL с нумерацией столов',
   viewAria: 'Вид рассадки',
   caption3d: 'Визуализация рассадки. Реальный декор может отличаться',
   mapAria3d: 'Объёмный вид зала: выберите стол',
