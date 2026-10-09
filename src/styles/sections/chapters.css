@@ -95,6 +95,7 @@
     pointer-events: none;
   }
   @keyframes smoke { from { transform: translateX(-4%); } to { transform: translateX(4%); } }
+  .ch--illusion .ch__frame { position: relative; z-index: 1; width: min(100%, 960px); aspect-ratio: 16 / 9; margin: var(--space-6) auto 0; overflow: hidden; border-radius: 18px; border: 1px solid var(--line-strong); box-shadow: 0 24px 60px -28px rgba(0, 0, 0, 0.7); }
   .ch__fx { display: none; }
 
   /* 05: рамка видоискателя и одна вспышка */

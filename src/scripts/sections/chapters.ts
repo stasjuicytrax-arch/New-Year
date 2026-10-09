@@ -71,7 +71,7 @@ function ch03(c: Chapter): string {
 }
 
 function word04(c: Chapter): string {
-  return shell(c, 'word ch--illusion', `${word(c)}${titled(head(c), c)}<div class="ch__fx ch__fx--smoke" aria-hidden="true"></div>`);
+  return shell(c, 'word ch--illusion', `${word(c)}${titled(head(c), c)}<div class="ch__frame">${picture({ name: 'illusion', alt: 'Иллюзионное шоу на сцене', sizes: '(min-width: 1024px) 60vw, 92vw', cls: 'ch__img' })}</div><div class="ch__fx ch__fx--smoke" aria-hidden="true"></div>`);
 }
 
 /** Глава 05: «фотоплёнка» — лента поляроидов из фото страницы, едет по скроллу; на входе одна вспышка камеры. */

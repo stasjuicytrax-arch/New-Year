@@ -46,6 +46,7 @@ const IMAGES = [
     widths: [640, 960, 1440, 2048],
     grade: 'cold',
   },
+  { name: 'illusion', src: '4c3a8c9476e01a59de7ad5995102e52b_1a5e57db-4e23-40a9-8ef2-596ff0e405ec.png', widths: [640, 960, 1440, 2048] },
   { name: 'kids-6', src: '36a59f1be99ce4053ec7866a698308f0_f3fde0a8-f698-4203-ad77-0cc97ae21da6.png', widths: [640, 960, 1440, 1664] },
   { name: 'kids-4', src: 'Vintermagi med Ded Moroz og Snegurochka.png', widths: [640, 960, 1254] },
   { name: 'kids-5', src: 'Magisk boblefest i vintereventyrland.png', widths: [640, 960, 1254] },
