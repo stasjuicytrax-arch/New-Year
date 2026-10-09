@@ -82,7 +82,9 @@
 
   /* ---------- Заголовок ---------- */
   .hero__head { position: relative; z-index: 4; width: 100%; padding-inline: var(--margin); text-align: center; }
-  .hero__label { margin: 0 auto var(--space-3); font-size: 12px; letter-spacing: 0.14em; line-height: 1.5; color: var(--text); }
+  /* Текст строго по оси H1: точка слева уравновешена невидимой копией справа, хвост letter-spacing компенсирован padding-left */
+  .hero__label { justify-content: center; margin: 0 auto var(--space-3); padding: 0 0 0 0.14em; font-size: 12px; letter-spacing: 0.14em; line-height: 1.5; text-align: center; color: var(--text); }
+  .hero__label::after { content: ''; flex: none; width: 6px; height: 6px; }
   .hero__line {
     position: relative;
     display: block;
