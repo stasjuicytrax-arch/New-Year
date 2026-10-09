@@ -304,10 +304,15 @@ export function renderSeating(): string {
           <p class="panel__total" data-total></p>
           <button type="button" class="panel__toggle" data-toggle aria-expanded="false" aria-controls="panel-list">${t.compose}</button>
           <span class="btn-wrap"><button type="button" class="btn btn--primary" data-open-booking data-goal="seats_go"><span>${t.go}</span></button></span>
+          <button type="button" class="panel__min" data-min aria-label="${t.minimize}"><span aria-hidden="true">×</span></button>
         </div>
       </div>
       <p class="panel__empty" data-emptytext>${t.empty}</p>
     </aside>
+    <button type="button" class="seats__pill" id="seats-pill" data-pill aria-label="${t.pillOpen}" data-show="false">
+      <span class="pill__txt" data-pilltxt></span>
+      <svg class="pill__arrow" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>
+    </button>
   </div>
   <dialog class="tcard tdlg glass" id="tables-dialog" aria-labelledby="tdlg-title">
     <div class="tcard__in">
@@ -326,12 +331,14 @@ let host: HTMLElement;
 let layout: Layout;
 let svg: SVGSVGElement;
 let panel: HTMLElement;
+let pill: HTMLButtonElement;
 let card: HTMLDialogElement;
 let cardTable = 0;
 
 const freeSeats = (n: number): number[] => Array.from({ length: SEATS_PER_TABLE }, (_, i) => i + 1).filter((s) => statusOf(seatKey(n, s)) === 'free');
 
 function notify(): void {
+  if (barMin) { barMin = false; storeBarMin(); }
   paint();
   listeners.forEach((fn) => fn());
 }
@@ -436,6 +443,46 @@ function paint(): void {
   if (card.open) paintCard();
 }
 
+/* ---------- полоса итога: закреплена, пока есть выбор; сворачивается в «таблетку» ---------- */
+
+const BAR_MIN_KEY = 'gnn-bar-min';
+const PILL_PAD = 76;
+let barMin = false;
+let barInView = false;
+try { barMin = sessionStorage.getItem(BAR_MIN_KEY) === '1'; } catch { /* sessionStorage недоступен */ }
+
+function storeBarMin(): void {
+  try {
+    if (barMin) sessionStorage.setItem(BAR_MIN_KEY, '1');
+    else sessionStorage.removeItem(BAR_MIN_KEY);
+  } catch { /* sessionStorage недоступен */ }
+}
+
+function setBarMin(v: boolean): void {
+  barMin = v;
+  storeBarMin();
+  syncBar();
+}
+
+function syncBarPad(): void {
+  const pad = !hasSelection() ? 0 : barMin ? PILL_PAD : panel.offsetHeight;
+  document.documentElement.style.setProperty('--bar-pad', pad + 'px');
+}
+
+function syncBar(): void {
+  if (!panel || !pill) return;
+  const empty = !hasSelection();
+  const desktop = window.matchMedia('(min-width: 1024px)').matches;
+  const showBar = empty ? barInView && desktop : !barMin;
+  const showPill = !empty && barMin;
+  panel.dataset.show = String(showBar);
+  panel.inert = !showBar;
+  pill.dataset.show = String(showPill);
+  pill.inert = !showPill;
+  pill.querySelector('[data-pilltxt]')!.textContent = `${t.pillLabel} · ${rub(totalPrice())}`;
+  syncBarPad();
+}
+
 function paintPanel(): void {
   const list = getPicks();
   const empty = !hasSelection();
@@ -462,6 +509,7 @@ function paintPanel(): void {
     panel.classList.remove('is-open');
     panel.querySelector('[data-toggle]')!.setAttribute('aria-expanded', 'false');
   }
+  syncBar();
 }
 
 /* ---------- карточка стола (для телефона) ---------- */
@@ -647,6 +695,7 @@ export function initSeating(): void {
   host = el.querySelector<HTMLElement>('[data-host]')!;
   svg = host.querySelector<SVGSVGElement>('svg')!;
   panel = el.querySelector<HTMLElement>('#seats-panel')!;
+  pill = el.querySelector<HTMLButtonElement>('#seats-pill')!;
   card = el.querySelector<HTMLDialogElement>('#table-card')!;
   const map = el.querySelector<HTMLElement>('[data-map]')!;
   const view = initView(map);
@@ -818,8 +867,13 @@ export function initSeating(): void {
     notify();
   });
 
-  // На телефоне панель закреплена снизу, пока блок схемы в кадре
-  new IntersectionObserver(([entry]) => { panel.dataset.inview = String(entry.isIntersecting); }, { threshold: 0 }).observe(el);
+  // Пустая полоса видна только в блоке #seats (десктоп); с выбором закреплена на всём сайте
+  new IntersectionObserver(([entry]) => { barInView = entry.isIntersecting; syncBar(); }, { threshold: 0 }).observe(el);
+  new ResizeObserver(syncBarPad).observe(panel);
+  window.matchMedia('(min-width: 1024px)').addEventListener('change', syncBar);
+  panel.querySelector('[data-min]')!.addEventListener('click', () => setBarMin(true));
+  pill.addEventListener('click', () => { setBarMin(false); panel.querySelector<HTMLElement>('[data-min]')!.focus({ preventScroll: true }); });
+  syncBar();
 
   // Подсказка над столом: мышь и клавиатурный фокус
   const tip = el.querySelector<HTMLElement>('[data-tip]')!;

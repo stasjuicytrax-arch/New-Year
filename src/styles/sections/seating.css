@@ -155,7 +155,19 @@
 
   /* Панель итога: полоса, закреплённая снизу, пока блок в кадре и форма не видна */
   .seats__panel.glass { position: fixed; left: 0; right: 0; bottom: 0; z-index: calc(var(--z-header) - 1); display: grid; gap: var(--space-3); padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); border-radius: 18px 18px 0 0; border-bottom: 0; background: #040e2a; box-shadow: 0 -14px 40px rgba(0, 0, 0, 0.5); }
-  .seats__panel:not([data-inview="true"]) { display: none; }
+  .seats__panel { transition: transform 0.38s var(--ease-out), opacity 0.28s var(--ease-out), visibility 0s; }
+  .seats__panel:not([data-show="true"]) { transform: translateY(110%); opacity: 0; visibility: hidden; pointer-events: none; transition: transform 0.38s var(--ease-out), opacity 0.28s var(--ease-out), visibility 0s 0.38s; }
+  .panel__min { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border: 1px solid var(--glass-line); border-radius: 50%; background: transparent; color: var(--text-strong); font-size: 26px; line-height: 1; cursor: pointer; }
+  .panel__min:focus-visible, .seats__pill:focus-visible { box-shadow: var(--focus-ring); outline: none; }
+  .seats__pill { position: fixed; z-index: calc(var(--z-header) - 1); left: 50%; bottom: calc(14px + env(safe-area-inset-bottom)); display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; max-width: calc(100vw - 32px); padding: 0 12px 0 20px; border: 1px solid var(--line-strong); border-radius: 999px; background: #040e2a; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55); color: var(--text-strong); font: inherit; font-size: 15px; font-weight: 600; white-space: nowrap; cursor: pointer; transform: translateX(-50%); transition: transform 0.38s var(--ease-out), opacity 0.28s var(--ease-out), visibility 0s; }
+  .seats__pill:not([data-show="true"]) { transform: translate(-50%, 24px); opacity: 0; visibility: hidden; pointer-events: none; transition: transform 0.38s var(--ease-out), opacity 0.28s var(--ease-out), visibility 0s 0.38s; }
+  .pill__arrow { flex: none; width: 32px; height: 32px; padding: 6px; border-radius: 50%; background: var(--text-strong); color: var(--night-950); }
+  html .site-footer { padding-bottom: calc(var(--space-6) + var(--bar-pad, 0px)); }
+  @media (min-width: 1024px) {
+    .seats__pill { left: auto; right: max(24px, calc((100% - 1400px) / 2)); }
+    .seats__pill:not([data-show="true"]) { transform: translateY(24px); }
+    .seats__pill { transform: none; }
+  }
   .panel__bar { display: grid; gap: var(--space-3); }
   .panel__txt { display: grid; gap: 2px; min-width: 0; }
   .panel__sum { display: -webkit-box; -webkit-line-clamp: 1; line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; font-size: 14px; line-height: 1.45; color: var(--text-strong); }
@@ -204,7 +216,6 @@
 
   /* Телефон: пустая панель не показывается; запас снизу, чтобы закреплённая панель не закрывала конец блока */
   @media (max-width: 1023.98px) {
-    .seats__panel[data-empty="true"] { display: none; }
     #seats { padding-bottom: calc(var(--pad-dense) + 190px); }
   }
 
@@ -248,6 +259,7 @@
   @media (prefers-reduced-motion: reduce) {
     .hall3d__plane { transition: none; transform: none; will-change: auto; }
     .hot::before, .seats__tab { transition: none; }
+    .seats__panel, .seats__panel:not([data-show="true"]), .seats__pill, .seats__pill:not([data-show="true"]) { transition: none; }
     .tbl, .tbl__body, .seat__cap, .seat__check, .cseat { transition: none; }
     .tbl:hover { transform: none; }
   }
