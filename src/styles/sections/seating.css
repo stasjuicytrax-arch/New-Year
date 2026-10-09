@@ -181,8 +181,6 @@
   .panel__total { display: grid; gap: 2px; margin-right: auto; font-size: 14px; color: var(--text-muted); }
   .panel__total b { font-family: var(--font-display); font-weight: 400; font-size: clamp(26px, 3vw, 34px); line-height: 1; color: var(--text-strong); font-variant-numeric: lining-nums; white-space: nowrap; }
   .panel__toggle { display: inline-grid; place-items: center; min-height: 44px; padding-inline: 14px; border: 1px solid var(--glass-line); border-radius: 12px; background: transparent; color: var(--text); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
-  .panel__empty { font-size: 15px; color: var(--text-muted); }
-  .seats__panel[data-empty="false"] .panel__empty { display: none; }
   .seats__panel[data-empty="true"] .panel__bar, .seats__panel[data-empty="true"] .panel__more { display: none; }
   .panel__more { display: none; gap: var(--space-2); }
   .seats__panel.is-open .panel__more { display: grid; }

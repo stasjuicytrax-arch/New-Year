@@ -228,7 +228,6 @@ export const seating = {
   mapAria: 'Схема зала: 15 столов по 8 мест',
   legend: { free: 'Свободно', selected: 'Выбрано', held: 'Удержано', booked: 'Занято' },
   listTitle: 'Все столы',
-  empty: 'Места не выбраны. Нажмите на стул на схеме.',
   allTable: 'Весь стол',
   releaseTable: 'Снять весь стол',
   remove: 'Убрать место',

@@ -309,7 +309,6 @@ export function renderSeating(): string {
           <button type="button" class="panel__min" data-min aria-label="${t.minimize}"><span aria-hidden="true">×</span></button>
         </div>
       </div>
-      <p class="panel__empty" data-emptytext>${t.empty}</p>
     </aside>
     <button type="button" class="seats__pill" id="seats-pill" data-pill aria-label="${t.pillOpen}" data-show="false">
       <span class="pill__txt" data-pilltxt></span>
@@ -450,7 +449,6 @@ function paint(): void {
 const BAR_MIN_KEY = 'gnn-bar-min';
 const PILL_PAD = 76;
 let barMin = false;
-let barInView = false;
 try { barMin = sessionStorage.getItem(BAR_MIN_KEY) === '1'; } catch { /* sessionStorage недоступен */ }
 
 function storeBarMin(): void {
@@ -474,8 +472,7 @@ function syncBarPad(): void {
 function syncBar(): void {
   if (!panel || !pill) return;
   const empty = !hasSelection();
-  const desktop = window.matchMedia('(min-width: 1024px)').matches;
-  const showBar = empty ? barInView && desktop : !barMin;
+  const showBar = !empty && !barMin;
   const showPill = !empty && barMin;
   panel.dataset.show = String(showBar);
   panel.inert = !showBar;
@@ -871,10 +868,8 @@ export function initSeating(): void {
     notify();
   });
 
-  // Пустая полоса видна только в блоке #seats (десктоп); с выбором закреплена на всём сайте
-  new IntersectionObserver(([entry]) => { barInView = entry.isIntersecting; syncBar(); }, { threshold: 0 }).observe(el);
+  // Полоса появляется после первого выбора и закреплена на всём сайте
   new ResizeObserver(syncBarPad).observe(panel);
-  window.matchMedia('(min-width: 1024px)').addEventListener('change', syncBar);
   panel.querySelector('[data-min]')!.addEventListener('click', () => setBarMin(true));
   pill.addEventListener('click', () => { setBarMin(false); panel.querySelector<HTMLElement>('[data-min]')!.focus({ preventScroll: true }); });
   syncBar();
