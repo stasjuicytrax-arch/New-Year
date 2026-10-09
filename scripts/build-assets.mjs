@@ -13,8 +13,10 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(ROOT, 'src', 'assets', 'img');
 
-/** @type {Array<{name:string, src:string, widths:number[], grade?:'cold'|'violet-to-blue', crop?:{left:number,top:number,width:number,height:number}}>} */
+/** @type {Array<{name:string, src:string, widths:number[], alpha?:boolean, grade?:'cold'|'violet-to-blue', crop?:{left:number,top:number,width:number,height:number}}>} */
 const IMAGES = [
+  // Ведущие: вырезка клиента «Слой 21.png» (RGBA 1861x2698), без апскейла: последняя ширина = исходная
+  { name: 'hosts-cutout', src: 'Слой 21.png', widths: [640, 960, 1440, 1861], alpha: true },
   {
     name: 'hosts',
     src: 'Ведущие и организаторы главной новогодней ночи/IMG_1984.JPG',
@@ -73,7 +75,7 @@ async function grade(input, mode) {
   return sharp(buf).composite([{ input: overlay, blend: 'soft-light' }]).toBuffer();
 }
 
-async function build({ name, src, widths, grade: mode, crop }) {
+async function build({ name, src, widths, grade: mode, crop, alpha }) {
   const srcPath = join(ROOT, src);
   let base = mode ? await grade(srcPath, mode) : await sharp(srcPath).rotate().toBuffer();
   if (crop) base = await sharp(base).extract(crop).toBuffer();
@@ -84,9 +86,15 @@ async function build({ name, src, widths, grade: mode, crop }) {
     const pipe = sharp(base).resize({ width, withoutEnlargement: true });
     const stem = join(OUT, `${name}-${w}`);
     const height = Math.round((meta.height * width) / meta.width);
-    await pipe.clone().avif({ quality: 62, effort: 5 }).toFile(`${stem}.avif`);
-    await pipe.clone().webp({ quality: 84 }).toFile(`${stem}.webp`);
-    await pipe.clone().jpeg({ quality: 86, mozjpeg: true }).toFile(`${stem}.jpg`);
+    if (alpha) {
+      // вырезка с прозрачным фоном: AVIF + WebP с альфой, без JPEG
+      await pipe.clone().avif({ quality: 68, effort: 5 }).toFile(`${stem}.avif`);
+      await pipe.clone().webp({ quality: 88, alphaQuality: 100 }).toFile(`${stem}.webp`);
+    } else {
+      await pipe.clone().avif({ quality: 62, effort: 5 }).toFile(`${stem}.avif`);
+      await pipe.clone().webp({ quality: 84 }).toFile(`${stem}.webp`);
+      await pipe.clone().jpeg({ quality: 86, mozjpeg: true }).toFile(`${stem}.jpg`);
+    }
     manifest.push({ w, width, height });
   }
   console.log(`${name}: ${manifest.map((m) => `${m.width}x${m.height}`).join(', ')}`);

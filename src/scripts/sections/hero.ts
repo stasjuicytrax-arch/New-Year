@@ -4,11 +4,14 @@ import { mountCountdown } from '../countdown';
 import { finePointer, gsap, reducedMotion } from '../scroll';
 import { magnetic } from '../ui';
 
-import hostsAvif1024 from '../../assets/img/hosts-cutout-1024.avif';
-import hostsAvif600 from '../../assets/img/hosts-cutout-600.avif';
-import hostsWebp1024 from '../../assets/img/hosts-cutout-1024.webp';
-import hostsWebp600 from '../../assets/img/hosts-cutout-600.webp';
-import hostsPng600 from '../../assets/img/hosts-cutout-600.png';
+import hostsAvif640 from '../../assets/img/hosts-cutout-640.avif';
+import hostsAvif960 from '../../assets/img/hosts-cutout-960.avif';
+import hostsAvif1440 from '../../assets/img/hosts-cutout-1440.avif';
+import hostsAvif1861 from '../../assets/img/hosts-cutout-1861.avif';
+import hostsWebp640 from '../../assets/img/hosts-cutout-640.webp';
+import hostsWebp960 from '../../assets/img/hosts-cutout-960.webp';
+import hostsWebp1440 from '../../assets/img/hosts-cutout-1440.webp';
+import hostsWebp1861 from '../../assets/img/hosts-cutout-1861.webp';
 
 /**
  * HERO-афиша, ВЕРСИЯ 2: центрированная композиция (docs/DESIGN-SYSTEM.md).
@@ -47,9 +50,9 @@ function markup(): string {
 
     <div class="hero__figure">
       <picture class="hero__hosts" data-hosts>
-        <source type="image/avif" srcset="${hostsAvif600} 600w, ${hostsAvif1024} 1024w" sizes="${SIZES}">
-        <source type="image/webp" srcset="${hostsWebp600} 600w, ${hostsWebp1024} 1024w" sizes="${SIZES}">
-        <img src="${hostsPng600}" width="1024" height="1536" alt="${event.hosts.join(' и ')}, ведущие Главной новогодней ночи" fetchpriority="high" decoding="async">
+        <source type="image/avif" srcset="${hostsAvif640} 640w, ${hostsAvif960} 960w, ${hostsAvif1440} 1440w, ${hostsAvif1861} 1861w" sizes="${SIZES}">
+        <source type="image/webp" srcset="${hostsWebp640} 640w, ${hostsWebp960} 960w, ${hostsWebp1440} 1440w, ${hostsWebp1861} 1861w" sizes="${SIZES}">
+        <img src="${hostsWebp960}" srcset="${hostsWebp640} 640w, ${hostsWebp960} 960w, ${hostsWebp1440} 1440w, ${hostsWebp1861} 1861w" sizes="${SIZES}" width="1861" height="2698" alt="${event.hosts.join(' и ')}, ведущие Главной новогодней ночи" fetchpriority="high" decoding="async">
       </picture>
     </div>
 

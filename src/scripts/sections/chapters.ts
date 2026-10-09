@@ -45,10 +45,6 @@ function ch01(c: Chapter): string {
 function ch02(c: Chapter): string {
   const cutout = picture({
     name: 'hosts-cutout',
-    variants: [
-      { w: 600, h: 900 },
-      { w: 1024, h: 1536 },
-    ],
     fallback: 'webp',
     alt: `${event.hosts.join(' и ')}, ведущие Главной новогодней ночи`,
     sizes: '(min-width: 1024px) 40vw, min(100vw, 500px)',

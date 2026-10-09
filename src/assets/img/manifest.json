@@ -1,4 +1,29 @@
 {
+  "hosts-cutout": {
+    "src": "1861x2698",
+    "variants": [
+      {
+        "w": 640,
+        "width": 640,
+        "height": 928
+      },
+      {
+        "w": 960,
+        "width": 960,
+        "height": 1392
+      },
+      {
+        "w": 1440,
+        "width": 1440,
+        "height": 2088
+      },
+      {
+        "w": 1861,
+        "width": 1861,
+        "height": 2698
+      }
+    ]
+  },
   "hosts": {
     "src": "1707x2560",
     "variants": [

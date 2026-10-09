@@ -10,7 +10,6 @@
         "typecheck": "tsc --noEmit",
         "assets": "node scripts/build-assets.mjs",
         "deco": "node scripts/build-deco.mjs",
-        "hosts": "node scripts/build-hosts.mjs",
         "qa:mobile": "node scripts/qa-mobile.mjs"
     },
     "dependencies": {
