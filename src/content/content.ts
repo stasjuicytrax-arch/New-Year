@@ -72,7 +72,6 @@ export const hero = {
     { label: 'СБОР ГОСТЕЙ', value: '21:00' },
   ],
   cta: 'Забронировать стол',
-  priceNote: 'от 15 000 ₽ за гостя',
   countdownLabel: 'До 2027 года в Перми',
 } as const;
 

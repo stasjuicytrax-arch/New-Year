@@ -125,7 +125,6 @@
   .hero__timer .countdown__label { max-width: none; font-size: 14px; letter-spacing: 0.14em; text-align: center; }
   .hero__timer .countdown__board { justify-content: center; gap: var(--space-2); }
 
-  .hero__price { max-width: 44ch; font-family: var(--font-text); font-size: 16px; font-weight: 600; line-height: 1.45; color: var(--text-strong); text-wrap: balance; }
   .hero__note { display: block; font-weight: 400; color: var(--text); }
   .hero__sub { max-width: 32ch; font-size: var(--fs-lead); line-height: 1.5; color: var(--text); text-wrap: balance; }
 

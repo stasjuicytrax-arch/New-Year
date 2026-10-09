@@ -76,7 +76,6 @@ function markup(): string {
         </div>
       </div>
       <div class="hero__timer" data-in></div>
-      <p class="hero__price" data-in>${hero.priceNote}</p>
       <p class="hero__sub" data-in>${typo(hero.subtitle)}</p>
     </div>
   </div>`;
