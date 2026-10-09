@@ -70,8 +70,12 @@
   @media (pointer: coarse), (max-width: 1023.98px) { .seats__tip { display: none; } }
 
   /* Переключатель «Схема | 3D-вид» */
-  .seats__switch { display: inline-grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border: 1px solid var(--glass-line); border-radius: 999px; background: rgba(0, 16, 46, 0.6); }
-  .seats__tab { min-height: 44px; min-width: 112px; padding: 0 20px; border: 0; border-radius: 999px; background: transparent; color: var(--text); font-family: var(--font-ui); font-size: 15px; font-weight: 600; cursor: pointer; transition: background var(--dur-2) var(--ease-out), color var(--dur-2) var(--ease-out); }
+  .seats__switch { display: inline-flex; flex-wrap: nowrap; width: max-content; max-width: 100%; gap: 4px; padding: 4px; border: 1px solid var(--glass-line); border-radius: 999px; background: rgba(0, 16, 46, 0.6); }
+  .seats__tab { flex: 0 0 auto; white-space: nowrap; min-height: 44px; padding: 0 20px; border: 0; border-radius: 999px; background: transparent; color: var(--text); font-family: var(--font-ui); font-size: 15px; font-weight: 600; cursor: pointer; transition: background var(--dur-2) var(--ease-out), color var(--dur-2) var(--ease-out); }
+  @media (max-width: 599.98px) {
+    .seats__switch { display: flex; width: 100%; }
+    .seats__tab { flex: 1 1 0; min-width: 0; padding: 0 8px; font-size: 14px; }
+  }
   .seats__tab[aria-pressed="true"] { background: var(--chrome-button); color: var(--night-950); }
   .seats__tab:focus-visible { outline: 3px solid var(--neon-400); outline-offset: 2px; }
   [data-view="3d"] > .seats__map { display: none; }
