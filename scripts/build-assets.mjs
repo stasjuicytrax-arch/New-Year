@@ -46,7 +46,7 @@ const IMAGES = [
     widths: [640, 960, 1440, 2048],
     grade: 'cold',
   },
-  { name: 'kids-2', src: 'Для блока на детскую анимацию/a-min.jpg', widths: [640, 960, 1440, 2048] },
+  { name: 'kids-6', src: '36a59f1be99ce4053ec7866a698308f0_f3fde0a8-f698-4203-ad77-0cc97ae21da6.png', widths: [640, 960, 1440, 1664] },
   { name: 'kids-4', src: 'Vintermagi med Ded Moroz og Snegurochka.png', widths: [640, 960, 1254] },
   { name: 'kids-5', src: 'Magisk boblefest i vintereventyrland.png', widths: [640, 960, 1254] },
   // Зал WHITE HALL (галерея и глава 07). Отбор: без дублей одного кадра в разной подсветке, без фото персонала и мягких кадров.

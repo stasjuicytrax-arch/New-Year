@@ -180,7 +180,7 @@
   .ch__polaroid .ch__img { object-position: 50% 50%; }
   .ch__polaroid--1 { left: 0; top: 6%; z-index: 2; rotate: -5deg; }
   .ch__polaroid--2 { right: 0; top: 0; width: 66%; z-index: 1; rotate: 3deg; }
-  .ch__polaroid--2 .ch__img { object-position: 52% 50%; }
+  .ch__polaroid--2 .ch__img { object-position: 55% 28%; }
   .ch__polaroid--3 { left: 14%; bottom: 0; width: 54%; z-index: 3; rotate: -1deg; }
 
   /* ---------- 08: DJ Seven ---------- */
