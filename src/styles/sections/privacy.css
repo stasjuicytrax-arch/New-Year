@@ -1,0 +1,14 @@
+@layer sections {
+  .policy { width: min(100% - 2 * var(--margin), 760px); margin-inline: auto; padding-block: clamp(48px, 8vw, 96px); font-family: var(--font-text); color: var(--text); }
+  .policy h1 { margin: var(--space-6) 0 var(--space-4); font-size: clamp(28px, 6vw, 44px); line-height: 1.05; }
+  .policy h2 { margin: var(--space-7, 48px) 0 var(--space-3); font-size: clamp(20px, 3.4vw, 26px); line-height: 1.15; }
+  .policy p, .policy li { max-width: none; font-family: var(--font-text); font-size: 16px; line-height: 1.65; }
+  .policy p { margin: 0 0 var(--space-3); }
+  .policy ul { margin: 0 0 var(--space-3); padding-left: 1.25em; }
+  .policy li { margin-bottom: 6px; }
+  .policy strong { color: var(--text-strong); font-weight: 600; }
+  .policy a { display: inline-block; padding-block: 12px; color: var(--text-strong); text-decoration: underline; text-underline-offset: 4px; }
+  .policy a:focus-visible { outline: 3px solid var(--neon-400); outline-offset: 2px; border-radius: 4px; }
+  .policy__back { margin: 0; }
+  .policy > .policy__back:last-child { margin-top: var(--space-6); }
+}
