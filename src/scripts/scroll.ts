@@ -29,6 +29,7 @@ export function scrollToTarget(target: string | HTMLElement, offset = 0): void {
 export function lockScroll(lock: boolean): void {
   if (lenis) lock ? lenis.stop() : lenis.start();
   document.documentElement.style.overflow = lock ? 'hidden' : '';
+  document.body.style.overflow = lock ? 'hidden' : '';
 }
 
 export { gsap, ScrollTrigger, SplitText };

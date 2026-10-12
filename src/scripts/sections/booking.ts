@@ -25,14 +25,14 @@ const stepper = (name: string, label: string): string => `
 export function renderBooking(): string {
   return `
   <dialog class="bk glass" id="booking-dialog" aria-labelledby="bk-title">
-    <div class="bk__in">
+    <div class="bk__in" data-lenis-prevent>
       <header class="bk__head">
         <h3 class="bk__title chrome" id="bk-title">${bookingBlock.title}</h3>
         <button type="button" class="bk__x" data-bk-close aria-label="${bookingBlock.close}"><span aria-hidden="true">×</span></button>
       </header>
 
       <form class="bk__form" id="booking-form" novalidate aria-labelledby="bk-title">
-        <div class="form__fields">
+        <div class="bk__scroll" data-lenis-prevent>
           <div class="form__choice" data-choice>
             <p class="label label--dot">${seating.choiceTitle}</p>
             <p class="form__choice-sel" data-choice-sel></p>
@@ -42,43 +42,50 @@ export function renderBooking(): string {
             <button type="button" class="form__choice-edit" data-bk-close>${bookingBlock.edit}</button>
           </div>
 
-          <label class="field">
-            <span class="field__label">Имя <b aria-hidden="true">*</b></span>
-            <input class="input" name="name" type="text" autocomplete="name" required minlength="2" maxlength="60">
-            <span class="field__error" data-err="name" role="alert"></span>
-          </label>
-          <label class="field">
-            <span class="field__label">Телефон <b aria-hidden="true">*</b></span>
-            <input class="input" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+7 (___) ___-__-__" required>
-            <span class="field__error" data-err="phone" role="alert"></span>
-          </label>
-
-          <fieldset class="field field--hot" data-hot>
-            <legend class="field__label">${bookingBlock.hotTitle} <small>${bookingBlock.hotHint}</small></legend>
-            <div class="form__row form__row--2">
-              ${stepper('veal', bookingBlock.veal)}
-              ${stepper('zander', bookingBlock.zander)}
+          <div class="form__fields bk__main">
+            <div class="form__row form__row--2 bk__np">
+              <label class="field">
+                <span class="field__label">Имя <b aria-hidden="true">*</b></span>
+                <input class="input" name="name" type="text" autocomplete="name" required minlength="2" maxlength="60">
+                <span class="field__error" data-err="name" role="alert"></span>
+              </label>
+              <label class="field">
+                <span class="field__label">Телефон <b aria-hidden="true">*</b></span>
+                <input class="input" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+7 (___) ___-__-__" required>
+                <span class="field__error" data-err="phone" role="alert"></span>
+              </label>
             </div>
-            <span class="field__error" data-err="hot" role="alert"></span>
-          </fieldset>
 
-          <label class="field">
-            <span class="field__label">${bookingBlock.comment}</span>
-            <textarea class="input input--area" name="comment" rows="3" maxlength="400"></textarea>
-          </label>
+            <fieldset class="field field--hot" data-hot>
+              <legend class="field__label">${bookingBlock.hotTitle} <small>${bookingBlock.hotHint}</small></legend>
+              <div class="form__row form__row--2">
+                ${stepper('veal', bookingBlock.veal)}
+                ${stepper('zander', bookingBlock.zander)}
+              </div>
+              <span class="field__error" data-err="hot" role="alert"></span>
+            </fieldset>
 
-          <input class="hp" type="text" name="site" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <label class="field">
+              <span class="field__label">${bookingBlock.comment}</span>
+              <textarea class="input input--area" name="comment" rows="2" maxlength="400"></textarea>
+            </label>
 
-          <label class="check">
-            <input type="checkbox" name="consent" required>
-            <span>${bookingBlock.consent}. <a href="${import.meta.env.BASE_URL}privacy.html">Политика обработки персональных данных</a></span>
-          </label>
-          <span class="field__error" data-err="consent" role="alert"></span>
+            <input class="hp" type="text" name="site" tabindex="-1" autocomplete="off" aria-hidden="true">
 
-          <div class="form__submit">
-            <span class="btn-wrap"><button class="btn btn--primary" type="submit" data-goal="form_submit"><span>${bookingBlock.submit}</span></button></span>
-            <p class="form__status" data-status role="status"></p>
+            <label class="check">
+              <input type="checkbox" name="consent" required>
+              <span>${bookingBlock.consent}. <a href="${import.meta.env.BASE_URL}privacy.html">Политика обработки персональных данных</a></span>
+            </label>
+            <span class="field__error" data-err="consent" role="alert"></span>
           </div>
+
+          <p class="bk__call">${bookingBlock.callLine} ${callLinks()}</p>
+        </div>
+
+        <div class="bk__bar form__submit">
+          <p class="bk__total" data-bar-total></p>
+          <span class="btn-wrap"><button class="btn btn--primary" type="submit" data-goal="form_submit"><span>${bookingBlock.submit}</span></button></span>
+          <p class="form__status" data-status role="status"></p>
         </div>
       </form>
 
@@ -96,8 +103,6 @@ export function renderBooking(): string {
         </div>
         <span class="btn-wrap"><button class="btn btn--secondary" type="button" data-bk-back><span>${bookingBlock.edit}</span></button></span>
       </div>
-
-      <p class="bk__call">${bookingBlock.callLine} ${callLinks()}</p>
     </div>
   </dialog>`;
 }
@@ -151,7 +156,9 @@ export function initBooking(): void {
     const kidsEl = choice.querySelector<HTMLElement>('[data-choice-kids]')!;
     kidsEl.textContent = kidsText();
     kidsEl.hidden = kids.length === 0;
-    choice.querySelector('[data-choice-sum]')!.textContent = `${seating.total} ${fmt(totalPrice())} ${prices.currency}`;
+    const sum = `${seating.total} ${fmt(totalPrice())} ${prices.currency}`;
+    choice.querySelector('[data-choice-sum]')!.textContent = sum;
+    form.querySelector('[data-bar-total]')!.textContent = sum;
     // горячее нужно только тем, кто сидит за столом; по умолчанию все телятина
     const n = picks.length;
     if (n !== seatsCount) {
@@ -178,7 +185,9 @@ export function initBooking(): void {
     if (typeof dlg.showModal === 'function') dlg.showModal();
     else dlg.setAttribute('open', '');
     lockScroll(true);
+    (document.activeElement as HTMLElement | null)?.blur();
     dlg.scrollTop = 0;
+    form.querySelector<HTMLElement>('.bk__scroll')!.scrollTop = 0;
   };
   const close = (): void => {
     if (typeof dlg.close === 'function') dlg.close();
