@@ -25,7 +25,7 @@
     .hall__rail { margin: 0; padding: 0; overflow: visible; scroll-snap-type: none; }
     .hall__grid { display: grid; grid-template-columns: 1.7fr 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 16px; width: min(100%, 1400px); max-width: none; margin-inline: auto; height: clamp(320px, calc(100svh - 232px), 680px); }
     .hall__item { flex: none; max-width: none; aspect-ratio: auto; }
-    .hall__item--1 { grid-row: 1 / span 2; }
+    .hall__item--1, .hall__item--4 { grid-row: 1 / span 2; }
     .hall__dots { display: none; }
   }
 
