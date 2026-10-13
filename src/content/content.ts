@@ -30,8 +30,8 @@ export const event = {
 } as const;
 
 export const phones = [
-  { label: '+7 908 270-89-71', href: 'tel:+79082708971', goal: 'phone_1' },
-  { label: '+7 919 445-96-01', href: 'tel:+79194459601', goal: 'phone_2' },
+  { name: 'Александр', label: '+7 908 270-89-71', href: 'tel:+79082708971', goal: 'phone_1' },
+  { name: 'Станислав', label: '+7 919 445-96-01', href: 'tel:+79194459601', goal: 'phone_2' },
 ] as const;
 
 export const prices = {
@@ -45,7 +45,7 @@ export const prices = {
 /** ⚠ Канал заявок: Telegram-бот через serverless-функцию. Эндпоинт задаётся при деплое. */
 export const booking = {
   channel: 'telegram' as 'telegram' | 'email' | 'link',
-  endpoint: '' as string,
+  endpoint: 'https://functions.yandexcloud.net/d4eq5kgv2lge2tsl864f' as string,
   /** Фоллбэк, пока бот не подключён. ⚠ ссылку предоставит клиент. */
   fallbackUrl: '' as string,
   metrikaId: '' as string, // ⚠ ID счётчика Яндекс.Метрики
@@ -191,9 +191,12 @@ export const bookingBlock = {
   /** Окно с телефонами, пока не задан booking.endpoint (заявки через форму ещё не принимаются). */
   modalTitle: 'Онлайн-бронь подключается',
   modalText: 'Позвоните нам:',
+  /** Окно с телефонами, если заявка не ушла (нет сети, ошибка функции). */
+  failTitle: 'Не удалось отправить заявку',
   modalClose: 'Закрыть',
   submit: 'Отправить заявку',
-  success: 'Заявка принята. Мы перезвоним, чтобы подтвердить стол. До встречи 31 декабря!',
+  successTitle: 'Заявка принята!',
+  successText: 'Мы перезвоним для подтверждения',
   consent: 'Согласен на обработку персональных данных',
 } as const;
 

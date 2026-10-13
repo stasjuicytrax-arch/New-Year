@@ -90,16 +90,16 @@ export function renderBooking(): string {
       </form>
 
       <div class="bk__done" data-success hidden>
-        <p class="form__success-title chrome">${bookingBlock.success.split('.')[0]}.</p>
-        <p>${bookingBlock.success.split('. ').slice(1).join('. ')}</p>
+        <p class="form__success-title chrome">${bookingBlock.successTitle}</p>
+        <p>${bookingBlock.successText}</p>
         <span class="btn-wrap"><button class="btn btn--secondary" type="button" data-bk-close><span>${bookingBlock.close}</span></button></span>
       </div>
 
       <div class="bk__done" data-fallback hidden>
-        <p class="form__success-title chrome">${bookingBlock.modalTitle}</p>
+        <p class="form__success-title chrome" data-fallback-title>${bookingBlock.modalTitle}</p>
         <p>${bookingBlock.modalText}</p>
         <div class="modal__calls">
-          ${phones.map((p) => `<span class="btn-wrap"><a class="btn btn--primary" href="${p.href}" data-goal="${p.goal}"><span>${p.label}</span></a></span>`).join('')}
+          ${phones.map((p) => `<span class="btn-wrap"><a class="btn btn--primary btn--call" href="${p.href}" data-goal="${p.goal}"><span>${p.name} · ${p.label}</span></a></span>`).join('')}
         </div>
         <span class="btn-wrap"><button class="btn btn--secondary" type="button" data-bk-back><span>${bookingBlock.edit}</span></button></span>
       </div>
@@ -114,6 +114,7 @@ export function initBooking(): void {
 
   const success = dlg.querySelector<HTMLElement>('[data-success]')!;
   const fallback = dlg.querySelector<HTMLElement>('[data-fallback]')!;
+  const failTitle = fallback.querySelector<HTMLElement>('[data-fallback-title]')!;
   const status = form.querySelector<HTMLElement>('[data-status]')!;
   const submit = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
   const hotBox = form.querySelector<HTMLElement>('[data-hot]')!;
@@ -214,6 +215,14 @@ export function initBooking(): void {
     phone.value = `+7${p[0] ? ` (${p[0]}` : ''}${p[0].length === 3 ? ')' : ''}${p[1] ? ` ${p[1]}` : ''}${p[2] ? `-${p[2]}` : ''}${p[3] ? `-${p[3]}` : ''}`;
   });
 
+  function showFallback(title: string): void {
+    failTitle.textContent = title;
+    form!.hidden = true;
+    fallback.hidden = false;
+    submit.disabled = false;
+    dlg!.scrollTop = 0;
+  }
+
   function err(k: string, msg: string): void {
     const el = form!.querySelector<HTMLElement>(`[data-err="${k}"]`);
     if (el) el.textContent = msg;
@@ -249,8 +258,7 @@ export function initBooking(): void {
     };
     if (!booking.endpoint) {
       // канал заявок ещё не подключён: честно говорим об этом и даём позвонить
-      form.hidden = true;
-      fallback.hidden = false;
+      showFallback(bookingBlock.modalTitle);
       return;
     }
     submit.disabled = true;
@@ -261,8 +269,7 @@ export function initBooking(): void {
       success.hidden = false;
       dlg.scrollTop = 0;
     } catch {
-      status.innerHTML = `Не удалось отправить заявку. Позвоните нам: ${callLinks()}`;
-      submit.disabled = false;
+      showFallback(bookingBlock.failTitle);
     }
   });
 }

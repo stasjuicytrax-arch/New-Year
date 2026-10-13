@@ -296,6 +296,7 @@
   .bk__done[hidden], .bk__form[hidden] { display: none; }
   .bk .modal__calls { display: flex; flex-direction: column; align-items: stretch; gap: var(--space-3); width: 100%; }
   .bk .modal__calls .btn-wrap, .bk .modal__calls .btn { width: 100%; }
+  .bk .btn--call { padding-inline: 12px; font-size: 14px; letter-spacing: 0.02em; text-transform: none; }
   .bk .form__submit .btn-wrap, .bk .form__submit .btn { width: 100%; }
   .form__choice-edit { padding: 0; border: 0; background: none; font: inherit; font-size: 15px; font-weight: 600; justify-self: start; text-decoration: underline; cursor: pointer; }
   .field--hot[hidden] { display: none; }
