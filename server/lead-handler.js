@@ -114,13 +114,18 @@ function sendTelegram(l) {
     const chat = env('TELEGRAM_CHAT_ID');
     if (!token || !chat) return resolve({ ok: false, reason: 'Telegram не настроен' });
     const payload = JSON.stringify({ chat_id: chat, text: telegramText(l), parse_mode: 'HTML', disable_web_page_preview: true });
+    /* Из Яндекс.Облака api.telegram.org недоступен (проверено 13.10.2026), поэтому адрес можно заменить
+       на релей вне РФ: TELEGRAM_API_BASE=https://relay.example.workers.dev (путь /bot<token>/sendMessage сохраняется) */
+    let base;
+    try { base = new URL(env('TELEGRAM_API_BASE') || 'https://api.telegram.org'); } catch { return resolve({ ok: false, reason: 'Неверный TELEGRAM_API_BASE' }); }
     const req = https.request(
       {
-        hostname: 'api.telegram.org',
-        path: `/bot${token}/sendMessage`,
+        hostname: base.hostname,
+        port: base.port || 443,
+        path: `${base.pathname.replace(/\/$/, '')}/bot${token}/sendMessage`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) },
-        timeout: 8000,
+        timeout: 4000,
       },
       (res) => {
         let raw = '';
