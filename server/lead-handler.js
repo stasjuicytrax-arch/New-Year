@@ -115,7 +115,7 @@ function sendTelegram(l) {
     if (!token || !chat) return resolve({ ok: false, reason: 'Telegram не настроен' });
     const payload = JSON.stringify({ chat_id: chat, text: telegramText(l), parse_mode: 'HTML', disable_web_page_preview: true });
     /* Из Яндекс.Облака api.telegram.org недоступен (проверено 13.10.2026), поэтому адрес можно заменить
-       на релей вне РФ: TELEGRAM_API_BASE=https://relay.example.workers.dev (путь /bot<token>/sendMessage сохраняется) */
+       на релей вне РФ: TELEGRAM_API_BASE=https://relay.example.workers.dev (путь /bot<token>/sendMessage сохраняется), TELEGRAM_RELAY_KEY уходит заголовком X-Relay-Key */
     let base;
     try { base = new URL(env('TELEGRAM_API_BASE') || 'https://api.telegram.org'); } catch { return resolve({ ok: false, reason: 'Неверный TELEGRAM_API_BASE' }); }
     const req = https.request(
@@ -124,8 +124,12 @@ function sendTelegram(l) {
         port: base.port || 443,
         path: `${base.pathname.replace(/\/$/, '')}/bot${token}/sendMessage`,
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) },
-        timeout: 4000,
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(payload),
+          ...(env('TELEGRAM_RELAY_KEY') ? { 'X-Relay-Key': env('TELEGRAM_RELAY_KEY') } : {}),
+        },
+        timeout: 8000,
       },
       (res) => {
         let raw = '';

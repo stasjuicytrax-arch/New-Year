@@ -1,0 +1,4 @@
+name = "ngperm-tg-relay"
+main = "worker.js"
+compatibility_date = "2024-11-01"
+# Секреты (wrangler secret put): TELEGRAM_BOT_TOKEN, RELAY_KEY
