@@ -37,7 +37,9 @@ export const guestChannel = {
   successNote: 'Вы уже с нами. Подпишитесь на канал гостей: там новости программы, рассадка и сюрпризы',
   successCta: 'Подписаться в Telegram',
   bandTitle: 'Канал гостей Главной новогодней ночи',
+  bandSub: 'Новости программы, рассадка и сюрпризы',
   bandCta: 'Подписаться',
+  footerLabel: 'Канал гостей',
 } as const;
 
 export const phones = [

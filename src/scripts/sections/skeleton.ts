@@ -79,7 +79,10 @@ export function renderSkeleton(): void {
       `<section class="tgband" aria-label="${guestChannel.bandTitle}">
         <div class="container tgband__in">
           <span class="tgband__ic" aria-hidden="true">${ICON_TG}</span>
-          <p class="tgband__title">${guestChannel.bandTitle}</p>
+          <div class="tgband__txt">
+            <p class="tgband__title">${guestChannel.bandTitle}</p>
+            <p class="tgband__sub">${guestChannel.bandSub}</p>
+          </div>
           <span class="btn-wrap"><a class="btn btn--primary btn--tg" href="${telegramChannel}" target="_blank" rel="noopener noreferrer" data-goal="tg_band">${ICON_TG}<span>${guestChannel.bandCta}</span></a></span>
         </div>
       </section>`,
@@ -105,7 +108,7 @@ export function renderSkeleton(): void {
                 `<div class="footer__contact"><a class="footer__phone" href="${p.href}" data-goal="${p.goal}">${p.name} · ${p.label}</a><a class="footer__soc" href="${p.vk}" target="_blank" rel="noopener noreferrer" aria-label="ВКонтакте: ${p.name}" data-goal="vk_${p.goal}">${ICON_VK}</a></div>`,
             )
             .join('')}
-          ${telegramChannel ? `<div class="footer__contact"><a class="footer__soc" href="${telegramChannel}" target="_blank" rel="noopener noreferrer" aria-label="Telegram-канал" data-goal="tg_channel">${ICON_TG}</a></div>` : ''}
+          ${telegramChannel ? `<div class="footer__contact footer__contact--tg"><a class="footer__soc" href="${telegramChannel}" target="_blank" rel="noopener noreferrer" aria-label="Telegram: ${guestChannel.footerLabel}" data-goal="tg_channel">${ICON_TG}</a><a class="footer__phone footer__tglabel" href="${telegramChannel}" target="_blank" rel="noopener noreferrer" data-goal="tg_channel_label">${guestChannel.footerLabel}</a></div>` : ''}
         </div>
         <div class="footer__col">
           <p class="label label--dot">${footer.colBooking}</p>
