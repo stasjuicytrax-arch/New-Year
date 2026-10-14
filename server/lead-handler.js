@@ -260,6 +260,7 @@ async function handleStatus(ctx) {
   }
 }
 
+const unbookButton = (id) => ({ inline_keyboard: [[{ text: '🔓 Снять бронь', callback_data: `un:${id}` }]] });
 const buttons = (id) => ({ inline_keyboard: [[{ text: '✅ Подтвердить', callback_data: `ok:${id}` }, { text: '❌ Отклонить', callback_data: `no:${id}` }]] });
 
 /* Принимает разобранное тело запроса, возвращает { status, body } */
@@ -340,7 +341,7 @@ async function handleCallback(update, ctx) {
 async function processCallback(update, ctx) {
   const cq = update && update.callback_query;
   if (!cq || !cq.data) return { status: 200, body: { ok: true } };
-  const m = /^(ok|no):([0-9a-f]{10})$/.exec(cq.data);
+  const m = /^(ok|no|un):([0-9a-f]{10})$/.exec(cq.data);
   const answer = (text) => tgCall('answerCallbackQuery', { callback_query_id: cq.id, text, show_alert: false });
   if (!m) { await answer('Неизвестная кнопка'); return { status: 200, body: { ok: true } }; }
 
@@ -362,37 +363,52 @@ async function processCallback(update, ctx) {
   }
   const rec = state.holds[m[2]];
   if (!rec) { await answer('Заявка не найдена или уже устарела'); return { status: 200, body: { ok: true } }; }
-  if (rec.status !== 'hold') { await answer(`Уже обработано: ${rec.status === 'booked' ? 'подтверждено' : 'отклонено'}`); return { status: 200, body: { ok: true } }; }
+  const action = m[1];
+  if (action === 'un') {
+    if (rec.status !== 'booked') { await answer(rec.status === 'released' ? 'Бронь уже снята' : 'Бронь не подтверждена, снимать нечего'); return { status: 200, body: { ok: true } }; }
+  } else if (rec.status !== 'hold') {
+    const was = { booked: 'подтверждено', rejected: 'отклонено', released: 'бронь снята' }[rec.status] || rec.status;
+    await answer(`Уже обработано: ${was}`);
+    return { status: 200, body: { ok: true } };
+  }
 
-  const confirm = m[1] === 'ok';
+  const confirm = action === 'ok';
   if (confirm && rec.expiresAt <= now) {
     // срок брони вышел: подтверждаем, только если места никто не занял
     const taken = seatStatuses(state, now);
     if (rec.seats.some((k) => taken[k])) { await answer('Бронь истекла, места уже заняты другой заявкой'); return { status: 200, body: { ok: true } }; }
   }
-  rec.status = confirm ? 'booked' : 'rejected';
+  rec.status = action === 'un' ? 'released' : confirm ? 'booked' : 'rejected';
   rec.updatedAt = now;
   rec.by = who(cq.from);
+
+  const stamp = new Date(now).toLocaleString('ru-RU', { timeZone: 'Asia/Yekaterinburg' });
+  const line =
+    action === 'un'
+      ? `🔓 Снял бронь: ${esc(rec.by)} · ${stamp}. Места свободны.`
+      : confirm
+        ? `✅ Подтвердил: ${esc(rec.by)} · ${stamp}. Места заняты.`
+        : `❌ Отклонил: ${esc(rec.by)} · ${stamp}. Места свободны.`;
+  const msg = cq.message || {};
+  const text = `${rec.text || esc(msg.text || '')}\n\n${line}`;
+  rec.text = text; // следующее действие (снятие брони) дописывает строку к этой
   try { await ctx.store.save(state); } catch (e) {
     console.error('Статус не сохранён:', e.message);
     await answer('Не удалось сохранить, нажмите ещё раз');
     return { status: 200, body: { ok: true } };
   }
 
-  const stamp = new Date(now).toLocaleString('ru-RU', { timeZone: 'Asia/Yekaterinburg' });
-  const line = confirm ? `✅ Подтвердил: ${esc(rec.by)} · ${stamp}. Места заняты.` : `❌ Отклонил: ${esc(rec.by)} · ${stamp}. Места свободны.`;
-  const msg = cq.message || {};
-  const text = `${rec.text || esc(msg.text || '')}\n\n${line}`;
   const edited = await tgCall('editMessageText', {
     chat_id: (msg.chat && msg.chat.id) || rec.chatId,
     message_id: msg.message_id || rec.messageId,
     text,
     parse_mode: 'HTML',
     disable_web_page_preview: true,
-    reply_markup: { inline_keyboard: [] },
+    // после подтверждения остаётся «Снять бронь»; после отклонения и снятия кнопок нет
+    reply_markup: confirm ? unbookButton(rec.id) : { inline_keyboard: [] },
   });
   if (!edited.ok) console.error('Сообщение не обновлено:', edited.reason);
-  await answer(confirm ? 'Места заняты' : 'Места свободны');
+  await answer(confirm ? 'Места заняты' : action === 'un' ? 'Бронь снята, места свободны' : 'Места свободны');
   return { status: 200, body: { ok: true } };
 }
 
