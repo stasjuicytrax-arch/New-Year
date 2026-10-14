@@ -24,7 +24,7 @@ export const event = {
   addressShort: 'Монастырская, 2а',
   mapUrl: 'https://yandex.ru/maps/?text=' + encodeURIComponent('Пермь, ул. Монастырская, 2а, WHITE HALL'),
   hosts: ['Александр Меркурьев', 'Стас Торопов'],
-  dj: 'DJ Seven',
+  dj: '',
   guestLimit: 150,
   domain: 'https://ngperm.ru',
 } as const;
@@ -116,7 +116,7 @@ export const program = {
     { n: '05', id: 'ch-05', title: 'Профессиональные фотографии', text: 'Профессиональный фотограф запечатлит лучшие моменты вечера: улыбки, танцы, объятия и праздничные эмоции.' },
     { n: '06', id: 'ch-06', title: 'Праздник для всей семьи', text: 'Пока взрослые отдыхают и наслаждаются программой, дети будут заняты профессиональной анимацией в отдельном зале.' },
     { n: '07', id: 'ch-07', title: 'Фотозоны и декор', text: 'Праздничное оформление и эффектные фотозоны помогут создать яркие кадры для новогоднего альбома.' },
-    { n: '08', id: 'ch-08', title: 'Лучший DJ и танцы', text: 'Музыка, которая объединит гостей и подарит настроение для танцев до ночи.', extra: 'DJ Seven' },
+    { n: '08', id: 'ch-08', title: 'Лучший DJ и танцы', text: 'Музыка, которая объединит гостей и подарит настроение для танцев до ночи.' },
     { n: '09', id: 'ch-09', title: 'Спецэффекты', text: 'Свет, музыка и динамичные постановки превратят встречу Нового года в настоящее шоу.', word: 'ШОУ' },
     { n: '10', id: 'ch-10', title: 'Новогоднее меню от White Hall', extra: 'Каждому гостю — приветственное шампанское!' },
   ] satisfies Chapter[],
@@ -125,7 +125,7 @@ export const program = {
 /** Бегущая строка между блоками (ВЕРСИЯ 2). */
 export const marquee = '31 ДЕКАБРЯ · WHITE HALL · ТОП-150 · ПЕРМЬ ·';
 
-export const djMarquee = 'DJ SEVEN · DANCE TILL MORNING · 31.12';
+export const djMarquee = 'DANCE TILL MORNING · 31.12 · WHITE HALL';
 
 export interface MenuItem {
   name: string;

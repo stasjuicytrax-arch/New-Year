@@ -80,7 +80,7 @@ const FILM = [
   { name: 'hosts', alt: 'Александр Меркурьев и Стас Торопов', tilt: 1.8 },
   { name: 'ded-moroz', alt: 'Дед Мороз на сцене', tilt: -1.4 },
   { name: 'snegurochka', alt: 'Снегурочка на сцене', tilt: 2.4 },
-  { name: 'dj-seven', alt: 'DJ Seven за пультом', tilt: -1.8 },
+  { name: 'dj-seven', alt: 'Диджей за пультом', tilt: -1.8 },
   { name: 'ballet-feathers', alt: 'Танцовщицы с перьями', tilt: 1.5 },
 ] as const;
 
@@ -124,10 +124,10 @@ function ch08(c: Chapter): string {
   return shell(
     c,
     'left ch--dj',
-    `${titled(head(c, `<p class="ch__dj chrome" data-fade>${c.extra ?? ''}</p>`), c)}
+    `${titled(head(c, c.extra ? `<p class="ch__dj chrome" data-fade>${c.extra}</p>` : ''), c)}
     <div class="ch__media ch__media--dj">
       <div class="ch__neon" aria-hidden="true"><i></i><i></i><i></i></div>
-      ${mask(picture({ name: 'dj-seven', alt: 'DJ Seven за пультом', sizes: '(min-width: 1024px) 36vw, min(100vw, 450px)', cls: 'ch__img' }), 'ch__square')}
+      ${mask(picture({ name: 'dj-seven', alt: 'Диджей за пультом', sizes: '(min-width: 1024px) 36vw, min(100vw, 450px)', cls: 'ch__img' }), 'ch__square')}
       <div class="ch__eq" aria-hidden="true">${Array.from({ length: 18 }, (_, i) => `<i style="--i:${i}"></i>`).join('')}</div>
     </div>
     <div class="ch__marquee" aria-hidden="true"><div class="ch__marquee-track">${marquee}${marquee}</div></div>`,
