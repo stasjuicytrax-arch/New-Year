@@ -1,4 +1,5 @@
-import { booking, prices, seating as t, typo } from '../../content/content';
+import { booking, guestChannel, prices, seating as t, telegramChannel, typo } from '../../content/content';
+import { ICON_TG } from '../icons';
 import meta3d from '../../assets/img/hall3d-meta.json';
 import { picture } from '../media';
 import {
@@ -312,6 +313,16 @@ export function renderSeating(): string {
         </div>
         <ul class="kids__ages" data-ages></ul>
       </section>
+      ${telegramChannel ? `<section class="tgband" aria-label="${guestChannel.bandTitle}">
+        <div class="tgband__in">
+          <span class="tgband__ic" aria-hidden="true">${ICON_TG}</span>
+          <div class="tgband__txt">
+            <p class="tgband__title">${guestChannel.bandTitle}</p>
+            <p class="tgband__sub">${guestChannel.bandSub}</p>
+          </div>
+          <span class="btn-wrap"><a class="btn btn--primary btn--tg" href="${telegramChannel}" target="_blank" rel="noopener noreferrer" data-goal="tg_band">${ICON_TG}<span>${guestChannel.bandCta}</span></a></span>
+        </div>
+      </section>` : ''}
     </div>
     <aside class="seats__panel glass" id="seats-panel" aria-label="${t.choiceTitle}" data-empty="true">
       <div class="panel__more">

@@ -73,22 +73,6 @@ export function renderSkeleton(): void {
   $('#seats').innerHTML = renderSeating();
   document.body.insertAdjacentHTML('beforeend', renderBooking());
 
-  if (telegramChannel) {
-    $('#site-footer').insertAdjacentHTML(
-      'beforebegin',
-      `<section class="tgband" aria-label="${guestChannel.bandTitle}">
-        <div class="container tgband__in">
-          <span class="tgband__ic" aria-hidden="true">${ICON_TG}</span>
-          <div class="tgband__txt">
-            <p class="tgband__title">${guestChannel.bandTitle}</p>
-            <p class="tgband__sub">${guestChannel.bandSub}</p>
-          </div>
-          <span class="btn-wrap"><a class="btn btn--primary btn--tg" href="${telegramChannel}" target="_blank" rel="noopener noreferrer" data-goal="tg_band">${ICON_TG}<span>${guestChannel.bandCta}</span></a></span>
-        </div>
-      </section>`,
-    );
-  }
-
   $('#site-footer').innerHTML = `
     <div class="container footer__scene">
       <p class="footer__farewell chrome">${footer.farewell}</p>

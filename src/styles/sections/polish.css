@@ -108,7 +108,7 @@
   .site-footer a.footer__soc:focus-visible { outline: none; box-shadow: var(--focus-ring); }
   @media (hover: hover) { .site-footer a.footer__soc:hover { color: var(--neon-400); border-color: var(--neon-400); } }
   /* Плашка «Канал гостей» перед футером: иконка, текст и кнопка на одной линии; на мобиле колонка, кнопка во всю ширину */
-  .tgband { position: relative; z-index: var(--z-content); padding-block: var(--space-5); }
+  .tgband { position: relative; z-index: var(--z-content); width: 100%; min-width: 0; padding: 0; }
   .tgband__in { display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; padding: 20px 16px; border: 1px solid var(--glass-line); border-radius: 22px; background: color-mix(in oklab, var(--night-800) 60%, transparent); }
   .tgband__ic { display: grid; place-items: center; flex: none; width: 52px; height: 52px; border-radius: 16px; background: var(--snow-50); color: var(--night-950); }
   .tgband__ic svg { display: block; width: 26px; height: 26px; }
