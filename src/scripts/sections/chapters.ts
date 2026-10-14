@@ -35,10 +35,10 @@ function ch01(c: Chapter): string {
     c,
     'full',
     `${titled(head(c), c)}
-    <div class="ch__media">
-      ${mask(picture({ name: 'ballet-violet', alt: 'Балет в роскошных костюмах', sizes: FULL, cls: 'ch__img' }), 'ch__mask--wide')}
-    </div>
-    <div class="ch__strip" aria-hidden="true">${picture({ name: 'ballet-feathers', alt: '', sizes: '100vw', cls: 'ch__img' })}</div>`,
+    <div class="ch__media ch__media--pair">
+      ${mask(picture({ name: 'ballet-1', alt: 'Балет в костюмах с перьями', sizes: '(min-width: 1024px) 480px, (min-width: 640px) 46vw, 92vw', cls: 'ch__img' }), 'ch__frame')}
+      ${mask(picture({ name: 'ballet-2', alt: 'Балет в серебристых костюмах', sizes: '(min-width: 1024px) 480px, (min-width: 640px) 46vw, 92vw', cls: 'ch__img' }), 'ch__frame')}
+    </div>`,
   );
 }
 
@@ -76,12 +76,12 @@ function word04(c: Chapter): string {
 
 /** Глава 05: «фотоплёнка» — лента поляроидов из фото страницы, едет по скроллу; на входе одна вспышка камеры. */
 const FILM = [
-  { name: 'ballet-violet', alt: 'Балет в роскошных костюмах', tilt: -2.2 },
+  { name: 'ballet-1', alt: 'Балет в костюмах с перьями', tilt: -2.2 },
   { name: 'hosts', alt: 'Александр Меркурьев и Стас Торопов', tilt: 1.8 },
   { name: 'ded-moroz', alt: 'Дед Мороз на сцене', tilt: -1.4 },
   { name: 'snegurochka', alt: 'Снегурочка на сцене', tilt: 2.4 },
   { name: 'dj-seven', alt: 'Диджей за пультом', tilt: -1.8 },
-  { name: 'ballet-feathers', alt: 'Танцовщицы с перьями', tilt: 1.5 },
+  { name: 'ballet-2', alt: 'Балет в серебристых костюмах', tilt: 1.5 },
 ] as const;
 
 function ch05(c: Chapter): string {

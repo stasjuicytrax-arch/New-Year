@@ -38,6 +38,19 @@
   .ch__strip picture { display: block; height: 100%; }
   .ch__strip img { width: 110%; max-width: none; height: 100%; object-fit: cover; }
 
+  .ch__media--pair {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+    width: 100%;
+    max-width: 980px;
+    margin-inline: auto;
+  }
+  .ch__media--pair .ch__mask { aspect-ratio: 4 / 5; border-radius: 18px; }
+  @media (min-width: 640px) {
+    .ch__media--pair { grid-template-columns: 1fr 1fr; gap: clamp(14px, 2vw, 28px); }
+  }
+
   /* ---------- 02: ведущие ---------- */
   .ch__media--hosts { display: grid; place-items: end center; }
   .ch__halo {
