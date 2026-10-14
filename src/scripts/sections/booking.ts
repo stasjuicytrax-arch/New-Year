@@ -1,4 +1,5 @@
-import { booking, bookingBlock, event, phones, prices, seating } from '../../content/content';
+import { booking, bookingBlock, event, guestChannel, phones, prices, seating, telegramChannel } from '../../content/content';
+import { ICON_TG } from '../icons';
 import { lockScroll } from '../scroll';
 import { KID_AGE, KIDS_MAX } from '../../data/seating';
 import { applySeatStatuses, clearSelection, getKids, getPicks, hasSelection, kidsText, onSelectionChange, pickPrice, seatsText, setKidAge, setKidsCount, totalPrice } from './seating';
@@ -103,6 +104,7 @@ export function renderBooking(): string {
       <div class="bk__done" data-success hidden>
         <p class="form__success-title chrome">${bookingBlock.successTitle}</p>
         <p>${bookingBlock.successText}</p>
+        ${telegramChannel ? `<div class="bk__tg"><p>${guestChannel.successNote}</p><span class="btn-wrap"><a class="btn btn--primary btn--tg btn--tg-lg" href="${telegramChannel}" target="_blank" rel="noopener noreferrer" data-goal="tg_success">${ICON_TG}<span>${guestChannel.successCta}</span></a></span></div>` : ''}
         <span class="btn-wrap"><button class="btn btn--secondary" type="button" data-bk-close><span>${bookingBlock.close}</span></button></span>
       </div>
 

@@ -107,6 +107,19 @@
   .site-footer a.footer__soc svg { display: block; flex: none; width: 22px; height: 22px; margin: 0; }
   .site-footer a.footer__soc:focus-visible { outline: none; box-shadow: var(--focus-ring); }
   @media (hover: hover) { .site-footer a.footer__soc:hover { color: var(--neon-400); border-color: var(--neon-400); } }
+  /* Плашка «Канал гостей» перед футером: на мобиле одна колонка, кнопка во всю ширину */
+  .tgband { position: relative; z-index: var(--z-content); padding-block: var(--space-5); }
+  .tgband__in { display: grid; gap: var(--space-3); justify-items: center; text-align: center; padding: 24px 20px; border: 1px solid var(--glass-line); border-radius: 24px; background: color-mix(in oklab, var(--night-800) 60%, transparent); }
+  .tgband__ic { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 16px; background: var(--snow-50); color: var(--night-950); }
+  .tgband__ic svg { width: 28px; height: 28px; }
+  .tgband__title { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: clamp(26px, 6.5vw, 40px); line-height: 1.05; text-transform: uppercase; color: var(--text-strong); }
+  .tgband .btn-wrap, .tgband .btn { width: 100%; }
+  .btn--tg { gap: 10px; }
+  .btn--tg svg { flex: none; width: 20px; height: 20px; }
+  @media (min-width: 768px) {
+    .tgband__in { grid-template-columns: auto 1fr auto; gap: var(--space-4); justify-items: start; text-align: left; padding: 28px 36px; }
+    .tgband .btn-wrap, .tgband .btn { width: auto; }
+  }
   /* Короткое слово-образ «ШОУ» шире по буквам: запас, чтобы «У» не уходила за край */
   .ch--fx .ch__word { --k: 1.12; }
 }

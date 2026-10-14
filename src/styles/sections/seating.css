@@ -294,6 +294,13 @@
   .bk__call a { display: inline-block; padding-block: 10px; font-weight: 600; color: var(--text-strong); text-underline-offset: 4px; }
   .bk__done { display: grid; gap: var(--space-4); justify-items: center; padding-block: var(--space-5); text-align: center; }
   .bk__done[hidden], .bk__form[hidden] { display: none; }
+  .bk__tg { display: grid; gap: var(--space-3); justify-items: center; width: 100%; max-width: 420px; padding: 16px; border: 1px solid var(--glass-line); border-radius: 18px; background: color-mix(in oklab, var(--night-800) 55%, transparent); }
+  .bk__tg p { margin: 0; font-size: 15px; line-height: 1.4; color: var(--text); }
+  .bk__tg .btn-wrap, .bk__tg .btn { width: 100%; }
+  .btn--tg { gap: 10px; }
+  .btn--tg svg { flex: none; width: 20px; height: 20px; }
+  .btn--tg-lg { min-height: 56px; font-size: 15px; }
+  .bk .bk__done > .btn-wrap .btn--secondary { opacity: 0.85; }
   .bk__in > .bk__done { flex: 1; align-content: center; min-height: min(360px, 60svh); }
   .bk .modal__calls { display: flex; flex-direction: column; align-items: stretch; gap: var(--space-3); width: 100%; }
   .bk .modal__calls .btn-wrap, .bk .modal__calls .btn { width: 100%; }

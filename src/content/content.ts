@@ -32,6 +32,14 @@ export const event = {
 /** Telegram-канал для гостей (НЕ канал заявок). Пустая строка скрывает иконку в футере. */
 export const telegramChannel = 'https://t.me/ng_perm_gosti' as string;
 
+/** Подписка на канал гостей: экран «Заявка принята» и плашка перед футером. */
+export const guestChannel = {
+  successNote: 'Вы уже с нами. Подпишитесь на канал гостей: там новости программы, рассадка и сюрпризы',
+  successCta: 'Подписаться в Telegram',
+  bandTitle: 'Канал гостей Главной новогодней ночи',
+  bandCta: 'Подписаться',
+} as const;
+
 export const phones = [
   { name: 'Александр', label: '+7 908 270-89-71', href: 'tel:+79082708971', goal: 'phone_1', vk: 'https://vk.ru/merqury_show' },
   { name: 'Станислав', label: '+7 919 445-96-01', href: 'tel:+79194459601', goal: 'phone_2', vk: 'https://vk.ru/stastoropov' },
