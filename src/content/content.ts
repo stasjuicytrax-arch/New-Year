@@ -29,8 +29,8 @@ export const event = {
   domain: 'https://ngperm.ru',
 } as const;
 
-/** ⚠ Telegram-канал мероприятия (НЕ канал заявок): пока ссылка пустая, иконка в футере не выводится. */
-export const telegramChannel = '' as string;
+/** Telegram-канал для гостей (НЕ канал заявок). Пустая строка скрывает иконку в футере. */
+export const telegramChannel = 'https://t.me/ng_perm_gosti' as string;
 
 export const phones = [
   { name: 'Александр', label: '+7 908 270-89-71', href: 'tel:+79082708971', goal: 'phone_1', vk: 'https://vk.ru/merqury_show' },
