@@ -102,7 +102,8 @@
   /* Контакт: имя · телефон и иконка ВК в одной строке, тач-цели по 44px */
   .footer__contact { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 4px 8px; }
   .footer__contact .footer__phone { white-space: nowrap; font-size: clamp(16px, 4.6vw, 20px); }
-  .footer__soc { display: inline-grid; place-items: center; flex: none; width: 44px; height: 44px; border: 1px solid var(--glass-line); border-radius: 12px; color: var(--text-strong); }
+  .footer__soc { display: flex; align-items: center; justify-content: center; flex: none; box-sizing: border-box; width: 44px; height: 44px; min-height: 0; padding: 0; margin: 0; line-height: 0; border: 1px solid var(--glass-line); border-radius: 12px; color: var(--text-strong); }
+  .footer__soc svg { display: block; flex: none; width: 24px; height: 24px; margin: 0; }
   .footer__soc:focus-visible { outline: none; box-shadow: var(--focus-ring); }
   @media (hover: hover) { .footer__soc:hover { color: var(--neon-400); border-color: var(--neon-400); } }
   /* Короткое слово-образ «ШОУ» шире по буквам: запас, чтобы «У» не уходила за край */
