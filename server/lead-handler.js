@@ -325,8 +325,19 @@ async function handleLead(body, meta, ctx) {
 
 const who = (u) => (u ? [u.first_name, u.last_name].filter(Boolean).join(' ') + (u.username ? ` (@${u.username})` : '') : 'неизвестно');
 
-/** Нажатие кнопки в Telegram: callback_query из webhook. */
+/** Нажатие кнопки в Telegram: callback_query из webhook. На любое нажатие приходит answerCallbackQuery с причиной. */
 async function handleCallback(update, ctx) {
+  const cq = update && update.callback_query;
+  try {
+    return await processCallback(update, ctx);
+  } catch (e) {
+    console.error('Ошибка обработки callback:', e && e.message);
+    if (cq && cq.id) await tgCall('answerCallbackQuery', { callback_query_id: cq.id, text: `Ошибка: ${String((e && e.message) || e).slice(0, 150)}`, show_alert: true });
+    return { status: 200, body: { ok: true } };
+  }
+}
+
+async function processCallback(update, ctx) {
   const cq = update && update.callback_query;
   if (!cq || !cq.data) return { status: 200, body: { ok: true } };
   const m = /^(ok|no):([0-9a-f]{10})$/.exec(cq.data);
@@ -336,8 +347,9 @@ async function handleCallback(update, ctx) {
   // Кнопки работают только у админов канала (создатель или администратор); при сбое проверки отказ
   const member = await tgCall('getChatMember', { chat_id: (cq.message && cq.message.chat && cq.message.chat.id) || env('TELEGRAM_CHAT_ID'), user_id: cq.from && cq.from.id });
   const role = member.ok && member.result && member.result.status;
+  console.error(`callback от ${cq.from && cq.from.id}: getChatMember ok=${member.ok} роль=${role} (${member.reason})`);
   if (role !== 'creator' && role !== 'administrator') {
-    await answer('Только администраторы канала могут подтверждать заявки');
+    await answer(member.ok ? `Только администраторы канала могут подтверждать заявки (ваша роль: ${role || 'нет'})` : `Не удалось проверить права: ${member.reason}`);
     return { status: 200, body: { ok: true } };
   }
 

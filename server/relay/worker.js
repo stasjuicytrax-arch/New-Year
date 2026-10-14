@@ -13,8 +13,25 @@ function same(a, b) {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const deny = () => new Response('Forbidden', { status: 403 });
+
+    // Webhook Telegram: только POST с верным secret_token. Отвечаем сразу, в функцию пересылаем в фоне,
+    // иначе Telegram повторяет доставку при долгом ответе.
+    const hook = request.headers.get('X-Telegram-Bot-Api-Secret-Token');
+    if (hook !== null) {
+      if (request.method !== 'POST' || !env.WEBHOOK_SECRET || !env.FUNCTION_URL || !same(hook, env.WEBHOOK_SECRET)) return deny();
+      const body = await request.text();
+      ctx.waitUntil(
+        fetch(env.FUNCTION_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Telegram-Bot-Api-Secret-Token': hook },
+          body,
+        }).catch(() => undefined),
+      );
+      return new Response('ok');
+    }
+
     if (!env.RELAY_KEY || !env.TELEGRAM_BOT_TOKEN) return deny();
     if (request.method !== 'POST') return deny();
     if (!same(request.headers.get('X-Relay-Key') || '', env.RELAY_KEY)) return deny();
