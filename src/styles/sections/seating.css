@@ -59,9 +59,9 @@
   @media (hover: hover) { .seat:not(.is-booked):not(.is-held):hover .seat__cap { fill: color-mix(in oklab, var(--zc) 40%, rgba(0, 16, 46, 0.88)); } }
   .seat.is-sel .seat__cap { fill: var(--zc); filter: drop-shadow(0 2px 5px color-mix(in oklab, var(--zc) 80%, transparent)); }
   .seat.is-sel .seat__check { opacity: 1; }
-  .seat.is-held .seat__cap { stroke: #f4d24e; }
-  .seat.is-booked { cursor: not-allowed; }
-  .seat.is-booked .seat__cap { fill: #394360; stroke: #4f5a78; opacity: 0.8; }
+  .seat.is-held, .seat.is-booked { cursor: not-allowed; }
+  .seat.is-held .seat__cap { fill: #f4d24e; stroke: #ffe58a; }
+  .seat.is-booked .seat__cap { fill: #d6303c; stroke: #ff7a85; }
   .seat:focus-visible .seat__cap { stroke: #fff; stroke-width: 2.6; }
 
   /* Подсказка над столом (мышь, клавиатурный фокус) */
@@ -126,8 +126,8 @@
   .seats__states li { display: inline-flex; align-items: center; gap: 8px; }
   .cap { flex: none; width: 18px; height: 10px; border-radius: 6px; border: 1.5px solid var(--ice-200); }
   .cap--sel { background: var(--ice-200); box-shadow: 0 2px 6px rgba(171, 195, 228, 0.6); }
-  .cap--held { border-color: #f4d24e; background: repeating-linear-gradient(45deg, #f4d24e 0 2px, #2b2a18 2px 4px); }
-  .cap--booked { border-color: #4f5a78; background: #394360; }
+  .cap--held { border-color: #ffe58a; background: #f4d24e; }
+  .cap--booked { border-color: #ff7a85; background: #d6303c; }
   .seats__listbtn { display: inline-flex; align-items: center; justify-self: center; min-height: 44px; padding: 0 8px; border: 0; background: none; color: var(--text-strong); font: inherit; font-size: 14px; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
   .seats__listbtn:focus-visible { box-shadow: var(--focus-ring); border-radius: 6px; }
 
@@ -212,8 +212,8 @@
   .cseat { position: absolute; display: grid; place-items: center; width: 66px; height: 42px; padding: 0; transform: translate(-50%, -50%) rotate(var(--rot, 0deg)); border: 2px solid var(--zc); border-radius: 21px; background: rgba(0, 16, 46, 0.9); color: var(--text-strong); font: inherit; cursor: pointer; transition: background var(--dur-1) var(--ease-out), box-shadow var(--dur-1) var(--ease-out); }
   .cseat__n { display: block; transform: rotate(calc(var(--rot, 0deg) * -1)); font-size: 16px; font-weight: 600; line-height: 1; }
   .cseat.is-sel { background: var(--zc); color: var(--night-950); box-shadow: 0 5px 14px color-mix(in oklab, var(--zc) 55%, transparent); }
-  .cseat.is-held { border-color: #f4d24e; background: repeating-linear-gradient(45deg, #f4d24e 0 3px, #2b2a18 3px 7px); color: #fff; }
-  .cseat.is-booked { border-color: #4f5a78; background: #394360; color: #aab3c9; cursor: not-allowed; }
+  .cseat.is-held { border-color: #ffe58a; background: #f4d24e; color: #2b2208; cursor: not-allowed; }
+  .cseat.is-booked { border-color: #ff7a85; background: #d6303c; color: #fff; cursor: not-allowed; }
   .cseat:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
   .tcard__actions { display: grid; gap: var(--space-3); width: 100%; }
   .tcard__actions .btn-wrap, .tcard__actions .btn { width: 100%; }

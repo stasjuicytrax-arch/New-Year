@@ -29,9 +29,12 @@ export const event = {
   domain: 'https://ngperm.ru',
 } as const;
 
+/** ⚠ Telegram-канал мероприятия (НЕ канал заявок): пока ссылка пустая, иконка в футере не выводится. */
+export const telegramChannel = '' as string;
+
 export const phones = [
-  { name: 'Александр', label: '+7 908 270-89-71', href: 'tel:+79082708971', goal: 'phone_1' },
-  { name: 'Станислав', label: '+7 919 445-96-01', href: 'tel:+79194459601', goal: 'phone_2' },
+  { name: 'Александр', label: '+7 908 270-89-71', href: 'tel:+79082708971', goal: 'phone_1', vk: 'https://vk.ru/merqury_show' },
+  { name: 'Станислав', label: '+7 919 445-96-01', href: 'tel:+79194459601', goal: 'phone_2', vk: 'https://vk.ru/stastoropov' },
 ] as const;
 
 export const prices = {
@@ -232,7 +235,7 @@ export const seating = {
   stage: 'СЦЕНА',
   entrance: 'ВХОД',
   mapAria: 'Схема зала: 15 столов по 8 мест',
-  legend: { free: 'Свободно', selected: 'Выбрано', held: 'Удержано', booked: 'Занято' },
+  legend: { free: 'Свободно', selected: 'Выбрано', held: 'На брони', booked: 'Занято' },
   listTitle: 'Все столы',
   allTable: 'Весь стол',
   releaseTable: 'Снять весь стол',

@@ -418,8 +418,7 @@ function paint(): void {
     el.classList.toggle('is-held', st === 'held');
     el.classList.toggle('is-booked', st === 'booked');
     const dot = el.querySelector<SVGRectElement>('.seat__cap')!;
-    if (st === 'held' && !p) dot.style.fill = 'url(#seat-hatch)';
-    else dot.style.removeProperty('fill');
+    dot.style.removeProperty('fill');
     el.setAttribute('aria-pressed', String(!!p));
     el.setAttribute('aria-label', seatLabel(n, s));
     if (st === 'free') {
