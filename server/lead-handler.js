@@ -333,6 +333,14 @@ async function handleCallback(update, ctx) {
   const answer = (text) => tgCall('answerCallbackQuery', { callback_query_id: cq.id, text, show_alert: false });
   if (!m) { await answer('Неизвестная кнопка'); return { status: 200, body: { ok: true } }; }
 
+  // Кнопки работают только у админов канала (создатель или администратор); при сбое проверки отказ
+  const member = await tgCall('getChatMember', { chat_id: (cq.message && cq.message.chat && cq.message.chat.id) || env('TELEGRAM_CHAT_ID'), user_id: cq.from && cq.from.id });
+  const role = member.ok && member.result && member.result.status;
+  if (role !== 'creator' && role !== 'administrator') {
+    await answer('Только администраторы канала могут подтверждать заявки');
+    return { status: 200, body: { ok: true } };
+  }
+
   const now = Date.now();
   let state;
   try { state = await ctx.store.load(); } catch (e) {
