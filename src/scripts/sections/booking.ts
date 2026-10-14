@@ -1,7 +1,7 @@
 import { booking, bookingBlock, event, phones, prices, seating } from '../../content/content';
 import { lockScroll } from '../scroll';
 import { KID_AGE, KIDS_MAX } from '../../data/seating';
-import { getKids, getPicks, hasSelection, kidsText, onSelectionChange, pickPrice, seatsText, setKidAge, setKidsCount, totalPrice } from './seating';
+import { clearSelection, getKids, getPicks, hasSelection, kidsText, onSelectionChange, pickPrice, seatsText, setKidAge, setKidsCount, totalPrice } from './seating';
 
 /**
  * Заявка на бронь: окно над схемой зала. Открывается кнопкой «Забронировать» в полосе итога, сверху «Ваш выбор»,
@@ -305,6 +305,9 @@ export function initBooking(): void {
       form.hidden = true;
       success.hidden = false;
       dlg.scrollTop = 0;
+      // заявка принята: выбор и поля формы сбрасываются, нижняя панель «Забронировать» уходит
+      form.reset();
+      clearSelection();
     } catch {
       showFallback(bookingBlock.failTitle);
     }
