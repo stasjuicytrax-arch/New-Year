@@ -1,7 +1,7 @@
 import { booking, bookingBlock, event, phones, prices, seating } from '../../content/content';
 import { lockScroll } from '../scroll';
 import { KID_AGE, KIDS_MAX } from '../../data/seating';
-import { clearSelection, getKids, getPicks, hasSelection, kidsText, onSelectionChange, pickPrice, seatsText, setKidAge, setKidsCount, totalPrice } from './seating';
+import { applySeatStatuses, clearSelection, getKids, getPicks, hasSelection, kidsText, onSelectionChange, pickPrice, seatsText, setKidAge, setKidsCount, totalPrice } from './seating';
 
 /**
  * Заявка на бронь: окно над схемой зала. Открывается кнопкой «Забронировать» в полосе итога, сверху «Ваш выбор»,
@@ -301,6 +301,15 @@ export function initBooking(): void {
     submit.disabled = true;
     try {
       const res = await fetch(booking.endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      if (res.status === 409) {
+        // кто-то успел раньше: схема обновляется, занятые места снимаются из выбора
+        const j = (await res.json().catch(() => ({}))) as { seats?: Record<string, string> };
+        if (j.seats) applySeatStatuses(j.seats);
+        status.textContent = bookingBlock.seatsTaken;
+        submit.disabled = false;
+        if (!hasSelection()) close();
+        return;
+      }
       if (!res.ok) throw new Error(String(res.status));
       form.hidden = true;
       success.hidden = false;

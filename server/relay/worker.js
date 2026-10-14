@@ -1,5 +1,5 @@
 /* Ретранслятор Telegram Bot API для функции заявок ngperm.ru.
-   Пропускает только POST на /bot<наш токен>/sendMessage с заголовком X-Relay-Key. Всё остальное: 403. */
+   Пропускает только POST на /bot<наш токен>/{sendMessage,editMessageText,answerCallbackQuery} с заголовком X-Relay-Key. Всё остальное: 403. */
 
 const enc = new TextEncoder();
 
@@ -20,7 +20,9 @@ export default {
     if (!same(request.headers.get('X-Relay-Key') || '', env.RELAY_KEY)) return deny();
 
     const url = new URL(request.url);
-    if (!same(url.pathname, `/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`)) return deny();
+    // только методы, которые нужны функции заявок: отправка, правка сообщения, ответ на нажатие кнопки
+    const allowed = ['sendMessage', 'editMessageText', 'answerCallbackQuery'];
+    if (!allowed.some((m) => same(url.pathname, `/bot${env.TELEGRAM_BOT_TOKEN}/${m}`))) return deny();
 
     const res = await fetch(`https://api.telegram.org${url.pathname}`, {
       method: 'POST',

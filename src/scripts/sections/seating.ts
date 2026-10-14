@@ -1,4 +1,4 @@
-import { prices, seating as t, typo } from '../../content/content';
+import { booking, prices, seating as t, typo } from '../../content/content';
 import meta3d from '../../assets/img/hall3d-meta.json';
 import { picture } from '../media';
 import {
@@ -114,7 +114,7 @@ export function onSelectionChange(fn: () => void): void {
 
 /* ---------- разметка ---------- */
 
-const stateWord = (p: Pick | undefined, st: SeatStatus): string => (p ? 'выбрано' : st === 'held' ? 'удержано' : st === 'booked' ? 'занято' : 'свободно');
+const stateWord = (p: Pick | undefined, st: SeatStatus): string => (p ? 'выбрано' : st === 'held' ? 'на брони' : st === 'booked' ? 'занято' : 'свободно');
 
 const seatLabel = (n: number, s: number): string => {
   const key = seatKey(n, s);
@@ -929,14 +929,16 @@ export function initSeating(): void {
   paint();
 
   // Статусы мест: статический файл, позже адрес функции (SEATING_STATUS_URL)
-  fetch(SEATING_STATUS_URL, { cache: 'no-store' })
+  refreshSeatStatuses();
+}
+
+/** Статусы мест: GET на функцию заявок (hold показывается всем как «на брони»), пока адрес не задан, статический файл. */
+export function refreshSeatStatuses(): void {
+  fetch(booking.endpoint || SEATING_STATUS_URL, { cache: 'no-store' })
     .then((r) => (r.ok ? r.json() : null))
     .then((data: { seats?: Record<string, string> } | null) => {
       if (!data?.seats) return;
-      status.clear();
-      for (const [k, v] of Object.entries(data.seats)) if (v === 'held' || v === 'booked') status.set(k, v);
-      for (const k of [...picks.keys()]) if (statusOf(k) !== 'free') picks.delete(k);
-      notify();
+      applySeatStatuses(data.seats);
     })
     .catch(() => undefined);
 }
