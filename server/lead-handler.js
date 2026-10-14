@@ -74,11 +74,12 @@ function leadLines(l) {
     rows.push(['Места на схеме', [...byTable].map(([t, a]) => `стол ${t}: ${a.join(', ')}`).join(' · ') + ` — ${rub(l.seats.reduce((a, x) => a + x.price, 0))}`]);
   }
   if (l.seats && l.seats.length) rows.push(['Горячее', `телятина ${l.veal}, судак ${l.zander}`]);
+  // Строка про детей есть всегда: «Дети: 2 (возраст: 5, 8) — 14 000 ₽» или «Дети: нет»
   if (l.kids && l.kids.length) {
-    const ages = l.kids.map((k) => k.age).sort((a, b) => a - b);
-    const word = (a) => (a >= 5 && a <= 20 ? 'лет' : a % 10 === 1 ? 'год' : a % 10 >= 2 && a % 10 <= 4 ? 'года' : 'лет');
-    const list = ages.length === 1 ? `${ages[0]} ${word(ages[0])}` : `${ages.slice(0, -1).join(', ')} и ${ages[ages.length - 1]} лет`;
-    rows.push(['Дети', `${l.kids.length} (${list}) — ${rub(l.kids.reduce((a, k) => a + k.price, 0))}`]);
+    const ages = l.kids.map((k) => k.age).sort((x, y) => x - y);
+    rows.push(['Дети', `${l.kids.length} (возраст: ${ages.join(', ')}) — ${rub(l.kids.reduce((x, k) => x + k.price, 0))}`]);
+  } else {
+    rows.push(['Дети', 'нет']);
   }
   if ((l.seats && l.seats.length) || (l.kids && l.kids.length)) rows.push(['Итого', rub(l.total)]);
   if (l.comment) rows.push(['Комментарий', l.comment]);
