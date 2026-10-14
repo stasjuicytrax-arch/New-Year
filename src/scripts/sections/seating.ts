@@ -929,11 +929,20 @@ export function initSeating(): void {
 
   // Статусы мест: статический файл, позже адрес функции (SEATING_STATUS_URL)
   refreshSeatStatuses();
+  // Живые статусы: раз в 30 секунд, пока вкладка видна, и сразу при возврате на вкладку
+  window.setInterval(() => { if (!document.hidden) refreshSeatStatuses(); }, 30_000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshSeatStatuses(); });
+  window.addEventListener('focus', () => refreshSeatStatuses());
 }
 
 /** Статусы мест: GET на функцию заявок (hold показывается всем как «на брони»), пока адрес не задан, статический файл. */
+let lastRefresh = 0;
 export function refreshSeatStatuses(): void {
-  fetch(booking.endpoint || SEATING_STATUS_URL, { cache: 'no-store' })
+  if (Date.now() - lastRefresh < 3000) return;
+  lastRefresh = Date.now();
+  // метка в адресе: ни браузер, ни прокси не отдают старый ответ
+  const url = booking.endpoint ? `${booking.endpoint}?t=${Date.now()}` : SEATING_STATUS_URL;
+  fetch(url, { cache: 'no-store' })
     .then((r) => (r.ok ? r.json() : null))
     .then((data: { seats?: Record<string, string> } | null) => {
       if (!data?.seats) return;
