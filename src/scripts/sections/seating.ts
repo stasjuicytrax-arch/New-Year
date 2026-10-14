@@ -67,6 +67,27 @@ export const kidsTotal = (): number => kids.length * CHILD_PRICE;
 export const totalPrice = (): number => seatsTotal() + kidsTotal();
 export const hasSelection = (): boolean => picks.size > 0 || kids.length > 0;
 
+/** Дети из окна брони: общий источник правды с детским счётчиком на странице. */
+export const setKidsCount = (n: number): void => setKids(n);
+export function setKidAge(i: number, age: number): void {
+  if (i < 0 || i >= kids.length) return;
+  kids[i] = age;
+  notify();
+}
+/** После отправленной заявки: выбор сбрасывается целиком. */
+export function clearSelection(): void {
+  picks.clear();
+  kids.length = 0;
+  notify();
+}
+/** Применить свежие статусы мест (с функции); выбранные места, ставшие чужими, снимаются. */
+export function applySeatStatuses(seats: Record<string, string>): void {
+  status.clear();
+  for (const [k, v] of Object.entries(seats)) if (v === 'held' || v === 'booked') status.set(k, v);
+  for (const k of [...picks.keys()]) if (statusOf(k) !== 'free') picks.delete(k);
+  notify();
+}
+
 const ageWord = (a: number): string => (a >= 5 && a <= 20 ? 'лет' : a % 10 === 1 ? 'год' : a % 10 >= 2 && a % 10 <= 4 ? 'года' : 'лет');
 
 /** «Детские билеты: 2 (6 и 9 лет) — 14 000 ₽» */

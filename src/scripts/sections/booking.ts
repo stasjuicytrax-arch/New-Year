@@ -1,6 +1,7 @@
 import { booking, bookingBlock, event, phones, prices, seating } from '../../content/content';
 import { lockScroll } from '../scroll';
-import { getKids, getPicks, hasSelection, kidsText, pickPrice, seatsText, totalPrice } from './seating';
+import { KID_AGE, KIDS_MAX } from '../../data/seating';
+import { getKids, getPicks, hasSelection, kidsText, onSelectionChange, pickPrice, seatsText, setKidAge, setKidsCount, totalPrice } from './seating';
 
 /**
  * Заявка на бронь: окно над схемой зала. Открывается кнопкой «Забронировать» в полосе итога, сверху «Ваш выбор»,
@@ -55,6 +56,16 @@ export function renderBooking(): string {
                 <span class="field__error" data-err="phone" role="alert"></span>
               </label>
             </div>
+
+            <fieldset class="field field--kidsbk" data-kidsbk>
+              <legend class="field__label">${bookingBlock.kidsLegend} <small>${fmt(prices.child)} ${prices.currency}, ${bookingBlock.kidsHint}</small></legend>
+              <div class="stepper bk__kstep" role="group" aria-label="${seating.kidsStepper}">
+                <button type="button" class="stepper__btn" data-kk="-1" aria-label="Меньше: ${seating.kidsStepper}">−</button>
+                <output class="stepper__val" data-kk-val aria-live="polite">0</output>
+                <button type="button" class="stepper__btn" data-kk="1" aria-label="Больше: ${seating.kidsStepper}">+</button>
+              </div>
+              <ul class="kids__ages" data-kk-ages></ul>
+            </fieldset>
 
             <fieldset class="field field--hot" data-hot>
               <legend class="field__label">${bookingBlock.hotTitle} <small>${bookingBlock.hotHint}</small></legend>
@@ -146,6 +157,30 @@ export function initBooking(): void {
     });
   });
 
+  /* ---------- дети: счётчик и возраст каждого, синхронно с блоком на странице ---------- */
+  const kkVal = form.querySelector<HTMLElement>('[data-kk-val]')!;
+  const kkAges = form.querySelector<HTMLElement>('[data-kk-ages]')!;
+  const ageWord = (a: number): string => (a >= 5 && a <= 20 ? 'лет' : a % 10 === 1 ? 'год' : a % 10 >= 2 && a % 10 <= 4 ? 'года' : 'лет');
+  const paintKidsBk = (): void => {
+    const ages = getKids();
+    kkVal.textContent = String(ages.length);
+    form.querySelector<HTMLButtonElement>('[data-kk="-1"]')!.disabled = ages.length <= 0;
+    form.querySelector<HTMLButtonElement>('[data-kk="1"]')!.disabled = ages.length >= KIDS_MAX;
+    if (kkAges.children.length !== ages.length) {
+      const opts = Array.from({ length: KID_AGE.max - KID_AGE.min + 1 }, (_, i) => KID_AGE.min + i);
+      kkAges.innerHTML = ages
+        .map((_, i) => `<li class="kids__age"><label for="bk-kid-age-${i}">Ребёнок ${i + 1}</label><select id="bk-kid-age-${i}" class="input kids__select" data-kk-age="${i}">${opts.map((a) => `<option value="${a}">${a} ${ageWord(a)}</option>`).join('')}</select></li>`)
+        .join('');
+    }
+    kkAges.querySelectorAll<HTMLSelectElement>('[data-kk-age]').forEach((sel) => { sel.value = String(ages[Number(sel.dataset.kkAge)]); });
+  };
+  form.querySelectorAll<HTMLButtonElement>('[data-kk]').forEach((b) => b.addEventListener('click', () => setKidsCount(getKids().length + Number(b.dataset.kk))));
+  kkAges.addEventListener('change', (e) => {
+    const sel = (e.target as Element).closest<HTMLSelectElement>('[data-kk-age]');
+    if (sel) setKidAge(Number(sel.dataset.kkAge), Number(sel.value));
+  });
+  onSelectionChange(() => { if (dlg.open) paintChoice(); });
+
   /* ---------- «Ваш выбор» ---------- */
   const choice = form.querySelector<HTMLElement>('[data-choice]')!;
   const paintChoice = (): void => {
@@ -169,6 +204,7 @@ export function initBooking(): void {
       set('veal', n - zander);
     }
     hotBox.hidden = n === 0;
+    paintKidsBk();
   };
 
   const reset = (): void => {
@@ -232,6 +268,7 @@ export function initBooking(): void {
     e.preventDefault();
     ['name', 'phone', 'hot', 'consent'].forEach((k) => err(k, ''));
     status.textContent = '';
+    if (!hasSelection()) { status.textContent = 'Выберите места или детские билеты'; return; }
     const fd = new FormData(form);
     const name = String(fd.get('name') ?? '').trim();
     const digits = String(fd.get('phone') ?? '').replace(/\D/g, '');

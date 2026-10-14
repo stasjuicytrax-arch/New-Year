@@ -300,6 +300,10 @@
   .bk .form__submit .btn-wrap, .bk .form__submit .btn { width: 100%; }
   .form__choice-edit { padding: 0; border: 0; background: none; font: inherit; font-size: 15px; font-weight: 600; justify-self: start; text-decoration: underline; cursor: pointer; }
   .field--hot[hidden] { display: none; }
+  .field--kidsbk { display: grid; gap: var(--space-3); border: 0; padding: 0; margin: 0; }
+  .field--kidsbk legend { padding: 0; margin-bottom: 6px; }
+  .field--kidsbk legend small { display: block; font-size: 13px; color: var(--text-muted); }
+  .bk__kstep { justify-self: start; }
   .field--hot legend { padding: 0; margin-bottom: 6px; }
 
   /* форма: телефон — колонкой; десктоп переопределяет ниже */
