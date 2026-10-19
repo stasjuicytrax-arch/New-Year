@@ -322,6 +322,7 @@
   .bk__np { grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .bk .input { min-height: 48px; padding: 10px 14px; }
   .bk .input--area { min-height: 64px; }
+  @media (max-width: 1023.98px) { .bk .input--area { min-height: 100px; } } /* три строки подсказки */
   .bk .stepper { min-height: 48px; }
   .bk .stepper__btn { height: 46px; }
   .bk .stepper__val { font-size: 24px; }
