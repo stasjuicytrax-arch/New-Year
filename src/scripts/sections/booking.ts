@@ -79,7 +79,7 @@ export function renderBooking(): string {
 
             <label class="field">
               <span class="field__label">${bookingBlock.comment}</span>
-              <textarea class="input input--area" name="comment" rows="2" maxlength="400"></textarea>
+              <textarea class="input input--area" name="comment" rows="2" maxlength="400" placeholder="${bookingBlock.commentPlaceholder}"></textarea>
             </label>
 
             <input class="hp" type="text" name="site" tabindex="-1" autocomplete="off" aria-hidden="true">

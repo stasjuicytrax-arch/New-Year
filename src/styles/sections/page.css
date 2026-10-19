@@ -87,6 +87,9 @@
   .input:focus-visible { outline: none; border-bottom-color: var(--neon-400); box-shadow: 0 6px 16px -8px var(--electric-500); }
   .input--area { resize: vertical; min-height: 96px; }
   .input::placeholder { color: color-mix(in oklab, var(--ice-200) 55%, transparent); }
+  .input--area::placeholder { color: rgba(205, 220, 245, 0.45); opacity: 1; font-style: normal; }
+  .input--area:focus::placeholder { color: transparent; }
+  @media (max-width: 399px) { .input--area::placeholder { font-size: 15px; } }
 
   .stepper { display: flex; align-items: center; justify-content: space-between; min-height: 56px; border: 1px solid var(--line); background: var(--night-900); }
   .stepper__btn { display: grid; place-items: center; width: 48px; height: 54px; font-size: 24px; line-height: 1; color: var(--snow-50); transition: background-color var(--dur-1) var(--ease-out); }
