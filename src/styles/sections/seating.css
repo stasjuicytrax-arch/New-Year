@@ -36,7 +36,7 @@
   .hall__arrow { fill: none; stroke: var(--ice-200); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; opacity: 0.85; }
   .hall__door-t { font-family: var(--font-ui); font-size: 14px; font-weight: 600; letter-spacing: 0.14em; text-anchor: middle; fill: var(--ice-200); opacity: 0.85; }
 
-  /* Стол: стеклянный диск, ободок цвета зоны; зоны 1–2 и 3–5 подсвечены, 6–15 без сияния */
+  /* Стол: стеклянный диск, ободок цвета зоны; зоны 1-й и 2-й линии подсвечены, 3-я без сияния */
   .tbl { transition: transform 0.5s var(--ease-out); transform-box: fill-box; transform-origin: center; }
   .tbl__body { fill: color-mix(in oklab, var(--zc) 13%, rgba(8, 24, 64, 0.62)); stroke: color-mix(in oklab, var(--zc) 85%, transparent); stroke-width: 1.6; filter: drop-shadow(0 3px 8px color-mix(in oklab, var(--zc) 40%, transparent)); transition: fill var(--dur-2) var(--ease-out); }
   .tbl[data-zone="3"] .tbl__body { filter: none; }

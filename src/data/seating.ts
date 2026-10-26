@@ -30,8 +30,8 @@ export interface Zone {
 
 export const ZONES: readonly Zone[] = [
   { id: 1, name: '1-я линия', tables: 'столы 1–2', price: 20000, color: '#e6c27a' },
-  { id: 2, name: '2-я линия', tables: 'столы 3–5', price: 17000, color: '#6cb1ff' },
-  { id: 3, name: '3-я линия', tables: 'столы 6–15', price: 15000, color: '#6fbf9e' },
+  { id: 2, name: '2-я линия', tables: 'столы 3, 4, 8, 10', price: 17000, color: '#6cb1ff' },
+  { id: 3, name: '3-я линия', tables: 'столы 5–7, 9, 11–15', price: 15000, color: '#6fbf9e' },
 ];
 
 export interface HallTable {
@@ -75,7 +75,9 @@ const GRID: ReadonlyArray<readonly [n: number, col: number, row: number]> = [
   [5, 2, 7],
 ];
 
-const zoneOf = (n: number): Zone['id'] => (n <= 2 ? 1 : n <= 5 ? 2 : 3);
+/** Столы по 17 000 ₽; остальные с 3-го по 15-й по 15 000 ₽. */
+const ZONE2 = new Set([3, 4, 8, 10]);
+const zoneOf = (n: number): Zone['id'] => (n <= 2 ? 1 : ZONE2.has(n) ? 2 : 3);
 
 export const TABLES: readonly HallTable[] = GRID.map(([n, c, r]) => ({ n, zone: zoneOf(n), x: COL(c), y: ROW(r) })).sort((a, b) => a.n - b.n);
 
