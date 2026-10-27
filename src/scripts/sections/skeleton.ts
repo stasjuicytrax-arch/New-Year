@@ -101,5 +101,6 @@ export function renderSkeleton(): void {
       </div>
       <hr class="footer__rule">
       <p class="footer__legal"><a href="${import.meta.env.BASE_URL}privacy.html">${footer.privacy}</a><span aria-hidden="true"> · </span>${footer.copyright}</p>
+      <p class="footer__legal footer__dev">${footer.devLabel} <a href="${footer.devUrl}" target="_blank" rel="noopener">${footer.devName}</a></p>
     </div>`;
 }

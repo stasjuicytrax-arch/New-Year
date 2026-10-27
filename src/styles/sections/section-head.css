@@ -33,6 +33,7 @@
   .footer__cols { margin-top: calc(var(--sec-gap) - var(--cap-gap)); }
   .footer__rule { margin-top: calc(var(--sec-gap) - var(--cap-gap)); }
   .footer__legal { margin-top: calc(var(--space-5) - var(--cap-gap)); }
+  .footer__legal.footer__dev { margin-top: 0; }
 
   /* Десктоп: схема и галерея помещаются в экран вместе с увеличенной шапкой */
   @media (min-width: 1024px) {

@@ -284,4 +284,7 @@ export const footer = {
   route: 'Маршрут',
   privacy: 'Политика обработки персональных данных',
   copyright: '© 2026',
+  devLabel: 'Разработка сайта —',
+  devName: 'brandknight.ru',
+  devUrl: 'https://brandknight.ru',
 } as const;
