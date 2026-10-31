@@ -1,4 +1,11 @@
 name = "ngperm-tg-relay"
 main = "worker.js"
 compatibility_date = "2024-11-01"
-# Секреты (wrangler secret put): TELEGRAM_BOT_TOKEN, RELAY_KEY
+# Сохраняем существующий webhook на workers.dev.
+workers_dev = true
+routes = [{ pattern = "relay.ngperm.ru", custom_domain = true }]
+# Секреты (wrangler secret put): TELEGRAM_BOT_TOKEN, RELAY_KEY, WEBHOOK_SECRET, FUNCTION_URL
+
+# Telegram недоступен из российского узла DME: обрабатываем запросы в Европе.
+[placement]
+region = "aws:eu-north-1"

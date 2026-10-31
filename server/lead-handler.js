@@ -4,8 +4,8 @@
 
 'use strict';
 
-const https = require('https');
 const tls = require('tls');
+const { tgCall } = require('./telegram');
 
 const env = (k) => process.env[k] || '';
 
@@ -109,44 +109,6 @@ function plainText(l) {
   ].join('\r\n');
 }
 
-/* Вызов Bot API. Из Яндекс.Облака api.telegram.org недоступен (проверено 13.10.2026), поэтому адрес подменяется
-   на релей вне РФ: TELEGRAM_API_BASE=https://relay.example.workers.dev, ключ релея уходит заголовком X-Relay-Key. */
-function tgCall(method, payload) {
-  return new Promise((resolve) => {
-    const token = env('TELEGRAM_BOT_TOKEN');
-    if (!token) return resolve({ ok: false, reason: 'Telegram не настроен' });
-    let base;
-    try { base = new URL(env('TELEGRAM_API_BASE') || 'https://api.telegram.org'); } catch { return resolve({ ok: false, reason: 'Неверный TELEGRAM_API_BASE' }); }
-    const body = JSON.stringify(payload);
-    const req = https.request(
-      {
-        hostname: base.hostname,
-        port: base.port || 443,
-        path: `${base.pathname.replace(/\/$/, '')}/bot${token}/${method}`,
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Content-Length': Buffer.byteLength(body),
-          ...(env('TELEGRAM_RELAY_KEY') ? { 'X-Relay-Key': env('TELEGRAM_RELAY_KEY') } : {}),
-        },
-        timeout: 8000,
-      },
-      (res) => {
-        let raw = '';
-        res.on('data', (c) => { raw += c; });
-        res.on('end', () => {
-          let j = {};
-          try { j = JSON.parse(raw); } catch { /* не JSON */ }
-          resolve({ ok: res.statusCode === 200 && j.ok !== false, result: j.result, reason: `HTTP ${res.statusCode}${j.description ? `: ${j.description}` : ''}` });
-        });
-      },
-    );
-    req.on('timeout', () => req.destroy(new Error('timeout')));
-    req.on('error', (e) => resolve({ ok: false, reason: e.message }));
-    req.end(body);
-  });
-}
-
 /** Заявка в канал; markup — inline-кнопки «Подтвердить / Отклонить» (только если места сохранены как hold). */
 function sendTelegram(l, markup) {
   const chat = env('TELEGRAM_CHAT_ID');
@@ -244,7 +206,11 @@ function seatStatuses(state, now) {
 }
 
 function prune(state, now) {
-  for (const [id, rec] of Object.entries(state.holds || {})) if ((rec.updatedAt || rec.createdAt) < now - KEEP_MS) delete state.holds[id];
+  for (const [id, rec] of Object.entries(state.holds || {})) {
+    if (rec.status === 'booked' || (rec.status === 'hold' && rec.expiresAt > now)) continue;
+    const lastActive = Math.max(rec.updatedAt || rec.createdAt, rec.status === 'hold' ? rec.expiresAt || 0 : 0);
+    if (lastActive < now - KEEP_MS) delete state.holds[id];
+  }
 }
 
 const newId = () => require('crypto').randomBytes(5).toString('hex');
@@ -256,7 +222,7 @@ async function handleStatus(ctx) {
     return { status: 200, body: { ok: true, seats: seatStatuses(state, Date.now()) } };
   } catch (e) {
     console.error('Статусы мест не прочитаны:', e.message);
-    return { status: 200, body: { ok: true, seats: {} } }; // схема работает и без статусов
+    return { status: 503, body: { ok: false, error: 'Статусы мест временно недоступны' } };
   }
 }
 
@@ -333,8 +299,8 @@ async function handleCallback(update, ctx) {
     return await processCallback(update, ctx);
   } catch (e) {
     console.error('Ошибка обработки callback:', e && e.message);
-    if (cq && cq.id) await tgCall('answerCallbackQuery', { callback_query_id: cq.id, text: `Ошибка: ${String((e && e.message) || e).slice(0, 150)}`, show_alert: true });
-    return { status: 200, body: { ok: true } };
+    if (cq && cq.id) await tgCall('answerCallbackQuery', { callback_query_id: cq.id, text: 'Не удалось обработать заявку. Попробуйте ещё раз.', show_alert: true });
+    return { status: 503, body: { ok: false, error: 'callback_failed' } };
   }
 }
 
@@ -342,16 +308,22 @@ async function processCallback(update, ctx) {
   const cq = update && update.callback_query;
   if (!cq || !cq.data) return { status: 200, body: { ok: true } };
   const m = /^(ok|no|un):([0-9a-f]{10})$/.exec(cq.data);
-  const answer = (text) => tgCall('answerCallbackQuery', { callback_query_id: cq.id, text, show_alert: false });
+  const answer = (text, show_alert = true) => tgCall('answerCallbackQuery', { callback_query_id: cq.id, text, show_alert });
   if (!m) { await answer('Неизвестная кнопка'); return { status: 200, body: { ok: true } }; }
 
+  const chatId = env('TELEGRAM_CHAT_ID');
+  if (!chatId || String(cq.message?.chat?.id) !== chatId) {
+    await answer('Управлять бронью можно только в канале заявок');
+    return { status: 200, body: { ok: true } };
+  }
+
   // Кнопки работают только у админов канала (создатель или администратор); при сбое проверки отказ
-  const member = await tgCall('getChatMember', { chat_id: (cq.message && cq.message.chat && cq.message.chat.id) || env('TELEGRAM_CHAT_ID'), user_id: cq.from && cq.from.id });
+  const member = await tgCall('getChatMember', { chat_id: chatId, user_id: cq.from && cq.from.id });
   const role = member.ok && member.result && member.result.status;
   console.error(`callback от ${cq.from && cq.from.id}: getChatMember ok=${member.ok} роль=${role} (${member.reason})`);
   if (role !== 'creator' && role !== 'administrator') {
     await answer(member.ok ? `Только администраторы канала могут подтверждать заявки (ваша роль: ${role || 'нет'})` : `Не удалось проверить права: ${member.reason}`);
-    return { status: 200, body: { ok: true } };
+    return { status: member.ok ? 200 : 503, body: { ok: member.ok, ...(!member.ok ? { error: 'telegram_unavailable', reason: member.reason } : {}) } };
   }
 
   const now = Date.now();
@@ -359,57 +331,62 @@ async function processCallback(update, ctx) {
   try { state = await ctx.store.load(); } catch (e) {
     console.error('Хранилище недоступно:', e.message);
     await answer('Хранилище недоступно, попробуйте ещё раз');
-    return { status: 200, body: { ok: true } };
+    return { status: 503, body: { ok: false, error: 'storage_unavailable' } };
   }
   const rec = state.holds[m[2]];
   if (!rec) { await answer('Заявка не найдена или уже устарела'); return { status: 200, body: { ok: true } }; }
   const action = m[1];
-  if (action === 'un') {
+  const targetStatus = { ok: 'booked', no: 'rejected', un: 'released' }[action];
+  const alreadyDone = rec.status === targetStatus;
+  if (!alreadyDone && action === 'un') {
     if (rec.status !== 'booked') { await answer(rec.status === 'released' ? 'Бронь уже снята' : 'Бронь не подтверждена, снимать нечего'); return { status: 200, body: { ok: true } }; }
-  } else if (rec.status !== 'hold') {
+  } else if (!alreadyDone && rec.status !== 'hold') {
     const was = { booked: 'подтверждено', rejected: 'отклонено', released: 'бронь снята' }[rec.status] || rec.status;
     await answer(`Уже обработано: ${was}`);
     return { status: 200, body: { ok: true } };
   }
 
   const confirm = action === 'ok';
-  if (confirm && rec.expiresAt <= now) {
+  if (!alreadyDone && confirm && rec.expiresAt <= now) {
     // срок брони вышел: подтверждаем, только если места никто не занял
     const taken = seatStatuses(state, now);
     if (rec.seats.some((k) => taken[k])) { await answer('Бронь истекла, места уже заняты другой заявкой'); return { status: 200, body: { ok: true } }; }
   }
-  rec.status = action === 'un' ? 'released' : confirm ? 'booked' : 'rejected';
-  rec.updatedAt = now;
-  rec.by = who(cq.from);
-
-  const stamp = new Date(now).toLocaleString('ru-RU', { timeZone: 'Asia/Yekaterinburg' });
-  const line =
-    action === 'un'
+  const msg = cq.message || {};
+  if (!alreadyDone) {
+    rec.status = targetStatus;
+    rec.updatedAt = now;
+    rec.by = who(cq.from);
+    const stamp = new Date(now).toLocaleString('ru-RU', { timeZone: 'Asia/Yekaterinburg' });
+    const line = action === 'un'
       ? `🔓 Снял бронь: ${esc(rec.by)} · ${stamp}. Места свободны.`
       : confirm
         ? `✅ Подтвердил: ${esc(rec.by)} · ${stamp}. Места заняты.`
         : `❌ Отклонил: ${esc(rec.by)} · ${stamp}. Места свободны.`;
-  const msg = cq.message || {};
-  const text = `${rec.text || esc(msg.text || '')}\n\n${line}`;
-  rec.text = text; // следующее действие (снятие брони) дописывает строку к этой
-  try { await ctx.store.save(state); } catch (e) {
-    console.error('Статус не сохранён:', e.message);
-    await answer('Не удалось сохранить, нажмите ещё раз');
-    return { status: 200, body: { ok: true } };
+    rec.text = `${rec.text || esc(msg.text || '')}\n\n${line}`;
+    try { await ctx.store.save(state); } catch (e) {
+      console.error('Статус не сохранён:', e.message);
+      await answer('Не удалось сохранить, нажмите ещё раз');
+      return { status: 503, body: { ok: false } };
+    }
   }
 
   const edited = await tgCall('editMessageText', {
     chat_id: (msg.chat && msg.chat.id) || rec.chatId,
     message_id: msg.message_id || rec.messageId,
-    text,
+    text: rec.text || esc(msg.text || ''),
     parse_mode: 'HTML',
     disable_web_page_preview: true,
     // после подтверждения остаётся «Снять бронь»; после отклонения и снятия кнопок нет
     reply_markup: confirm ? unbookButton(rec.id) : { inline_keyboard: [] },
   });
-  if (!edited.ok) console.error('Сообщение не обновлено:', edited.reason);
-  await answer(confirm ? 'Места заняты' : action === 'un' ? 'Бронь снята, места свободны' : 'Места свободны');
+  if (!edited.ok && !edited.reason.includes('message is not modified')) {
+    console.error('Сообщение не обновлено:', edited.reason);
+    await answer('Статус сохранён, но сообщение не обновилось. Нажмите кнопку ещё раз.');
+    return { status: 503, body: { ok: false } };
+  }
+  await answer(confirm ? 'Места заняты' : action === 'un' ? 'Бронь снята, места свободны' : 'Места свободны', false);
   return { status: 200, body: { ok: true } };
 }
 
-module.exports = { handleLead, handleStatus, handleCallback, validate, telegramText, sendTelegram, sendMail, seatStatuses, tgCall };
+module.exports = { handleLead, handleStatus, handleCallback, validate, telegramText, sendTelegram, sendMail, seatStatuses, prune, tgCall };

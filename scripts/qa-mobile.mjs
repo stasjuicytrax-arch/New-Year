@@ -261,6 +261,13 @@ async function run(browser, [width, height, desktop = false]) {
     } catch {}
   }, PRELOAD_KEY);
   const page = await ctx.newPage();
+  // QA must never send test guests to the live booking function or Telegram.
+  await ctx.route('https://functions.yandexcloud.net/**', (route) => route.fulfill({
+    status: route.request().method() === 'GET' ? 200 : 502,
+    contentType: 'application/json',
+    headers: { 'Access-Control-Allow-Origin': '*' },
+    body: JSON.stringify(route.request().method() === 'GET' ? { ok: true, seats: {} } : { ok: false }),
+  }));
   page.on('console', (m) => m.type() === 'error' && fail(name, `console.error: ${m.text()}`));
   page.on('pageerror', (e) => fail(name, `pageerror: ${e.message}`));
   page.on('requestfailed', (r) => fail(name, `запрос упал: ${r.url()}`));

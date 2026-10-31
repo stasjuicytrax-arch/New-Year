@@ -6,8 +6,6 @@ import { picture } from '../media';
  * Тексты строго из content.ts (docs/CONTENT.md). Анимации (маски, параллакс, счётчики) вешает reveal.ts по data-атрибутам.
  */
 
-const FULL = '(min-width: 1024px) 1280px, 100vw';
-
 const head = (c: Chapter, extra = ''): string => `
   <header class="ch__head">
     <p class="ch__no"><span class="ch__digits chrome" data-count="${Number(c.n)}" data-pad="2">${c.n}</span><span class="label label--dot">${program.chapterLabel} ${c.n}</span></p>

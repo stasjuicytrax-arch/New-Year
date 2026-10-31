@@ -43,6 +43,8 @@ jobs:
         if: steps.detect.outputs.node == 'true'
         run: |
           npm ci
+          npm test --prefix server
+          npm run typecheck
           npx vite build --base="${{ steps.pages.outputs.base_path }}/"
 
       - uses: actions/upload-pages-artifact@v3

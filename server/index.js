@@ -25,7 +25,7 @@ module.exports.handler = async (event, context) => {
   const ctx = { store: token ? createStore(token) : null };
   if (method === 'GET') {
     const noStore = { ...headers, 'Cache-Control': 'no-store' };
-    if (!ctx.store) return json(200, noStore, { ok: true, seats: {} });
+    if (!ctx.store) return json(503, noStore, { ok: false, error: 'Статусы мест временно недоступны' });
     const r = await handleStatus(ctx);
     return json(r.status, noStore, r.body);
   }
@@ -38,7 +38,7 @@ module.exports.handler = async (event, context) => {
   if (hook !== undefined) {
     const secret = process.env.TELEGRAM_WEBHOOK_SECRET || '';
     if (!secret || hook !== secret) return json(403, headers, { ok: false });
-    if (!ctx.store) return json(200, headers, { ok: true });
+    if (!ctx.store) return json(503, headers, { ok: false });
     let upd;
     try {
       upd = JSON.parse(event.isBase64Encoded ? Buffer.from(event.body || '', 'base64').toString('utf8') : event.body || '{}');
