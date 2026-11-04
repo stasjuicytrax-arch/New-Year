@@ -8,6 +8,7 @@
         "build": "tsc --noEmit && vite build",
         "preview": "vite preview",
         "typecheck": "tsc --noEmit",
+        "test:seating": "node scripts/test-seating.mjs",
         "assets": "node scripts/build-assets.mjs",
         "deco": "node scripts/build-deco.mjs",
         "qa:mobile": "node scripts/qa-mobile.mjs"

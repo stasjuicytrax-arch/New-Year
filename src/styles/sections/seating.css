@@ -55,10 +55,10 @@
   .seat { cursor: pointer; outline: none; }
   .seat__hit { fill: rgba(0, 0, 0, 0.001); }
   .seat__cap { fill: rgba(0, 16, 46, 0.88); stroke: var(--zc); stroke-width: 1.9; transition: fill var(--dur-1) var(--ease-out), filter var(--dur-1) var(--ease-out); }
-  .seat__check { fill: none; stroke: var(--night-950); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; opacity: 0; transition: opacity var(--dur-1) var(--ease-out); pointer-events: none; }
+  .seat__no { fill: var(--text-strong); font-family: var(--font-text); font-size: 10px; font-weight: 700; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
   @media (hover: hover) { .seat:not(.is-booked):not(.is-held):hover .seat__cap { fill: color-mix(in oklab, var(--zc) 40%, rgba(0, 16, 46, 0.88)); } }
   .seat.is-sel .seat__cap { fill: var(--zc); filter: drop-shadow(0 2px 5px color-mix(in oklab, var(--zc) 80%, transparent)); }
-  .seat.is-sel .seat__check { opacity: 1; }
+  .seat.is-sel .seat__no, .seat.is-held .seat__no { fill: var(--night-950); }
   .seat.is-held, .seat.is-booked { cursor: not-allowed; }
   .seat.is-held .seat__cap { fill: #f4d24e; stroke: #ffe58a; }
   .seat.is-booked .seat__cap { fill: #d6303c; stroke: #ff7a85; }
@@ -209,7 +209,9 @@
   .tcard__live b { color: var(--text-strong); font-weight: 600; }
   .tcard__ring { position: relative; width: min(100%, 300px); aspect-ratio: 1; margin: var(--space-4) 0; }
   .tcard__table { position: absolute; inset: 28%; display: grid; place-items: center; border: 1.6px solid color-mix(in oklab, var(--zc) 85%, transparent); border-radius: 50%; background: color-mix(in oklab, var(--zc) 13%, rgba(8, 24, 64, 0.7)); box-shadow: 0 6px 20px color-mix(in oklab, var(--zc) 35%, transparent); font-family: var(--font-display); font-size: 40px; color: var(--text-strong); font-variant-numeric: lining-nums; }
-  .cseat { position: absolute; display: grid; place-items: center; width: 66px; height: 42px; padding: 0; transform: translate(-50%, -50%) rotate(var(--rot, 0deg)); border: 2px solid var(--zc); border-radius: 21px; background: rgba(0, 16, 46, 0.9); color: var(--text-strong); font: inherit; cursor: pointer; transition: background var(--dur-1) var(--ease-out), box-shadow var(--dur-1) var(--ease-out); }
+  .cseat { position: absolute; display: grid; place-items: center; width: clamp(44px, 18%, 54px); height: 44px; padding: 0; transform: translate(-50%, -50%) rotate(var(--rot, 0deg)); border: 2px solid var(--zc); border-radius: 21px; background: rgba(0, 16, 46, 0.9); color: var(--text-strong); font: inherit; cursor: pointer; touch-action: manipulation; transition: background var(--dur-1) var(--ease-out), box-shadow var(--dur-1) var(--ease-out); }
+  .tcard__direction { display: flex; align-items: center; gap: 8px; margin: 0 0 var(--space-3); font-size: 14px; color: var(--text); }
+  .tcard__direction svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
   .cseat__n { display: block; transform: rotate(calc(var(--rot, 0deg) * -1)); font-size: 16px; font-weight: 600; line-height: 1; }
   .cseat.is-sel { background: var(--zc); color: var(--night-950); box-shadow: 0 5px 14px color-mix(in oklab, var(--zc) 55%, transparent); }
   .cseat.is-held { border-color: #ffe58a; background: #f4d24e; color: #2b2208; cursor: not-allowed; }
@@ -260,12 +262,16 @@
   @media (min-width: 1024px) and (max-width: 1299.98px) {
     :root { --seats-chrome: 300px; }
   }
+  @media (min-width: 1024px) and (max-height: 700px) {
+    .kids { padding-inline: 14px; }
+    .kids__row, .kids__buy { gap: var(--space-3); }
+  }
 
   @media (prefers-reduced-motion: reduce) {
     .hall3d__plane { transition: none; transform: none; will-change: auto; }
     .hot::before, .seats__tab { transition: none; }
     .seats__panel, .seats__panel:not([data-show="true"]), .seats__pill, .seats__pill:not([data-show="true"]) { transition: none; }
-    .tbl, .tbl__body, .seat__cap, .seat__check, .cseat { transition: none; }
+    .tbl, .tbl__body, .seat__cap, .cseat { transition: none; }
     .tbl:hover { transform: none; }
   }
 

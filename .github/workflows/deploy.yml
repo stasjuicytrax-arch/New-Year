@@ -44,6 +44,7 @@ jobs:
         run: |
           npm ci
           npm test --prefix server
+          npm run test:seating
           npm run typecheck
           npx vite build --base="${{ steps.pages.outputs.base_path }}/"
 

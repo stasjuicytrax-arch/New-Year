@@ -26,6 +26,7 @@ import {
   zoneById,
   type HallTable,
   type Layout,
+  type Orient,
   type SeatStatus,
 } from '../../data/seating';
 
@@ -124,17 +125,17 @@ const seatLabel = (n: number, s: number): string => {
   return `Стол ${n}, место ${s}, ${rub(price)}, ${stateWord(p, statusOf(key))}`;
 };
 
-function tableMarkup(tb: HallTable): string {
+function tableMarkup(tb: HallTable, orient: Orient): string {
   const z = zoneById(tb.zone);
   const chairs = Array.from({ length: SEATS_PER_TABLE }, (_, i) => {
     const s = i + 1;
-    const { x, y, rot } = seatPos(tb, s);
+    const { x, y, rot } = seatPos(tb, s, orient);
     const fx = x.toFixed(1);
     const fy = y.toFixed(1);
     return `<g class="seat" role="button" tabindex="0" data-t="${tb.n}" data-s="${s}" aria-pressed="false" aria-label="${seatLabel(tb.n, s)}">
       <circle class="seat__hit" cx="${fx}" cy="${fy}" r="${GEOM.seatHit}"/>
       <rect class="seat__cap" x="${(x - GEOM.seatW / 2).toFixed(1)}" y="${(y - GEOM.seatD / 2).toFixed(1)}" width="${GEOM.seatW}" height="${GEOM.seatD}" rx="${GEOM.seatD / 2}" transform="rotate(${rot} ${fx} ${fy})"/>
-      <path class="seat__check" d="M${(x - 2.6).toFixed(1)} ${(y + 0.1).toFixed(1)} l1.7 1.8 l3.5 -3.6"/>
+      <text class="seat__no" x="${fx}" y="${fy}" aria-hidden="true">${s}</text>
     </g>`;
   }).join('');
   return `<g class="tbl" data-table="${tb.n}" data-zone="${tb.zone}" style="--zc:${z.color}">
@@ -230,7 +231,7 @@ function svgMarkup(L: Layout): string {
       <path class="hall__stage-edge" d="${edgePath}" stroke="url(#g-chrome)"/>
       <text class="hall__stage-t" x="${f(tx)}" y="${f(ty)}" fill="url(#g-chrome)" aria-hidden="true">${t.stage}</text>
       <g class="hall__door" aria-hidden="true">${door}</g>
-      ${L.tables.map(tableMarkup).join('')}
+      ${L.tables.map((tb) => tableMarkup(tb, L.orient)).join('')}
     </g>
   </svg>`;
 }
@@ -545,7 +546,7 @@ function paintPanel(): void {
 /* ---------- карточка стола (для телефона) ---------- */
 
 function paintCard(): void {
-  const tb = tableByN(cardTable);
+  const tb = layout.tables.find((table) => table.n === cardTable)!;
   const z = zoneById(tb.zone);
   const free = freeSeats(tb.n);
   const chosen = free.filter((s) => picks.has(seatKey(tb.n, s))).length;
@@ -555,11 +556,11 @@ function paintCard(): void {
     const key = seatKey(tb.n, s);
     const st = statusOf(key);
     const p = picks.get(key);
-    const { rot } = seatPos(tb, s);
-    const a = ((-90 + 22.5 + i * 45) * Math.PI) / 180;
+    const { x, y, rot } = seatPos(tb, s, layout.orient);
     const cls = ['cseat', p ? 'is-sel' : '', st === 'held' ? 'is-held' : '', st === 'booked' ? 'is-booked' : ''].join(' ');
-    return `<button type="button" class="${cls}" data-cs="${s}" style="left:${(50 + Math.cos(a) * 40).toFixed(2)}%;top:${(50 + Math.sin(a) * 40).toFixed(2)}%;--rot:${rot}deg" aria-pressed="${!!p}" aria-label="${seatLabel(tb.n, s)}"${st === 'free' ? '' : ' disabled'}><span class="cseat__n">${s}</span></button>`;
+    return `<button type="button" class="${cls}" data-cs="${s}" style="left:${(50 + (x - tb.x) / GEOM.orbit * 40).toFixed(2)}%;top:${(50 + (y - tb.y) / GEOM.orbit * 40).toFixed(2)}%;--rot:${rot}deg" aria-pressed="${!!p}" aria-label="${seatLabel(tb.n, s)}"${st === 'free' ? '' : ' disabled'}><span class="cseat__n">${s}</span></button>`;
   }).join('');
+  const stageAngle = Math.atan2(layout.stage.y + layout.stage.h / 2 - tb.y, layout.stage.x + layout.stage.w / 2 - tb.x) * 180 / Math.PI;
   card.innerHTML = `
     <div class="tcard__in" style="--zc:${z.color}">
       <p class="label label--dot">${z.name}</p>
@@ -567,6 +568,7 @@ function paintCard(): void {
       <p class="tcard__meta">${rub(z.price)} за место</p>
       <p class="tcard__live" aria-live="polite"><b>свободно ${free.length} из ${SEATS_PER_TABLE}</b>${chosen ? ` · выбрано ${chosen}` : ''}</p>
       <div class="tcard__ring"><span class="tcard__table" aria-hidden="true">${tb.n}</span>${chairs}</div>
+      <p class="tcard__direction"><svg viewBox="0 0 24 24" aria-hidden="true" style="transform:rotate(${stageAngle}deg)"><path d="M4 12h16m-6-6 6 6-6 6"/></svg>Направление к сцене</p>
       <div class="tcard__actions">
         <span class="btn-wrap"><button type="button" class="btn btn--secondary" data-cardall${free.length === 0 ? ' disabled' : ''}><span>${all ? t.releaseTable : t.allTable}</span></button></span>
         <span class="btn-wrap"><button type="button" class="btn btn--primary" data-cardclose><span>${t.done}</span></button></span>

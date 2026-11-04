@@ -784,7 +784,8 @@ await checkSource();
 const server = spawn(process.execPath, ['node_modules/vite/bin/vite.js', 'preview', '--port', String(PORT), '--strictPort'], { stdio: 'ignore' });
 const killServer = () => { try { server.kill('SIGKILL'); } catch {} };
 process.on('exit', killServer);
-setTimeout(() => { console.error('Mobile QA: общий таймаут 290 с'); killServer(); process.exit(2); }, 290000).unref();
+const timeoutMs = Number(process.env.QA_TIMEOUT_MS || 290000);
+setTimeout(() => { console.error(`Mobile QA: общий таймаут ${timeoutMs / 1000} с`); killServer(); process.exit(2); }, timeoutMs).unref();
 let browser;
 try {
   await waitForServer();

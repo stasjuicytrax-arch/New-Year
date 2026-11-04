@@ -3,6 +3,7 @@
  * «ТОП-150» на сайте — общее число гостей, к этим 120 местам отношения не имеет.
  */
 import { prices } from '../content/content';
+import approved from './seating-approved.json';
 
 export const SEATS_PER_TABLE = 8;
 /** Детский билет — входной, без места за столом (отдельный детский зал). */
@@ -42,13 +43,11 @@ export interface HallTable {
   y: number;
 }
 
-/** Размеры в единицах viewBox. Стул — капсула 14×8 по касательной к столу. */
-export const GEOM = { table: 26, orbit: 38, seatW: 16, seatD: 10, seatHit: 12, tableHit: 60 } as const;
+/** Размеры в единицах viewBox. Стул — капсула по касательной к столу. */
+export const GEOM = { table: 26, orbit: 40, seatW: 18, seatD: 14, seatHit: 12, tableHit: 60 } as const;
 
 /**
- * Раскладка по сетке, взаимное расположение как на rassadka.jpg: три колонки (слева, центр, справа), восемь рядов.
- * Шаг сетки 160: между краями стульев соседних столов остаётся ≥ 1,5 диаметра стола (2 × 26 × 1,5 = 78 при зазоре 78+).
- * Стол 15 стоит между левой и центральной колонками, как на исходнике.
+ * Опорные размеры контура зала. Центры столов берутся из утверждённой схемы ниже.
  */
 const PITCH = 160;
 const MARGIN = 30;
@@ -56,33 +55,21 @@ const WALL_GAP = 85;
 const COL = (i: number): number => MARGIN + WALL_GAP + i * PITCH;
 const ROW = (i: number): number => MARGIN + WALL_GAP + i * PITCH;
 
-/** [номер, колонка, ряд] */
-const GRID: ReadonlyArray<readonly [n: number, col: number, row: number]> = [
-  [15, 0.5, 0],
-  [14, 0, 1],
-  [13, 1, 1],
-  [12, 0, 2],
-  [11, 1, 2],
-  [10, 0, 3],
-  [4, 1, 3],
-  [9, 2, 3],
-  [1, 0, 4],
-  [2, 0, 5],
-  [8, 0, 6],
-  [3, 1, 6],
-  [7, 0, 7],
-  [6, 1, 7],
-  [5, 2, 7],
-];
+/** Центры и каждый стул перенесены с утверждённой схемы v3 (docs/seating-approved.svg).
+ * Масштаб центров оставляет проходы между столами; стулья сохраняют исходные смещения и пустые сектора. */
+const PLAN_SCALE = 1.27;
+const CHAIR_SCALE = GEOM.orbit / 50;
 
 /** Столы по 17 000 ₽; остальные с 3-го по 15-й по 15 000 ₽. */
 const ZONE2 = new Set([3, 4, 8, 10]);
 const zoneOf = (n: number): Zone['id'] => (n <= 2 ? 1 : ZONE2.has(n) ? 2 : 3);
 
-export const TABLES: readonly HallTable[] = GRID.map(([n, c, r]) => ({ n, zone: zoneOf(n), x: COL(c), y: ROW(r) })).sort((a, b) => a.n - b.n);
+export const TABLES: readonly HallTable[] = approved.tables.map(({ n, x, y }) => ({
+  n, zone: zoneOf(n), x: COL(0) + (x - 151) * PLAN_SCALE, y: ROW(0) + (y - 203) * PLAN_SCALE,
+}));
 
 /** Контур зала, сцена, танцпол, вход (единицы viewBox). */
-const hallRight = COL(2) + WALL_GAP;
+const hallRight = Math.max(...TABLES.map((t) => t.x)) + WALL_GAP;
 const hallBottom = ROW(7) + WALL_GAP;
 export const HALL = { x: MARGIN, y: MARGIN, w: hallRight - MARGIN, h: hallBottom - MARGIN };
 /** Справа (в горизонтальной раскладке сверху) запас под подпись входа. */
@@ -98,17 +85,23 @@ const danceX = COL(0) + 62;
 export const DANCE = { x: danceX, y: ROW(3) + 78, w: STAGE.x - 16 - danceX, h: ROW(5) + 92 - (ROW(3) + 78) };
 
 /** Вход: на правой стене исходника, на уровне стола 11 (справа от него, где стена и лестница). В горизонтальной раскладке это верхняя стена, точно над столом 11. */
-export const DOOR = { w: 56, y: ROW(2) };
+export const DOOR = { w: 56, y: TABLES.find((t) => t.n === 11)!.y };
 
 /** Окна на левой стене (отметки): центры по высоте. */
 export const WINDOWS = [ROW(0.9), ROW(2.5), ROW(4.5), ROW(6.1)].map((y) => Math.round(y));
 
-/** Центр стула: номер 1 справа от верхней точки, дальше по часовой стрелке; смещение 22,5° разводит стулья соседних столов.
- *  rot — поворот капсулы (градусы): длинная сторона по касательной, «спинка» наружу. */
-export function seatPos(t: HallTable, seat: number): { x: number; y: number; rot: number } {
-  const deg = -90 + 22.5 + (seat - 1) * 45;
-  const a = (deg * Math.PI) / 180;
-  return { x: t.x + Math.cos(a) * GEOM.orbit, y: t.y + Math.sin(a) * GEOM.orbit, rot: deg + 90 };
+/** t — центр стола в выбранной ориентации. Стул и его поворот преобразуются вместе с залом.
+ * Индекс в approved.seats — существующий номер места 1–8; ключи броней не меняются. */
+export function seatPos(t: HallTable, seat: number, orient: Orient = 'v'): { x: number; y: number; rot: number } {
+  const ref = approved.tables.find((table) => table.n === t.n);
+  const chair = ref?.seats[seat - 1];
+  if (!ref || !chair) throw new RangeError(`Unknown seat ${t.n}-${seat}`);
+  const dx = (chair[0] - ref.x) * CHAIR_SCALE;
+  const dy = (chair[1] - ref.y) * CHAIR_SCALE;
+  const deg = Math.atan2(dy, dx) * 180 / Math.PI;
+  return orient === 'v'
+    ? { x: t.x + dx, y: t.y + dy, rot: deg + 90 }
+    : { x: t.x + dy, y: t.y - dx, rot: deg };
 }
 
 export const zoneById = (id: Zone['id']): Zone => ZONES.find((z) => z.id === id)!;
