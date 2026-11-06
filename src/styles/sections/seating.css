@@ -18,6 +18,13 @@
     .seats__lead--touch { display: block; }
   }
   .seats__mapcol { display: grid; gap: var(--space-5); min-width: 0; }
+  .seats__availability { padding: 14px 18px; border: 1px solid var(--glass-line); border-radius: 14px; background: var(--night-950); color: var(--text-strong); font-size: 14px; line-height: 1.5; }
+  .seats__availability[hidden], .seats__availability button[hidden] { display: none; }
+  .seats__availability button { min-height: 44px; margin-top: 8px; padding: 8px 14px; border: 1px solid var(--glass-line); border-radius: 12px; background: transparent; color: var(--text-strong); font: inherit; cursor: pointer; }
+  .seats__availability button:focus-visible { outline: 2px solid var(--text-strong); outline-offset: 3px; }
+  .seat.is-unknown .seat__cap { fill: var(--night-950); stroke: var(--text-muted); stroke-dasharray: 2 2; }
+  .seat.is-unknown, .cseat:disabled { cursor: not-allowed; }
+  .tcard__in[data-seat-ready="false"] .tcard__ring, .tcard__in[data-seat-ready="false"] .tcard__direction { display: none; }
 
   /* Схема: на телефоне вертикальная, высота не больше экрана без шапки и 120px; на десктопе горизонтальная на всю ширину */
   .seats__map { position: relative; width: min(100%, calc((100svh - var(--header-h) - 120px) * var(--ratio, 0.4))); margin-inline: auto; overflow: hidden; border-radius: 24px; border: 1px solid var(--glass-line); background: color-mix(in oklab, var(--night-950) 78%, transparent); box-shadow: 0 24px 60px -28px rgba(0, 0, 0, 0.7); touch-action: pan-x pan-y; }

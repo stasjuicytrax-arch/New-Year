@@ -42,6 +42,12 @@ export interface Pick {
 
 const picks = new Map<string, Pick>();
 const status = new Map<string, SeatStatus>();
+let availability: 'loading' | 'ready' | 'error' = 'loading';
+let lastSuccess = 0;
+/** Устаревшие или не загруженные данные не дают разрешения на выбор и отправку. */
+export const seatAvailabilityReady = (): boolean => availability === 'ready' && Date.now() - lastSuccess < 60_000;
+const availabilityMessage = (): string => availability === 'loading' ? t.statusLoading : t.statusError;
+const availabilityMarkup = (): string => `<div class="seats__availability" data-availability role="status" aria-live="polite"${seatAvailabilityReady() ? ' hidden' : ''}><p data-availability-message>${availabilityMessage()}</p><button type="button" data-status-retry${availability === 'loading' ? ' hidden' : ''}>${t.statusRetry}</button></div>`;
 /** Детские билеты: возраст каждого ребёнка. Без мест, без привязки к схеме. */
 const kids: number[] = [];
 const listeners = new Set<() => void>();
@@ -84,6 +90,8 @@ export function clearSelection(): void {
 }
 /** Применить свежие статусы мест (с функции); выбранные места, ставшие чужими, снимаются. */
 export function applySeatStatuses(seats: Record<string, string>): void {
+  availability = 'ready';
+  lastSuccess = Date.now();
   status.clear();
   for (const [k, v] of Object.entries(seats)) if (v === 'held' || v === 'booked') status.set(k, v);
   for (const k of [...picks.keys()]) if (statusOf(k) !== 'free') picks.delete(k);
@@ -122,7 +130,7 @@ const seatLabel = (n: number, s: number): string => {
   const key = seatKey(n, s);
   const p = picks.get(key);
   const price = p ? pickPrice(p) : seatPrice(n);
-  return `Стол ${n}, место ${s}, ${rub(price)}, ${stateWord(p, statusOf(key))}`;
+  return `Стол ${n}, место ${s}, ${rub(price)}, ${seatAvailabilityReady() ? stateWord(p, statusOf(key)) : t.statusUnknown}`;
 };
 
 function tableMarkup(tb: HallTable, orient: Orient): string {
@@ -276,6 +284,7 @@ export function renderSeating(): string {
       </div>
     </header>
     <div class="seats__mapcol" style="--ratio:${ratio}" data-view="schema" data-mapcol>
+      ${availabilityMarkup()}
       <div class="seats__map" data-map>
         <div class="hall-host" data-host>${svgMarkup(layout)}</div>
         <div class="seats__tip" data-tip role="tooltip" hidden></div>
@@ -369,7 +378,7 @@ let pill: HTMLButtonElement;
 let card: HTMLDialogElement;
 let cardTable = 0;
 
-const freeSeats = (n: number): number[] => Array.from({ length: SEATS_PER_TABLE }, (_, i) => i + 1).filter((s) => statusOf(seatKey(n, s)) === 'free');
+const freeSeats = (n: number): number[] => seatAvailabilityReady() ? Array.from({ length: SEATS_PER_TABLE }, (_, i) => i + 1).filter((s) => statusOf(seatKey(n, s)) === 'free') : [];
 
 function notify(): void {
   if (barMin) { barMin = false; storeBarMin(); }
@@ -378,6 +387,7 @@ function notify(): void {
 }
 
 function toggleSeat(n: number, s: number): void {
+  if (!seatAvailabilityReady()) return;
   const key = seatKey(n, s);
   if (statusOf(key) !== 'free') return;
   if (picks.has(key)) picks.delete(key);
@@ -386,6 +396,7 @@ function toggleSeat(n: number, s: number): void {
 }
 
 function toggleTable(n: number): void {
+  if (!seatAvailabilityReady()) return;
   const free = freeSeats(n);
   const all = free.length > 0 && free.every((s) => picks.has(seatKey(n, s)));
   for (const s of free) {
@@ -420,6 +431,15 @@ function paintKids(): void {
 }
 
 function paint(): void {
+  const ready = seatAvailabilityReady();
+  root.dataset.availability = ready ? 'ready' : availability;
+  if (!ready) root.querySelectorAll<HTMLElement>('[data-tip], [data-tip3d]').forEach((tip) => { tip.hidden = true; });
+  root.querySelectorAll<HTMLElement>('[data-availability]').forEach((banner) => {
+    banner.hidden = ready;
+    banner.querySelector('[data-availability-message]')!.textContent = availabilityMessage();
+    banner.querySelector<HTMLElement>('[data-status-retry]')!.hidden = availability === 'loading';
+  });
+  root.querySelectorAll<HTMLButtonElement>('#seats-panel [data-open-booking]').forEach((b) => { b.disabled = picks.size > 0 && !ready; });
   svg.querySelectorAll<SVGGElement>('.seat').forEach((el) => {
     const n = Number(el.dataset.t);
     const s = Number(el.dataset.s);
@@ -429,11 +449,12 @@ function paint(): void {
     el.classList.toggle('is-sel', !!p);
     el.classList.toggle('is-held', st === 'held');
     el.classList.toggle('is-booked', st === 'booked');
+    el.classList.toggle('is-unknown', !ready && st === 'free');
     const dot = el.querySelector<SVGRectElement>('.seat__cap')!;
     dot.style.removeProperty('fill');
     el.setAttribute('aria-pressed', String(!!p));
     el.setAttribute('aria-label', seatLabel(n, s));
-    if (st === 'free') {
+    if (ready && st === 'free') {
       el.setAttribute('tabindex', '0');
       el.removeAttribute('aria-disabled');
     } else {
@@ -453,9 +474,9 @@ function paint(): void {
     const hit = g.querySelector('.tbl__hit')!;
     hit.setAttribute(
       'aria-label',
-      free.length === 0 ? `Стол ${tb.n}, мест нет` : `Стол ${tb.n}, ${all ? 'снять весь стол' : 'выбрать весь стол'}, свободно ${free.length} из ${SEATS_PER_TABLE}, ${rub(z.price)} за место`,
+      !ready ? `Стол ${tb.n}, ${t.statusUnknown}` : free.length === 0 ? `Стол ${tb.n}, мест нет` : `Стол ${tb.n}, ${all ? 'снять весь стол' : 'выбрать весь стол'}, свободно ${free.length} из ${SEATS_PER_TABLE}, ${rub(z.price)} за место`,
     );
-    const txt = (sel ? `Выбрано ${sel} · ` : '') + (free.length === 0 ? 'Мест нет' : `Свободно ${free.length} из ${SEATS_PER_TABLE}`);
+    const txt = !ready ? t.statusUnknown : (sel ? `Выбрано ${sel} · ` : '') + (free.length === 0 ? 'Мест нет' : `Свободно ${free.length} из ${SEATS_PER_TABLE}`);
     root.querySelectorAll<HTMLElement>(`[data-free="${tb.n}"]`).forEach((row) => { row.textContent = txt; });
   }
 
@@ -467,7 +488,7 @@ function paint(): void {
     b.classList.toggle('is-full', free.length === 0);
     b.classList.toggle('has-sel', sel > 0);
     b.dataset.sel = String(sel);
-    b.setAttribute('aria-label', free.length === 0 ? `Стол ${n}, мест нет` : `Стол ${n}, ${rub(z.price)} за место, свободно ${free.length} из ${SEATS_PER_TABLE}${sel ? `, выбрано ${sel}` : ''}`);
+    b.setAttribute('aria-label', !ready ? `Стол ${n}, ${t.statusUnknown}` : free.length === 0 ? `Стол ${n}, мест нет` : `Стол ${n}, ${rub(z.price)} за место, свободно ${free.length} из ${SEATS_PER_TABLE}${sel ? `, выбрано ${sel}` : ''}`);
     const badge = b.querySelector<HTMLElement>('.hot__sel');
     if (badge) badge.textContent = sel ? String(sel) : '';
   }
@@ -558,15 +579,16 @@ function paintCard(): void {
     const p = picks.get(key);
     const { x, y, rot } = seatPos(tb, s, layout.orient);
     const cls = ['cseat', p ? 'is-sel' : '', st === 'held' ? 'is-held' : '', st === 'booked' ? 'is-booked' : ''].join(' ');
-    return `<button type="button" class="${cls}" data-cs="${s}" style="left:${(50 + (x - tb.x) / GEOM.orbit * 40).toFixed(2)}%;top:${(50 + (y - tb.y) / GEOM.orbit * 40).toFixed(2)}%;--rot:${rot}deg" aria-pressed="${!!p}" aria-label="${seatLabel(tb.n, s)}"${st === 'free' ? '' : ' disabled'}><span class="cseat__n">${s}</span></button>`;
+    return `<button type="button" class="${cls}" data-cs="${s}" style="left:${(50 + (x - tb.x) / GEOM.orbit * 40).toFixed(2)}%;top:${(50 + (y - tb.y) / GEOM.orbit * 40).toFixed(2)}%;--rot:${rot}deg" aria-pressed="${!!p}" aria-label="${seatLabel(tb.n, s)}"${seatAvailabilityReady() && st === 'free' ? '' : ' disabled'}><span class="cseat__n">${s}</span></button>`;
   }).join('');
   const stageAngle = Math.atan2(layout.stage.y + layout.stage.h / 2 - tb.y, layout.stage.x + layout.stage.w / 2 - tb.x) * 180 / Math.PI;
   card.innerHTML = `
-    <div class="tcard__in" style="--zc:${z.color}">
+    <div class="tcard__in" data-seat-ready="${seatAvailabilityReady()}" style="--zc:${z.color}">
       <p class="label label--dot">${z.name}</p>
       <h3 class="tcard__title" id="tcard-title">Стол ${tb.n}</h3>
       <p class="tcard__meta">${rub(z.price)} за место</p>
-      <p class="tcard__live" aria-live="polite"><b>свободно ${free.length} из ${SEATS_PER_TABLE}</b>${chosen ? ` · выбрано ${chosen}` : ''}</p>
+      <p class="tcard__live" aria-live="polite"><b>${seatAvailabilityReady() ? `свободно ${free.length} из ${SEATS_PER_TABLE}` : t.statusUnknown}</b>${chosen ? ` · выбрано ${chosen}` : ''}</p>
+      ${availabilityMarkup()}
       <div class="tcard__ring"><span class="tcard__table" aria-hidden="true">${tb.n}</span>${chairs}</div>
       <p class="tcard__direction"><svg viewBox="0 0 24 24" aria-hidden="true" style="transform:rotate(${stageAngle}deg)"><path d="M4 12h16m-6-6 6 6-6 6"/></svg>Направление к сцене</p>
       <div class="tcard__actions">
@@ -731,6 +753,9 @@ export function initSeating(): void {
   card = el.querySelector<HTMLDialogElement>('#table-card')!;
   const map = el.querySelector<HTMLElement>('[data-map]')!;
   const view = initView(map);
+  el.addEventListener('click', (e) => {
+    if ((e.target as Element).closest('[data-status-retry]')) refreshSeatStatuses(true);
+  });
 
   // Переключатель «Схема | 3D-вид»: по умолчанию схема везде, 3D-вид по переключателю; выбор общий (одно состояние)
   const mapcol = el.querySelector<HTMLElement>('[data-mapcol]')!;
@@ -755,7 +780,7 @@ export function initSeating(): void {
     const n = Number(btn.dataset.hot);
     const z = zoneById(tableByN(n).zone);
     const free = freeSeats(n).length;
-    tip3d.textContent = `Стол ${n} · ${rub(z.price)} · ${free === 0 ? 'мест нет' : `свободно ${free} из ${SEATS_PER_TABLE}`}`;
+    tip3d.textContent = `Стол ${n} · ${rub(z.price)} · ${!seatAvailabilityReady() ? t.statusUnknown : free === 0 ? 'мест нет' : `свободно ${free} из ${SEATS_PER_TABLE}`}`;
     tip3d.hidden = false;
     const hb = hall3d.getBoundingClientRect();
     const b = btn.getBoundingClientRect();
@@ -913,7 +938,7 @@ export function initSeating(): void {
     const tb = tableByN(n);
     const z = zoneById(tb.zone);
     const free = freeSeats(n).length;
-    tip.textContent = `Стол ${n} · ${z.name} · ${rub(z.price)} · ${free === 0 ? 'мест нет' : `свободно ${free} из ${SEATS_PER_TABLE}`}`;
+    tip.textContent = `Стол ${n} · ${z.name} · ${rub(z.price)} · ${!seatAvailabilityReady() ? t.statusUnknown : free === 0 ? 'мест нет' : `свободно ${free} из ${SEATS_PER_TABLE}`}`;
     tip.hidden = false;
     const m = map.getBoundingClientRect();
     tip.style.maxWidth = `${Math.max(120, m.width - 16)}px`;
@@ -950,18 +975,32 @@ export function initSeating(): void {
 
 /** Статусы мест: GET на функцию заявок (hold показывается всем как «на брони»), пока адрес не задан, статический файл. */
 let lastRefresh = 0;
-export function refreshSeatStatuses(): void {
-  if (Date.now() - lastRefresh < 3000) return;
+let statusRequestPending = false;
+export function refreshSeatStatuses(force = false): void {
+  if (statusRequestPending || (!force && Date.now() - lastRefresh < 3000)) return;
   lastRefresh = Date.now();
+  statusRequestPending = true;
+  availability = 'loading';
+  paint();
+  listeners.forEach((fn) => fn());
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 8000);
   // метка в адресе: ни браузер, ни прокси не отдают старый ответ
   const url = booking.endpoint ? `${booking.endpoint}?t=${Date.now()}` : SEATING_STATUS_URL;
-  fetch(url, { cache: 'no-store' })
-    .then((r) => (r.ok ? r.json() : null))
-    .then((data: { seats?: Record<string, string> } | null) => {
-      if (!data?.seats) return;
-      applySeatStatuses(data.seats);
+  fetch(url, { cache: 'no-store', signal: controller.signal })
+    .then((r) => { if (!r.ok) throw new Error('Status unavailable'); return r.json(); })
+    .then((data: { ok?: boolean; seats?: Record<string, string> } | null) => {
+      const seats = data?.seats;
+      if (data?.ok === false || !seats || typeof seats !== 'object' || Array.isArray(seats)
+        || Object.entries(seats).some(([k, v]) => !/^(?:[1-9]|1[0-5])-[1-8]$/.test(k) || !['free', 'held', 'booked'].includes(v))) throw new Error('Invalid seat statuses');
+      applySeatStatuses(seats);
     })
-    .catch(() => undefined);
+    .catch(() => {
+      availability = 'error';
+      paint();
+      listeners.forEach((fn) => fn());
+    })
+    .finally(() => { window.clearTimeout(timeout); statusRequestPending = false; });
 }
 
 export { CHILD_PRICE };

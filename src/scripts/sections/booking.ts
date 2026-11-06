@@ -2,7 +2,7 @@ import { booking, bookingBlock, event, guestChannel, phones, prices, seating, te
 import { ICON_TG } from '../icons';
 import { lockScroll } from '../scroll';
 import { KID_AGE, KIDS_MAX } from '../../data/seating';
-import { applySeatStatuses, clearSelection, getKids, getPicks, hasSelection, kidsText, onSelectionChange, pickPrice, seatsText, setKidAge, setKidsCount, totalPrice } from './seating';
+import { applySeatStatuses, clearSelection, getKids, getPicks, hasSelection, kidsText, onSelectionChange, pickPrice, seatsText, setKidAge, setKidsCount, totalPrice, seatAvailabilityReady, refreshSeatStatuses } from './seating';
 
 /**
  * Заявка на бронь: окно над схемой зала. Открывается кнопкой «Забронировать» в полосе итога, сверху «Ваш выбор»,
@@ -41,6 +41,7 @@ export function renderBooking(): string {
             <p class="form__choice-kids" data-choice-kids></p>
             <p class="form__choice-sum" data-choice-sum></p>
             <p class="form__choice-note">${seating.note}</p>
+            <div class="seats__availability" data-bk-availability role="status" hidden><p>${seating.statusError}</p><button type="button" data-bk-status-retry>${seating.statusRetry}</button></div>
             <button type="button" class="form__choice-edit" data-bk-close>${bookingBlock.edit}</button>
           </div>
 
@@ -181,12 +182,17 @@ export function initBooking(): void {
     const sel = (e.target as Element).closest<HTMLSelectElement>('[data-kk-age]');
     if (sel) setKidAge(Number(sel.dataset.kkAge), Number(sel.value));
   });
-  onSelectionChange(() => { if (dlg.open) paintChoice(); });
+  onSelectionChange(() => {
+    if (seatAvailabilityReady() && status.textContent === seating.statusError) status.textContent = '';
+    if (dlg.open) paintChoice();
+  });
+  form.querySelector('[data-bk-status-retry]')!.addEventListener('click', () => refreshSeatStatuses(true));
 
   /* ---------- «Ваш выбор» ---------- */
   const choice = form.querySelector<HTMLElement>('[data-choice]')!;
   const paintChoice = (): void => {
     const picks = getPicks();
+    form.querySelector<HTMLElement>('[data-bk-availability]')!.hidden = !picks.length || seatAvailabilityReady();
     const kids = getKids();
     const sel = choice.querySelector<HTMLElement>('[data-choice-sel]')!;
     sel.textContent = seatsText();
@@ -268,6 +274,10 @@ export function initBooking(): void {
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (getPicks().length && !seatAvailabilityReady()) {
+      status.textContent = seating.statusError;
+      return;
+    }
     ['name', 'phone', 'hot', 'consent'].forEach((k) => err(k, ''));
     status.textContent = '';
     if (!hasSelection()) { status.textContent = 'Выберите места или детские билеты'; return; }
