@@ -44,9 +44,13 @@ const picks = new Map<string, Pick>();
 const status = new Map<string, SeatStatus>();
 let availability: 'loading' | 'ready' | 'error' = 'loading';
 let lastSuccess = 0;
+let statusRevision = 0;
 /** Устаревшие или не загруженные данные не дают разрешения на выбор и отправку. */
 export const seatAvailabilityReady = (): boolean => availability === 'ready' && Date.now() - lastSuccess < 60_000;
-const availabilityMessage = (): string => availability === 'loading' ? t.statusLoading : t.statusError;
+const availabilityMessage = (): string => {
+  if (availability === 'loading') return t.statusLoading;
+  return statusRevision > 0 ? t.statusStale : t.statusError;
+};
 const availabilityMarkup = (): string => `<div class="seats__availability" data-availability role="status" aria-live="polite"${seatAvailabilityReady() ? ' hidden' : ''}><p data-availability-message>${availabilityMessage()}</p><button type="button" data-status-retry${availability === 'loading' ? ' hidden' : ''}>${t.statusRetry}</button></div>`;
 /** Детские билеты: возраст каждого ребёнка. Без мест, без привязки к схеме. */
 const kids: number[] = [];
@@ -90,6 +94,7 @@ export function clearSelection(): void {
 }
 /** Применить свежие статусы мест (с функции); выбранные места, ставшие чужими, снимаются. */
 export function applySeatStatuses(seats: Record<string, string>): void {
+  statusRevision++;
   availability = 'ready';
   lastSuccess = Date.now();
   status.clear();
@@ -130,7 +135,9 @@ const seatLabel = (n: number, s: number): string => {
   const key = seatKey(n, s);
   const p = picks.get(key);
   const price = p ? pickPrice(p) : seatPrice(n);
-  return `Стол ${n}, место ${s}, ${rub(price)}, ${seatAvailabilityReady() ? stateWord(p, statusOf(key)) : t.statusUnknown}`;
+  const st = statusOf(key);
+  const label = st === 'free' && !seatAvailabilityReady() ? t.statusUnknown : stateWord(p, st);
+  return `Стол ${n}, место ${s}, ${rub(price)}, ${label}`;
 };
 
 function tableMarkup(tb: HallTable, orient: Orient): string {
@@ -583,7 +590,7 @@ function paintCard(): void {
   }).join('');
   const stageAngle = Math.atan2(layout.stage.y + layout.stage.h / 2 - tb.y, layout.stage.x + layout.stage.w / 2 - tb.x) * 180 / Math.PI;
   card.innerHTML = `
-    <div class="tcard__in" data-seat-ready="${seatAvailabilityReady()}" style="--zc:${z.color}">
+    <div class="tcard__in" data-seat-ready="${seatAvailabilityReady()}" data-seat-status-known="${statusRevision > 0}" style="--zc:${z.color}">
       <p class="label label--dot">${z.name}</p>
       <h3 class="tcard__title" id="tcard-title">Стол ${tb.n}</h3>
       <p class="tcard__meta">${rub(z.price)} за место</p>
@@ -971,36 +978,62 @@ export function initSeating(): void {
   window.setInterval(() => { if (!document.hidden) refreshSeatStatuses(); }, 30_000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshSeatStatuses(); });
   window.addEventListener('focus', () => refreshSeatStatuses());
+  window.addEventListener('online', () => refreshSeatStatuses(true));
 }
 
-/** Статусы мест: GET на функцию заявок (hold показывается всем как «на брони»), пока адрес не задан, статический файл. */
-let lastRefresh = 0;
-let statusRequestPending = false;
-export function refreshSeatStatuses(force = false): void {
-  if (statusRequestPending || (!force && Date.now() - lastRefresh < 3000)) return;
-  lastRefresh = Date.now();
-  statusRequestPending = true;
-  availability = 'loading';
-  paint();
-  listeners.forEach((fn) => fn());
+async function fetchSeatStatuses(): Promise<Record<string, string>> {
   const controller = new AbortController();
   const timeout = window.setTimeout(() => controller.abort(), 8000);
   // метка в адресе: ни браузер, ни прокси не отдают старый ответ
   const url = booking.endpoint ? `${booking.endpoint}?t=${Date.now()}` : SEATING_STATUS_URL;
-  fetch(url, { cache: 'no-store', signal: controller.signal })
-    .then((r) => { if (!r.ok) throw new Error('Status unavailable'); return r.json(); })
-    .then((data: { ok?: boolean; seats?: Record<string, string> } | null) => {
-      const seats = data?.seats;
-      if (data?.ok === false || !seats || typeof seats !== 'object' || Array.isArray(seats)
-        || Object.entries(seats).some(([k, v]) => !/^(?:[1-9]|1[0-5])-[1-8]$/.test(k) || !['free', 'held', 'booked'].includes(v))) throw new Error('Invalid seat statuses');
-      applySeatStatuses(seats);
-    })
-    .catch(() => {
-      availability = 'error';
+  try {
+    const response = await fetch(url, { cache: 'no-store', signal: controller.signal });
+    if (!response.ok) throw new Error('Status unavailable');
+    const data: { ok?: boolean; seats?: Record<string, string> } | null = await response.json();
+    const seats = data?.seats;
+    if (data?.ok === false || !seats || typeof seats !== 'object' || Array.isArray(seats)
+      || Object.entries(seats).some(([k, v]) => !/^(?:[1-9]|1[0-5])-[1-8]$/.test(k) || !['free', 'held', 'booked'].includes(v))) throw new Error('Invalid seat statuses');
+    return seats;
+  } finally {
+    window.clearTimeout(timeout);
+  }
+}
+
+let lastRefresh = 0;
+let statusRequestPending = false;
+export async function refreshSeatStatuses(force = false): Promise<void> {
+  if (statusRequestPending || (!force && Date.now() - lastRefresh < 3000)) return;
+  lastRefresh = Date.now();
+  statusRequestPending = true;
+  const revision = statusRevision;
+  try {
+    if (!seatAvailabilityReady() && availability !== 'loading') {
+      availability = 'loading';
       paint();
       listeners.forEach((fn) => fn());
-    })
-    .finally(() => { window.clearTimeout(timeout); statusRequestPending = false; });
+    }
+    for (let attempt = 0; attempt < 2; attempt++) {
+      let seats: Record<string, string>;
+      try {
+        seats = await fetchSeatStatuses();
+      } catch {
+        if (revision !== statusRevision) return;
+        if (attempt === 0) {
+          await new Promise<void>((resolve) => window.setTimeout(resolve, 750));
+          if (revision !== statusRevision) return;
+          continue;
+        }
+        availability = 'error';
+        paint();
+        listeners.forEach((fn) => fn());
+        return;
+      }
+      if (revision === statusRevision) applySeatStatuses(seats);
+      return;
+    }
+  } finally {
+    statusRequestPending = false;
+  }
 }
 
 export { CHILD_PRICE };
