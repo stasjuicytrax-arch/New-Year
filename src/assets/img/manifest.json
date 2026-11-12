@@ -139,43 +139,18 @@
       }
     ]
   },
-  "illusion-cards": {
-    "src": "3939x4924",
+  "illusion-mikhail": {
+    "src": "1022x1280",
     "variants": [
       {
         "w": 640,
         "width": 640,
-        "height": 800
+        "height": 802
       },
       {
-        "w": 960,
-        "width": 960,
-        "height": 1200
-      },
-      {
-        "w": 1440,
-        "width": 1440,
-        "height": 1800
-      }
-    ]
-  },
-  "illusion-portrait": {
-    "src": "4202x5873",
-    "variants": [
-      {
-        "w": 640,
-        "width": 640,
-        "height": 895
-      },
-      {
-        "w": 960,
-        "width": 960,
-        "height": 1342
-      },
-      {
-        "w": 1440,
-        "width": 1440,
-        "height": 2013
+        "w": 1022,
+        "width": 1022,
+        "height": 1280
       }
     ]
   },

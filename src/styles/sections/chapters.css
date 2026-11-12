@@ -17,6 +17,7 @@
   .ch__title { margin: 0; font-size: clamp(30px, 4.4vw, 68px); line-height: 0.98; text-wrap: balance; }
   .ch__text { max-width: 46ch; font-size: var(--fs-lead); line-height: 1.5; color: var(--text); }
   .ch__media { position: relative; min-width: 0; }
+  .ch__media--portrait { width: min(100%, 500px); margin-inline: auto; }
 
   .ch__mask { position: relative; overflow: hidden; }
   .ch__mask picture { display: block; width: 100%; height: 100%; }
@@ -37,19 +38,6 @@
   }
   .ch__strip picture { display: block; height: 100%; }
   .ch__strip img { width: 110%; max-width: none; height: 100%; object-fit: cover; }
-
-  .ch__media--pair {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 14px;
-    width: 100%;
-    max-width: 980px;
-    margin-inline: auto;
-  }
-  .ch__media--pair .ch__mask { aspect-ratio: 4 / 5; border-radius: 18px; }
-  @media (min-width: 640px) {
-    .ch__media--pair { grid-template-columns: 1fr 1fr; gap: clamp(14px, 2vw, 28px); }
-  }
 
   /* ---------- 02: ведущие ---------- */
   .ch__media--hosts { display: grid; place-items: end center; }
@@ -74,6 +62,7 @@
   /* ---------- 03: Дед Мороз и Снегурочка ---------- */
   .ch__media--duo { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); padding-bottom: 8%; }
   .ch__frame { aspect-ratio: 3 / 4; }
+  .ch__frame--portrait { aspect-ratio: 4 / 5; }
   .ch__frame--a { grid-column: 1 / span 7; grid-row: 1; }
   .ch__frame--b { grid-column: 6 / span 7; grid-row: 1; margin-top: 26%; z-index: 1; box-shadow: 0 0 0 5px var(--night-950), 0 0 36px color-mix(in oklab, var(--electric-500) 40%, transparent); }
   .ch__img--ded { object-position: 54% 20%; }
@@ -115,8 +104,8 @@
     pointer-events: none;
   }
   @keyframes smoke { from { transform: translateX(-4%); } to { transform: translateX(4%); } }
-  .ch__media--illusion { z-index: 1; width: min(100%, 960px); margin: var(--space-6) 0 0; }
-  .ch--illusion .ch__frame { aspect-ratio: 5 / 7; overflow: hidden; border: 1px solid var(--line-strong); box-shadow: 0 24px 60px -28px rgba(0, 0, 0, 0.7); }
+  .ch__media--illusion { z-index: 1; margin-block: var(--space-6) 0; }
+  .ch--illusion .ch__frame { overflow: hidden; border: 1px solid var(--line-strong); box-shadow: 0 24px 60px -28px rgba(0, 0, 0, 0.7); }
   .ch--illusion .ch__frame picture { display: block; height: 100%; }
   .ch--illusion .ch__caption { margin-top: var(--space-3); font-size: var(--fs-body); font-weight: 600; color: var(--text-strong); }
   .ch__fx { display: none; }

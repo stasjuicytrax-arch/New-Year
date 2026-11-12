@@ -27,16 +27,14 @@ const shell = (c: Chapter, mod: string, inner: string): string => `
 const titled = (html: string, c: Chapter): string => html.replace('class="ch__title"', `id="${c.id}-t" class="ch__title"`);
 
 const mask = (html: string, cls = ''): string => `<div class="ch__mask ${cls}" data-mask>${html}</div>`;
+const portraitSizes = '(min-width: 556px) 500px, 90vw';
 
 function ch01(c: Chapter): string {
   return shell(
     c,
     'full',
     `${titled(head(c), c)}
-    <div class="ch__media ch__media--pair">
-      ${mask(picture({ name: 'ballet-1', alt: 'Балет в костюмах с перьями', sizes: '(min-width: 1024px) 480px, (min-width: 640px) 46vw, 92vw', cls: 'ch__img' }), 'ch__frame')}
-      ${mask(picture({ name: 'ballet-2', alt: 'Балет в серебристых костюмах', sizes: '(min-width: 1024px) 480px, (min-width: 640px) 46vw, 92vw', cls: 'ch__img' }), 'ch__frame')}
-    </div>`,
+    ${mask(picture({ name: 'ballet-1', alt: 'Балет в костюмах с перьями', sizes: portraitSizes, cls: 'ch__img' }), 'ch__media ch__media--portrait ch__frame--portrait')}`,
   );
 }
 
@@ -69,16 +67,17 @@ function ch03(c: Chapter): string {
 }
 
 function word04(c: Chapter): string {
-  const sizes = '(min-width: 1024px) 466px, (min-width: 640px) 46vw, 92vw';
   return shell(
     c,
     'word ch--illusion',
     `${word(c)}${titled(head(c), c)}
-    <figure class="ch__media ch__media--illusion">
-      <div class="ch__media--pair">
-        <div class="ch__frame">${picture({ name: 'illusion-cards', alt: 'Иллюзионист показывает фокус с игральными картами', sizes, cls: 'ch__img' })}</div>
-        <div class="ch__frame">${picture({ name: 'illusion-portrait', alt: 'Портрет иллюзиониста в чёрном костюме', sizes, cls: 'ch__img' })}</div>
-      </div>
+    <figure class="ch__media ch__media--portrait ch__media--illusion">
+      <div class="ch__frame ch__frame--portrait">${picture({
+        name: 'illusion-mikhail',
+        alt: 'Иллюзионист показывает фокус с игральными картами',
+        sizes: portraitSizes,
+        cls: 'ch__img',
+      })}</div>
       ${c.extra ? `<figcaption class="ch__caption">${typo(c.extra)}</figcaption>` : ''}
     </figure>
     <div class="ch__fx ch__fx--smoke" aria-hidden="true"></div>`,
