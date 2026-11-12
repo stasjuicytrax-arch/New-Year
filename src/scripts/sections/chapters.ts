@@ -2,7 +2,7 @@ import { djMarquee, event, menu, program, typo, type Chapter } from '../../conte
 import { picture } from '../media';
 
 /**
- * Десять глав «Что вас ждёт». Раскладка чередуется: full / right / left, на mobile фото на всю ширину, текст под ним.
+ * Главы «Что вас ждёт». Раскладка чередуется: full / right / left, на mobile фото следует за текстом.
  * Тексты строго из content.ts (docs/CONTENT.md). Анимации (маски, параллакс, счётчики) вешает reveal.ts по data-атрибутам.
  */
 
@@ -74,10 +74,13 @@ function word04(c: Chapter): string {
     c,
     'word ch--illusion',
     `${word(c)}${titled(head(c), c)}
-    <div class="ch__media ch__media--pair">
-      <div class="ch__frame">${picture({ name: 'illusion-cards', alt: 'Иллюзионист показывает фокус с игральными картами', sizes, cls: 'ch__img' })}</div>
-      <div class="ch__frame">${picture({ name: 'illusion-portrait', alt: 'Портрет иллюзиониста в чёрном костюме', sizes, cls: 'ch__img' })}</div>
-    </div>
+    <figure class="ch__media ch__media--illusion">
+      <div class="ch__media--pair">
+        <div class="ch__frame">${picture({ name: 'illusion-cards', alt: 'Иллюзионист показывает фокус с игральными картами', sizes, cls: 'ch__img' })}</div>
+        <div class="ch__frame">${picture({ name: 'illusion-portrait', alt: 'Портрет иллюзиониста в чёрном костюме', sizes, cls: 'ch__img' })}</div>
+      </div>
+      ${c.extra ? `<figcaption class="ch__caption">${typo(c.extra)}</figcaption>` : ''}
+    </figure>
     <div class="ch__fx ch__fx--smoke" aria-hidden="true"></div>`,
   );
 }
@@ -142,7 +145,23 @@ function ch08(c: Chapter): string {
   );
 }
 
-function word09(c: Chapter): string {
+function vocal(c: Chapter): string {
+  return shell(
+    c,
+    'right ch--vocal',
+    `${titled(head(c), c)}
+    <div class="ch__media ch__media--vocal">
+      ${mask(picture({
+        name: 'maria-galavura',
+        alt: 'Мария Галавура в серебристом платье у новогодней ёлки',
+        sizes: '(min-width: 1334px) 584px, (min-width: 1024px) 44vw, (min-width: 890px) 800px, 90vw',
+        cls: 'ch__img',
+      }), 'ch__frame ch__frame--vocal')}
+    </div>`,
+  );
+}
+
+function effects(c: Chapter): string {
   return shell(
     c,
     'word ch--fx',
@@ -150,7 +169,7 @@ function word09(c: Chapter): string {
   );
 }
 
-function ch10(c: Chapter): string {
+function chapterMenu(c: Chapter): string {
   const items = menu.items
     .map((it, i) => {
       const n = String(i + 1).padStart(2, '0');
@@ -192,8 +211,9 @@ const builders: Record<string, (c: Chapter) => string> = {
   'ch-06': ch06,
   'ch-07': ch07,
   'ch-08': ch08,
-  'ch-09': word09,
-  'ch-10': ch10,
+  'ch-vocal': vocal,
+  'ch-09': effects,
+  'ch-10': chapterMenu,
 };
 
 export function renderChapters(): string {

@@ -418,5 +418,30 @@
         "height": 1280
       }
     ]
+  },
+  "maria-galavura": {
+    "src": "1672x941",
+    "variants": [
+      {
+        "w": 640,
+        "width": 640,
+        "height": 360
+      },
+      {
+        "w": 960,
+        "width": 960,
+        "height": 540
+      },
+      {
+        "w": 1440,
+        "width": 1440,
+        "height": 810
+      },
+      {
+        "w": 1672,
+        "width": 1672,
+        "height": 941
+      }
+    ]
   }
 }

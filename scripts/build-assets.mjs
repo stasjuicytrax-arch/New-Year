@@ -59,6 +59,7 @@ const IMAGES = [
   { name: 'hall-4', src: 'White hall/GHGQM__9Neep4CPrZKH_nKD1k-fFxkKZ8wJuOqzrvYRHJhJJPEvaFlyL_KzYxuzDAIQL6UskA_w.jpg', widths: [640, 960, 1440, 2048] },
   { name: 'hall-5', src: 'White hall/P5rxh2fgogyXTK8InPSjKOVEMKPe2TC14S2MNCAew7x8rrixBD8HGwEtxaC7N2j2hoafzA.jpg', widths: [640, 960, 1440, 2048] },
   { name: 'dj-seven', src: 'Наш диджей DJ Seven/IMG_5835.PNG', widths: [640, 900, 1254] },
+  { name: 'maria-galavura', src: 'IMG_4097.PNG', widths: [640, 960, 1440, 1672] },
 ];
 
 const NIGHT = { r: 0, g: 16, b: 46 }; // --night-900
