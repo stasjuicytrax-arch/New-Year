@@ -69,7 +69,17 @@ function ch03(c: Chapter): string {
 }
 
 function word04(c: Chapter): string {
-  return shell(c, 'word ch--illusion', `${word(c)}${titled(head(c), c)}<div class="ch__frame">${picture({ name: 'illusion', alt: 'Иллюзионное шоу на сцене', sizes: '(min-width: 1024px) 60vw, 92vw', cls: 'ch__img' })}</div><div class="ch__fx ch__fx--smoke" aria-hidden="true"></div>`);
+  const sizes = '(min-width: 1024px) 466px, (min-width: 640px) 46vw, 92vw';
+  return shell(
+    c,
+    'word ch--illusion',
+    `${word(c)}${titled(head(c), c)}
+    <div class="ch__media ch__media--pair">
+      <div class="ch__frame">${picture({ name: 'illusion-cards', alt: 'Иллюзионист показывает фокус с игральными картами', sizes, cls: 'ch__img' })}</div>
+      <div class="ch__frame">${picture({ name: 'illusion-portrait', alt: 'Портрет иллюзиониста в чёрном костюме', sizes, cls: 'ch__img' })}</div>
+    </div>
+    <div class="ch__fx ch__fx--smoke" aria-hidden="true"></div>`,
+  );
 }
 
 /** Глава 05: «фотоплёнка» — лента поляроидов из фото страницы, едет по скроллу; на входе одна вспышка камеры. */
